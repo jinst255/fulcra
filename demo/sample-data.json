@@ -1,0 +1,318 @@
+{
+  "about": {
+    "targetWork": "Applied AI and developer tools",
+    "enjoys": "Building software and explaining things to people",
+    "homeBase": "Boise, Idaho",
+    "communityImportance": "very",
+    "remote": "yes",
+    "relocate": "maybe",
+    "languages": [
+      {
+        "name": "English",
+        "level": "native"
+      },
+      {
+        "name": "Spanish",
+        "level": "fluent"
+      }
+    ],
+    "windowWeeks": 22,
+    "payGoal": 30000
+  },
+  "dealbreakers": {
+    "minTakeHome": 8000,
+    "maxHours": null,
+    "mustRemote": false,
+    "noRelocation": false,
+    "excludeTypes": [],
+    "languageGap": true
+  },
+  "jobs": [
+    {
+      "id": "dev",
+      "title": "Software dev internship",
+      "company": "Northbeam Software",
+      "location": "Salt Lake City, UT (hybrid)",
+      "source": "page",
+      "status": "open",
+      "pay": {
+        "min": 24,
+        "max": 24,
+        "period": "hour",
+        "is_estimate": false
+      },
+      "hours": 37,
+      "weeks": 15,
+      "takeHome": 13320,
+      "scores": [
+        5.0,
+        8,
+        6,
+        10,
+        7,
+        8,
+        7
+      ],
+      "reasons": [
+        "About $13,300 before tax over 15 weeks.",
+        "Building software is the kind of work you enjoy most.",
+        "Internal tools help coworkers more than end users.",
+        "Direct experience in applied AI and developer tools.",
+        "Forty hours a week, evenings mostly free.",
+        "Fixed pay for a set fifteen-week term.",
+        "Hybrid; a few weeks away from your community."
+      ]
+    },
+    {
+      "id": "contract",
+      "title": "Contract AI work",
+      "company": "Remote AI training platform",
+      "location": "Remote",
+      "source": "page",
+      "status": "open",
+      "pay": {
+        "min": 20,
+        "max": 30,
+        "period": "hour",
+        "is_estimate": false
+      },
+      "hours": 20,
+      "weeks": 20,
+      "takeHome": 10000,
+      "scores": [
+        4.0,
+        6,
+        5,
+        7,
+        8,
+        6,
+        10
+      ],
+      "reasons": [
+        "About $10,000 before tax over 20 weeks.",
+        "Interesting tasks, with repetitive review some weeks.",
+        "Improves AI models; the benefit to people is indirect.",
+        "Hands-on with frontier models, though not engineering work.",
+        "Set your own hours and work from home.",
+        "Task supply can dry up without notice.",
+        "Fully remote, so you stay where you are."
+      ]
+    },
+    {
+      "id": "sales",
+      "title": "Summer sales rep",
+      "company": "Summit Pest Solutions",
+      "location": "Dallas, TX",
+      "source": "email",
+      "status": "open",
+      "pay": {
+        "min": 26700,
+        "max": 26700,
+        "period": "total",
+        "is_estimate": true
+      },
+      "hours": 65,
+      "weeks": 16,
+      "takeHome": 26700,
+      "scores": [
+        9.0,
+        3,
+        3,
+        3,
+        2,
+        3,
+        2
+      ],
+      "reasons": [
+        "About $26,700 before tax over 16 weeks (estimate).",
+        "Long days of door-to-door pitching.",
+        "Product helps some buyers; pressure selling hurts others.",
+        "Sales skills transfer a little to consulting work.",
+        "Six-day weeks with long hours all summer.",
+        "Mostly commission, so income swings week to week.",
+        "Requires moving out of state for the summer."
+      ]
+    },
+    {
+      "id": "warehouse",
+      "title": "Warehouse associate",
+      "company": "Valley Distribution",
+      "location": "Nampa, ID",
+      "source": "email",
+      "status": "open",
+      "pay": {
+        "min": 16,
+        "max": 16,
+        "period": "hour",
+        "is_estimate": false
+      },
+      "hours": 40,
+      "weeks": 21,
+      "takeHome": 13440,
+      "payUnitCorrection": {
+        "from": "year",
+        "to": "hour",
+        "reason": "The posting said $16 a year, which only makes sense as hourly."
+      },
+      "scores": [
+        5.0,
+        3,
+        3,
+        2,
+        4,
+        6,
+        2
+      ],
+      "reasons": [
+        "About $13,400 before tax over 21 weeks.",
+        "Repetitive physical work on your feet.",
+        "Keeps orders moving; little direct effect on people.",
+        "Little connection to software or AI work.",
+        "Rotating shifts make a routine hard to keep.",
+        "Easy to start, but shifts can be cut.",
+        "Long commute to the site most days."
+      ]
+    },
+    {
+      "id": "tutor",
+      "title": "Math and coding tutor",
+      "company": "Independent",
+      "location": "Boise, ID or online",
+      "source": "paste",
+      "status": "open",
+      "pay": {
+        "min": 25,
+        "max": 25,
+        "period": "hour",
+        "is_estimate": false
+      },
+      "hours": 12,
+      "weeks": 22,
+      "takeHome": 6600,
+      "scores": [
+        3.0,
+        7,
+        8,
+        5,
+        8,
+        7,
+        9
+      ],
+      "reasons": [
+        "About $6,600 before tax over 22 weeks.",
+        "One-on-one teaching is rewarding.",
+        "Clear, direct help for each student.",
+        "Builds explaining skills, little technical growth.",
+        "You set the schedule.",
+        "Easy to start; demand dips in summer.",
+        "Local or online, near your community."
+      ]
+    },
+    {
+      "id": "ta",
+      "title": "Math teaching assistant",
+      "company": "State university",
+      "location": "Boise, ID",
+      "source": "page",
+      "status": "open",
+      "pay": {
+        "min": 15,
+        "max": 15,
+        "period": "hour",
+        "is_estimate": false
+      },
+      "hours": 20,
+      "weeks": 22,
+      "takeHome": 6600,
+      "scores": [
+        3.0,
+        6,
+        7,
+        6,
+        7,
+        8,
+        6
+      ],
+      "reasons": [
+        "About $6,600 before tax over 22 weeks.",
+        "Explaining math is engaging; grading is tedious.",
+        "Helps students pass a class they find hard.",
+        "Teaching sharpens communication for client-facing work.",
+        "Hours fit around classes.",
+        "Campus job with steady, guaranteed hours.",
+        "On campus, but only during the term."
+      ]
+    },
+    {
+      "id": "analyst",
+      "title": "Junior data analyst",
+      "company": "Teton Analytics",
+      "location": "Idaho Falls, ID",
+      "source": "email",
+      "status": "unknown",
+      "preliminary": true,
+      "pay": {
+        "min": 20,
+        "max": 20,
+        "period": "hour",
+        "is_estimate": true
+      },
+      "hours": 40,
+      "weeks": 22,
+      "takeHome": 17600,
+      "scores": [
+        6.3,
+        6,
+        5,
+        7,
+        6,
+        6,
+        5
+      ],
+      "reasons": [
+        "About $17,600 before tax over 22 weeks (estimate).",
+        "Data work is close to what you enjoy.",
+        "Unclear who the analysis helps.",
+        "Data skills lead toward applied AI work.",
+        "Likely a standard full-time schedule.",
+        "Little detail on stability from the alert.",
+        "A few hours from home base."
+      ]
+    },
+    {
+      "id": "helpdesk",
+      "title": "IT help desk technician",
+      "company": "Gem County Schools",
+      "location": "Emmett, ID",
+      "source": "email",
+      "status": "closed",
+      "pay": {
+        "min": 18,
+        "max": 18,
+        "period": "hour",
+        "is_estimate": false
+      },
+      "hours": 40,
+      "weeks": 22,
+      "takeHome": 15840,
+      "scores": [
+        5.8,
+        5,
+        6,
+        4,
+        6,
+        7,
+        6
+      ],
+      "reasons": [
+        "About $15,800 before tax over 22 weeks.",
+        "Troubleshooting is fine, but repetitive.",
+        "Keeps teachers and students working.",
+        "Some technical growth, little AI work.",
+        "School hours with summers lighter.",
+        "Stable public employer.",
+        "Short drive from home base."
+      ]
+    }
+  ]
+}
