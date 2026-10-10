@@ -27,12 +27,14 @@ Facts:
 
 Scores:
 - Score each requested dimension from 1 to 10, where 10 is always best for this person, using that dimension's definition and its anchors for 1 and 10.
+- Be decisive and use the whole range. 5 means ordinary for this person. Give 8 to 10 only for a specific strength you can name in the listing, and 1 to 3 for a specific weakness. Most jobs are strong on some dimensions and weak on others; don't put every dimension between 5 and 7.
 - Judge for this person's stated goals, interests, home base, and languages, not for an average person.
 - Each reason is one plain sentence of 15 words or fewer, written to the person ("you"), naming the specific thing in the listing that drove the score.
 - If the job requires a language the person doesn't speak, add the flag "language_gap" and lower the career and risk scores. A bilingual premium for a language they speak counts as upside.
 - Add "commission_only" when pay is mostly or entirely commission, "unpaid" when the job is unpaid, and "scam_risk" when the listing shows common scam signs.`;
 
-export const PRELIMINARY_NOTE = 'Information is limited; score conservatively toward 5 when unsure.';
+export const PRELIMINARY_NOTE =
+  'Only the title, company, location, and maybe pay are known. Score what those clearly show as decisively as usual; use 5 only for dimensions they say nothing about.';
 
 const COMMUNITY: Record<About['communityImportance'], string> = {
   very: 'very important',

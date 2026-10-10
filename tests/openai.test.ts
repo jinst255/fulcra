@@ -139,7 +139,7 @@ describe('prompts', () => {
       preliminary: true,
     });
     expect(msg.match(/<\/listing>/g)!.length).toBe(1);
-    expect(msg).toContain('score conservatively toward 5');
+    expect(msg).toContain('use 5 only for dimensions they say nothing about');
     expect(msg).not.toContain('- pay');
     expect(truncateListing('a'.repeat(MAX_LISTING_CHARS + 50)).length).toBe(MAX_LISTING_CHARS);
   });

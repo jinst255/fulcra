@@ -2004,5 +2004,31 @@
         "content": "$1"
       }
     }
+  },
+  "settings_scoring_spread": {
+    "message": "Spread scores across your jobs"
+  },
+  "settings_scoring_spreadHint": {
+    "message": "On each dimension, your best job shows 10 and your weakest shows 1, so small differences are easy to see. Turn off to see the AI's raw scores. Your own scores are never changed."
+  },
+  "radar_missing": {
+    "message": "No info"
+  },
+  "radar_missingNote": {
+    "message": "Red points have no information, such as a job that doesn't state its pay. They sit at the center, on their axis."
+  },
+  "radar_pick_hintAny": {
+    "message": "Pick as many as you like. $COUNT$ shown.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "radar_pick_clear": {
+    "message": "Clear all"
+  },
+  "radar_pick_top3": {
+    "message": "Show the top 3"
   }
 }

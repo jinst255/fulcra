@@ -64,23 +64,26 @@ export function topLine(view: RankView, r: RankedJob): string {
   return t('ranked.breakdown.top', { items });
 }
 
-/** Radar "What stands out" lines for up to three picked jobs. */
+/** Radar "What stands out" lines for the picked jobs. Missing scores never lead or trail. */
 export function standoutLines(view: RankView, picked: RankedJob[]): string[] {
   const dims = view.dims;
+  const has = (r: RankedJob, d: Dimension) => view.scoreOf(r, d) != null;
   const s = (r: RankedJob, d: Dimension) => view.scoreOf(r, d) ?? 0;
   if (!picked.length) return [t('radar.standout.pickAny')];
   if (picked.length === 1) return [t('radar.standout.pickMore')];
   const out: string[] = [];
   for (const p of picked) {
-    const leads = dims.filter((d) => picked.every((q) => q === p || s(q, d) < s(p, d)));
+    const leads = dims.filter(
+      (d) => has(p, d) && picked.every((q) => q === p || !has(q, d) || s(q, d) < s(p, d)),
+    );
     if (!leads.length) {
       out.push(t('radar.standout.none', { job: p.job.facts.title }));
       continue;
     }
     leads.sort((a, b) => view.weight(b) - view.weight(a) || s(p, b) - s(p, a));
     const main = leads[0]!;
-    let weakest = dims[0]!;
-    for (const d of dims) if (s(p, d) < s(p, weakest)) weakest = d;
+    let weakest = main;
+    for (const d of dims) if (has(p, d) && s(p, d) < s(p, weakest)) weakest = d;
     let line = t('radar.standout.leads', {
       job: p.job.facts.title,
       dimension: lowerFirst(main.name),
@@ -100,7 +103,8 @@ export function standoutLines(view: RankView, picked: RankedJob[]): string[] {
   let lo = 0;
   let hi = 0;
   for (const d of dims) {
-    const vals = picked.map((p) => s(p, d));
+    const vals = picked.filter((p) => has(p, d)).map((p) => s(p, d));
+    if (vals.length < 2) continue;
     const dd = Math.max(...vals) - Math.min(...vals);
     if (dd > spread) {
       spread = dd;

@@ -298,7 +298,7 @@ export function JobDetail({
             const ov = x?.override;
             const hasOv = ov != null;
             const doOverride = async (v: number | null) => {
-              const learn = await setOverride(job, d.id, v, settings);
+              const learn = await setOverride(job, d.id, v, settings, hasOv ? null : s);
               if (learn) onLearn(learn);
             };
             return (
@@ -327,7 +327,7 @@ export function JobDetail({
                         type="button"
                         className="link-btn"
                         style={{ minHeight: 36, fontSize: 13 }}
-                        onClick={() => void doOverride(x.score)}
+                        onClick={() => void doOverride(Math.round(s ?? x.score))}
                       >
                         {t('detail.override')}
                       </button>

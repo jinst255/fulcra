@@ -19,6 +19,7 @@ describe('strong-match notifications', () => {
     await updateSettings((s) => {
       s.about = structuredClone(SAMPLE_ABOUT);
       s.scoring.notifyThreshold = 7;
+      s.scoring.spread = false;
     });
     const jobs = sampleJobs();
     await putSampleJobs(jobs);

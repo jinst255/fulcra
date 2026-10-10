@@ -12,10 +12,11 @@ export interface TakeHome {
   estimate: boolean;
 }
 
+/** The middle of the pay range. Zero pay is treated as missing: listings almost never mean it. */
 function midpoint(pay: Pay): number | null {
   const lo = pay.min ?? pay.max;
   const hi = pay.max ?? pay.min;
-  if (lo == null || hi == null) return null;
+  if (lo == null || hi == null || hi <= 0) return null;
   return (lo + hi) / 2;
 }
 
@@ -48,10 +49,11 @@ export function weeklyPay(
   }
 }
 
-/** T = p_w × min(d, W) − c */
-export function takeHome(facts: Facts, windowWeeks: number, knownCosts = 0): TakeHome {
+/** T = p_w × min(d, W) − c. A job flagged unpaid takes home nothing. */
+export function takeHome(facts: Facts, windowWeeks: number, knownCosts = 0, unpaid = false): TakeHome {
   const d = facts.duration_weeks && facts.duration_weeks > 0 ? facts.duration_weeks : windowWeeks;
   const weeks = Math.min(d, windowWeeks);
+  if (unpaid) return { total: -knownCosts, weeks, estimate: false };
   const { weekly, hoursEstimated } = weeklyPay(
     facts.pay,
     facts.hours_per_week,

@@ -251,10 +251,17 @@ function ScoringSection() {
       .then((cs) => setShortcut(cs.find((c) => c.name === 'score-page')?.shortcut || ''))
       .catch(() => setShortcut(''));
   }, []);
-  const toggle = (k: 'autoScore' | 'upgradeOnVisit' | 'notify') =>
+  const toggle = (k: 'autoScore' | 'upgradeOnVisit' | 'notify' | 'spread') =>
     update((s) => void (s.scoring[k] = !s.scoring[k]));
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
+      <SwitchRow
+        id="lbl-spread"
+        label={t('settings.scoring.spread')}
+        hint={t('settings.scoring.spreadHint')}
+        on={sc.spread}
+        onToggle={() => toggle('spread')}
+      />
       <SwitchRow
         id="lbl-auto"
         label={t('settings.scoring.auto')}

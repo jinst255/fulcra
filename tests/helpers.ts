@@ -6,6 +6,8 @@ export function sampleSettings(): Settings {
   const s = defaultSettings();
   s.about = structuredClone(SAMPLE_ABOUT);
   s.dealbreakers = structuredClone(SAMPLE_DEALBREAKERS);
+  // The blueprint's worked examples use the model's raw scores.
+  s.scoring.spread = false;
   return s;
 }
 

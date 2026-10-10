@@ -132,7 +132,14 @@ export interface Settings {
   about: About;
   dealbreakers: Dealbreakers;
   email: EmailSettings;
-  scoring: { autoScore: boolean; upgradeOnVisit: boolean; notify: boolean; notifyThreshold: number };
+  scoring: {
+    autoScore: boolean;
+    upgradeOnVisit: boolean;
+    notify: boolean;
+    notifyThreshold: number;
+    /** Stretch each dimension's model scores so your best job on it is 10 and your worst is 1. */
+    spread: boolean;
+  };
   ui: {
     showOutsideDealbreakers: boolean | null;
     baselineOrder: string[];

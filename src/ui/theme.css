@@ -53,6 +53,15 @@
   --red-text: #7a1a12;
   --red-soft: #e3a59e;
   --gray-switch: #8b9096;
+  --chart-bg: #faf9f6;
+  --series-1: #0f6b5f;
+  --series-2: #b45309;
+  --series-3: #3a3f45;
+  --series-4: #2f5fa8;
+  --series-5: #7a4ca8;
+  --series-6: #a8326e;
+  --series-7: #5f7a1f;
+  --series-8: #12839b;
   --radius: 12px;
   --mono: 'IBM Plex Mono', ui-monospace, monospace;
   color-scheme: light;

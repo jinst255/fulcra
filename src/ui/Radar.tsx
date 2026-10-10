@@ -1,5 +1,6 @@
-// Radar: hand-drawn SVG, up to three jobs, tappable axes. Blueprint section 9.2,
+// Radar: hand-drawn SVG, any number of jobs, tappable axes. Blueprint section 9.2,
 // matched to the approved demo. "What stands out" is worked out from scores, no AI call.
+// A point with no score sits at the center in red, so missing information never looks like a score.
 import { useMemo, useState } from 'react';
 import { byValue, type RankedJob } from '../core/rank';
 import { fmtDimScore, standoutLines } from '../core/standouts';
@@ -13,38 +14,50 @@ import { EmptyState } from './RankedList';
 const CX = 340;
 const CY = 232;
 const R = 160;
-const SLOTS = [
-  { color: '#0F6B5F', dash: '', shape: 'circle' },
-  { color: '#B45309', dash: '6 4', shape: 'square' },
-  { color: '#3A3F45', dash: '2 3', shape: 'triangle' },
-] as const;
+const COLORS = 8;
+const SHAPES = ['circle', 'square', 'triangle', 'diamond'] as const;
+const DASHES = ['', '6 4', '2 3', '8 3 2 3'];
+/** Line style for the k-th picked job: color from the theme, shape and dash to tell them apart. */
+function slot(k: number) {
+  return {
+    color: `var(--series-${(k % COLORS) + 1})`,
+    shape: SHAPES[k % SHAPES.length]!,
+    dash: DASHES[Math.floor(k / COLORS + k) % DASHES.length]!,
+  };
+}
 
 const f1 = (n: number) => n.toFixed(1);
 
 function marker(shape: string, x: number, y: number): string {
   if (shape === 'circle') return `M${f1(x - 4)} ${f1(y)}a4 4 0 1 0 8 0a4 4 0 1 0 -8 0Z`;
   if (shape === 'square') return `M${f1(x - 3.5)} ${f1(y - 3.5)}h7v7h-7Z`;
+  if (shape === 'diamond')
+    return `M${f1(x)} ${f1(y - 5)}L${f1(x + 5)} ${f1(y)}L${f1(x)} ${f1(y + 5)}L${f1(x - 5)} ${f1(y)}Z`;
   return `M${f1(x)} ${f1(y - 5)}L${f1(x + 4.5)} ${f1(y + 3.5)}L${f1(x - 4.5)} ${f1(y + 3.5)}Z`;
 }
 
 function LineKey({ k }: { k: number }) {
-  const s = SLOTS[k]!;
+  const s = slot(k);
   return (
     <svg width="36" height="16" viewBox="0 0 36 16" aria-hidden="true" style={{ flex: 'none' }}>
-      <line x1="2" y1="8" x2="34" y2="8" stroke={s.color} strokeWidth="2.25" strokeDasharray={s.dash} />
-      <path d={marker(s.shape, 18, 8)} fill={s.color} />
+      <line
+        x1="2"
+        y1="8"
+        x2="34"
+        y2="8"
+        style={{ stroke: s.color }}
+        strokeWidth="2.25"
+        strokeDasharray={s.dash}
+      />
+      <path d={marker(s.shape, 18, 8)} style={{ fill: s.color }} />
     </svg>
   );
 }
 
 export function Radar() {
   const { view, jobs } = useApp();
-  const defaults = useMemo(() => {
-    const ids = view.openPass.slice(0, 3).map((x) => x.job.id);
-    while (ids.length < 3) ids.push('');
-    return ids;
-  }, [view.openPass]);
-  const [slotsRaw, setSlots] = useState<string[] | null>(null);
+  const defaults = useMemo(() => view.openPass.slice(0, 3).map((x) => x.job.id), [view.openPass]);
+  const [pickedRaw, setPicked] = useState<string[] | null>(null);
   const [axisRaw, setAxis] = useState(0);
   if (!jobs.length) {
     return (
@@ -57,7 +70,7 @@ export function Radar() {
       </div>
     );
   }
-  const slots = (slotsRaw ?? defaults).map((id) => (id && view.byId.get(id)?.scored ? id : ''));
+  const ids = (pickedRaw ?? defaults).filter((id) => view.byId.get(id)?.scored);
   const dims = view.dims;
   const N = Math.max(dims.length, 1);
   const axis = Math.min(axisRaw, N - 1);
@@ -73,12 +86,10 @@ export function Radar() {
     grid += `M${CX} ${CY}L${f1(p[0])} ${f1(p[1])}`;
   });
   const outer = dims.map((_d, i) => pt(i, 10).map(f1).join(',')).join(' ');
-  const picked: { x: RankedJob; slot: number }[] = [];
-  slots.forEach((id, k) => {
-    if (id) picked.push({ x: view.byId.get(id)!, slot: k });
-  });
-  const full = picked.length >= 3;
+  const picked = ids.map((id, k) => ({ x: view.byId.get(id)!, slot: k }));
   const sOf = (x: RankedJob, d: Dimension) => view.scoreOf(x, d) ?? 0;
+  const missing = (x: RankedJob, d: Dimension) => view.scoreOf(x, d) == null;
+  const anyMissing = picked.some(({ x }) => dims.some((d) => missing(x, d)));
   const stand = standoutLines(
     view,
     picked.map((p) => p.x),
@@ -130,37 +141,55 @@ export function Radar() {
                   y1={CY}
                   x2={f1(end[0])}
                   y2={f1(end[1])}
-                  stroke="#0F6B5F"
+                  style={{ stroke: 'var(--teal)' }}
                   strokeOpacity="0.12"
                   strokeWidth="22"
                   strokeLinecap="round"
                 />
-                <polygon points={outer} fill="#FAF9F6" stroke="#CFCBC0" strokeWidth="1.25" />
-                <path d={grid} fill="none" stroke="#E4E1D8" strokeWidth="1" />
-                {[...picked].reverse().map(({ x, slot }) => {
-                  const s = SLOTS[slot]!;
+                <polygon
+                  points={outer}
+                  style={{ fill: 'var(--chart-bg)', stroke: 'var(--border-input)' }}
+                  strokeWidth="1.25"
+                />
+                <path d={grid} fill="none" style={{ stroke: 'var(--track)' }} strokeWidth="1" />
+                {[...picked].reverse().map(({ x, slot: k }) => {
+                  const s = slot(k);
                   const pts = dims.map((d, i) => pt(i, sOf(x, d)));
+                  const known = pts.filter((_p, i) => !missing(x, dims[i]!));
+                  // Missing scores draw in red below, on their own axis.
                   return (
                     <g key={x.job.id}>
                       <polygon
                         points={pts.map((p) => p.map(f1).join(',')).join(' ')}
-                        fill={s.color}
-                        fillOpacity={0.06 + 0.02 * (2 - slot)}
-                        stroke={s.color}
+                        style={{ fill: s.color, stroke: s.color }}
+                        fillOpacity={picked.length > 3 ? 0.04 : 0.06 + 0.02 * Math.max(0, 2 - k)}
                         strokeWidth="2.25"
                         strokeDasharray={s.dash}
                         strokeLinejoin="round"
                       />
                       <path
-                        d={pts.map((p) => marker(s.shape, p[0], p[1])).join('')}
-                        fill={s.color}
-                        stroke="#FFFFFF"
+                        d={known.map((p) => marker(s.shape, p[0], p[1])).join('')}
+                        style={{ fill: s.color, stroke: 'var(--card)' }}
                         strokeWidth="1"
                       />
                     </g>
                   );
                 })}
-                <g fontFamily="IBM Plex Mono, monospace" fontSize="10" fill="#5A6068">
+                {picked.map(({ x, slot: k }) => {
+                  const shape = slot(k).shape;
+                  const red = dims
+                    .map((d, i) => (missing(x, d) ? pt(i, 0.9) : null))
+                    .filter((p): p is [number, number] => p != null);
+                  return red.length ? (
+                    <path
+                      key={x.job.id}
+                      d={red.map((p) => marker(shape, p[0], p[1])).join('')}
+                      style={{ fill: 'var(--red)', stroke: 'var(--card)' }}
+                      strokeWidth="1"
+                    />
+                  ) : null;
+                })}
+                <g fontFamily="IBM Plex Mono, monospace" fontSize="10" style={{ fill: 'var(--text-2)' }}>
                   {[2, 4, 6, 8, 10].map((v) => (
                     <text key={v} x={CX + 6} y={CY - (R * v) / 10 + 4}>
                       {v}
@@ -225,7 +254,7 @@ export function Radar() {
                 <span style={{ fontSize: 14, fontWeight: 500 }}>{axisDim.name}</span>
                 <span className="small-note">{t('radar.axisMeta', { n: view.weight(axisDim) })}</span>
               </div>
-              {picked.map(({ x, slot }) => (
+              {picked.map(({ x, slot: k }) => (
                 <div
                   key={x.job.id}
                   style={{
@@ -237,14 +266,20 @@ export function Radar() {
                     flexWrap: 'wrap',
                   }}
                 >
-                  <LineKey k={slot} />
+                  <LineKey k={k} />
                   <span style={{ width: 170, flex: 'none' }}>{jobTitle(x.job)}</span>
-                  <span
-                    className="mono"
-                    style={{ width: 32, flex: 'none', textAlign: 'right', fontWeight: 500 }}
-                  >
-                    {fmtDimScore(view.scoreOf(x, axisDim), axisDim)}
-                  </span>
+                  {missing(x, axisDim) ? (
+                    <span style={{ flex: 'none', fontWeight: 500, color: 'var(--red)' }}>
+                      {t('radar.missing')}
+                    </span>
+                  ) : (
+                    <span
+                      className="mono"
+                      style={{ width: 32, flex: 'none', textAlign: 'right', fontWeight: 500 }}
+                    >
+                      {fmtDimScore(view.scoreOf(x, axisDim), axisDim)}
+                    </span>
+                  )}
                   <span style={{ flex: '1 1 200px', minWidth: 0, color: 'var(--text-3)' }}>
                     {reasonOf(x, axisDim)}
                   </span>
@@ -253,20 +288,32 @@ export function Radar() {
             </div>
           )}
           <div className="small-note">{t('radar.rings')}</div>
+          {anyMissing && (
+            <div className="small-note" style={{ color: 'var(--red)' }}>
+              {t('radar.missingNote')}
+            </div>
+          )}
         </section>
 
         <aside aria-label={t('radar.pick.title')} className="card side-col">
           <div>
             <h2 style={{ fontSize: 16 }}>{t('radar.pick.title')}</h2>
             <div className="small-note" style={{ marginTop: 2 }}>
-              {full ? t('radar.pick.full') : t('radar.pick.hint')}
+              {t('radar.pick.hintAny', { count: picked.length })}
+            </div>
+            <div className="row-wrap" style={{ marginTop: 6 }}>
+              <button type="button" className="btn" disabled={!picked.length} onClick={() => setPicked([])}>
+                {t('radar.pick.clear')}
+              </button>
+              <button type="button" className="link-btn" onClick={() => setPicked(defaults)}>
+                {t('radar.pick.top3')}
+              </button>
             </div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', borderTop: '1px solid var(--rule)' }}>
             {pickList.map((x) => {
-              const k = slots.indexOf(x.job.id);
+              const k = ids.indexOf(x.job.id);
               const on = k >= 0;
-              const disabled = !on && full;
               const id = `rj-${x.job.id}`;
               return (
                 <div
@@ -283,18 +330,8 @@ export function Radar() {
                     type="checkbox"
                     id={id}
                     checked={on}
-                    disabled={disabled}
                     style={{ width: 20, height: 20, margin: '0 0 0 4px', flex: 'none' }}
-                    onChange={() => {
-                      const next = slots.slice();
-                      if (on) next[k] = '';
-                      else {
-                        const free = next.indexOf('');
-                        if (free < 0) return;
-                        next[free] = x.job.id;
-                      }
-                      setSlots(next);
-                    }}
+                    onChange={() => setPicked(on ? ids.filter((id) => id !== x.job.id) : [...ids, x.job.id])}
                   />
                   <label
                     htmlFor={id}
@@ -307,7 +344,6 @@ export function Radar() {
                       minHeight: 48,
                       fontSize: 14,
                       cursor: 'pointer',
-                      color: disabled ? 'var(--text-2)' : undefined,
                     }}
                   >
                     <span style={{ visibility: on ? 'visible' : 'hidden', display: 'flex' }}>

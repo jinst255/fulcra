@@ -46,7 +46,7 @@ export function defaultSettings(): Settings {
       accountIndex: 0,
       importDays: 30,
     },
-    scoring: { autoScore: false, upgradeOnVisit: true, notify: true, notifyThreshold: 8 },
+    scoring: { autoScore: false, upgradeOnVisit: true, notify: true, notifyThreshold: 8, spread: true },
     ui: {
       showOutsideDealbreakers: null,
       baselineOrder: [],

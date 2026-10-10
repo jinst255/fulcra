@@ -23,15 +23,20 @@ export function setWeight(update: Update, id: string, value: number): void {
   });
 }
 
-/** Sets or clears the user's own score, records it, and returns a learning suggestion if one is due. */
+/**
+ * Sets or clears the user's own score, records it, and returns a learning suggestion if one is due.
+ * `shown` is the model's score as the user saw it (spread across their jobs), for learning.
+ */
 export async function setOverride(
   job: JobRecord,
   dimId: string,
   value: number | null,
   settings: Settings,
+  shown?: number | null,
 ): Promise<{ dimId: string; dir: 'up' | 'down' } | null> {
-  const model = job.scores[dimId]?.score;
-  if (model == null) return null;
+  const raw = job.scores[dimId]?.score;
+  if (raw == null) return null;
+  const model = shown ?? raw;
   const v = value == null ? null : Math.max(1, Math.min(10, Math.round(value)));
   await updateJob(job.id, (j) => {
     const s = j.scores[dimId];
