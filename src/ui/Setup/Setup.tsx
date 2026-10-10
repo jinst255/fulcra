@@ -54,7 +54,7 @@ export function Setup({ step, review = false }: { step: number; review?: boolean
       const r = await testKey(keyDraft);
       setKeyTest(r);
       if (r !== 'ok') return;
-      await saveKey(keyDraft.trim());
+      await saveKey(keyDraft);
       setKeyDraft('');
     } else if (step === STEP.key && !key.hasKey) {
       setKeyMissing(true);

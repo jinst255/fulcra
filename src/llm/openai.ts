@@ -47,6 +47,12 @@ function outputText(body: ResponsesBody): string | null {
   return null;
 }
 
+/** Keys are printable ASCII with no spaces. */
+export const isKeyShaped = (key: string): boolean => /^[\x21-\x7e]+$/.test(key);
+
+/** A pasted key without the spaces, line breaks, and invisible characters copying can add. */
+export const cleanKey = (key: string): string => key.replace(/[\s\u200b-\u200d\u2060\ufeff]/g, '');
+
 async function mapHttpError(res: Response): Promise<ProviderError> {
   let code = '';
   try {
@@ -142,6 +148,8 @@ export class OpenAIProvider implements Provider {
 
   /** One HTTP call with backoff on rate limits and server errors: 2s, 8s, 30s. */
   private async post(key: string, path: string, body: unknown): Promise<ResponsesBody> {
+    // A character a header can't carry makes fetch throw, which would read as being offline.
+    if (!isKeyShaped(key)) throw new ProviderError('KEY_INVALID', 'key characters');
     for (let attempt = 0; ; attempt++) {
       let res: Response;
       try {

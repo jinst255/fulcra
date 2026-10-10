@@ -2847,5 +2847,17 @@
         "content": "$3"
       }
     }
+  },
+  "popup_saved_title": {
+    "message": "Job saved, not scored yet"
+  },
+  "popup_saved_keyInvalid": {
+    "message": "Fulcra will score it once your OpenAI key works."
+  },
+  "popup_saved_noCredit": {
+    "message": "Fulcra will score it once your OpenAI account has credit."
+  },
+  "popup_saved_offline": {
+    "message": "Fulcra will score it when you're back online."
   }
 }

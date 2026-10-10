@@ -3,7 +3,7 @@
 import { useState, type ReactNode } from 'react';
 import { t } from '../../i18n/t';
 import { send } from '../../messages';
-import { openai } from '../../llm/openai';
+import { cleanKey, openai } from '../../llm/openai';
 import { removeApiKey, setApiKey } from '../../store/settings';
 import { addLog } from '../../store/log';
 
@@ -43,7 +43,7 @@ export function KeyResult({ test }: { test: KeyTest }) {
 }
 
 export async function testKey(key: string): Promise<KeyTest> {
-  const r = await openai.testKey(key.trim());
+  const r = await openai.testKey(cleanKey(key));
   await addLog(
     r === 'ok' ? 'KEY_OK' : r === 'nocredit' ? 'NO_CREDIT' : r === 'offline' ? 'OFFLINE' : 'KEY_INVALID',
     'app',
@@ -52,7 +52,7 @@ export async function testKey(key: string): Promise<KeyTest> {
 }
 
 export async function saveKey(key: string): Promise<void> {
-  await setApiKey(key);
+  await setApiKey(cleanKey(key));
   await send({ type: 'keyChanged' }).catch(() => undefined);
 }
 

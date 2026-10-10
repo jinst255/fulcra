@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { defaultDimensions } from '../src/core/dimensions';
-import { OpenAIProvider } from '../src/llm/openai';
+import { cleanKey, OpenAIProvider } from '../src/llm/openai';
 import { ProviderError } from '../src/llm/provider';
 import {
   dimensionsBlock,
@@ -109,6 +109,13 @@ describe('OpenAI client', () => {
     expect(sleeps).toEqual([2000, 8000, 30000]);
     const out = await provider([busy(), ok(JSON.stringify({ facts, scores, flags: [] }))]).score('sk-x', req);
     expect(out.output.facts!.title).toBe('Dev intern');
+  });
+
+  it('cleans a pasted key, and calls one with characters no key has bad, not offline', async () => {
+    expect(cleanKey(' sk-proj-abc\u200bdef\n123 ')).toBe('sk-proj-abcdef123');
+    // No request is sent: fetch would throw on the header, which used to read as offline.
+    expect(await provider([]).testKey('sk-proj-abc\u00e9def')).toBe('bad');
+    await expect(provider([]).score('sk-“quoted”', req)).rejects.toMatchObject({ code: 'KEY_INVALID' });
   });
 
   it('tests a key without ever putting it in an error', async () => {

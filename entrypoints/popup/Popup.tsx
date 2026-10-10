@@ -231,6 +231,17 @@ export function Popup() {
         <Spinner large />
       </div>
     );
+  } else if (v.kind === 'busy' && v.phase === 'scoring' && err) {
+    // Scoring can't run (bad key, no credit, offline): say the job is safe, not "Scoring…" forever.
+    body = (
+      <div className="center-col" style={{ padding: '48px 0', gap: 8 }}>
+        <div role="status" className="center-col" style={{ gap: 8, textAlign: 'center' }}>
+          <span style={{ fontSize: 15, fontWeight: 500 }}>{t('popup.saved.title')}</span>
+          <span style={{ fontSize: 14, color: 'var(--text-2)' }}>{t(`popup.saved.${err}`)}</span>
+        </div>
+        <div style={{ width: '100%', marginTop: 8 }}>{errBox}</div>
+      </div>
+    );
   } else if (v.kind === 'busy') {
     body = (
       <div role="status" className="center-col" style={{ padding: '80px 0', color: 'var(--text-3)' }}>
