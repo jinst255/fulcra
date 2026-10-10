@@ -277,7 +277,7 @@ function PrioritiesSection() {
 }
 
 function ScoringSection() {
-  const { settings, update } = useApp();
+  const { settings, update, toast, key } = useApp();
   const sc = settings.scoring;
   const [shortcut, setShortcut] = useState<string | null>(null);
   useEffect(() => {
@@ -290,6 +290,24 @@ function ScoringSection() {
     update((s) => void (s.scoring[k] = !s.scoring[k]));
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
+      <div className="switch-row" style={{ flexWrap: 'wrap', paddingBottom: 8 }}>
+        <span className="label" style={{ flex: '1 1 260px' }}>
+          {t('settings.scoring.rescoreAll')}
+          <span className="hint">{t('settings.scoring.rescoreAllHint')}</span>
+        </span>
+        <button
+          type="button"
+          className="btn"
+          disabled={!key.hasKey}
+          onClick={() =>
+            void send<number>({ type: 'rescoreAll' }).then((n) =>
+              toast(n ? t('settings.scoring.rescoreAllAsked') : t('settings.scoring.rescoreAllNone')),
+            )
+          }
+        >
+          {t('settings.scoring.rescoreAllButton')}
+        </button>
+      </div>
       <SwitchRow
         id="lbl-spread"
         label={t('settings.scoring.spread')}

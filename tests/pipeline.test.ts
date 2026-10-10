@@ -13,6 +13,7 @@ import {
   planAndMaybeStart,
   queueUnscored,
   startPlannedBatch,
+  askRescoreAll,
 } from '../src/pipeline/queue';
 import { resetDbForTests } from '../src/store/db';
 import { getJob, putJob, putSampleJobs } from '../src/store/jobs';
@@ -251,6 +252,27 @@ describe('re-scoring engine (12.4)', () => {
     await pump();
     await settle();
     expect((await getJob('j11'))!.scores.risk).toMatchObject({ dimVersion: 2, state: 'current', score: 4 });
+    expect((await getStatus()).batch).toBeNull();
+  });
+});
+
+describe('re-score all', () => {
+  it('asks with the cost, then re-scores every open job and keeps your own scores', async () => {
+    const p = fakeProvider();
+    setProviderForTests(p);
+    await setApiKey('sk-test-0000000000000000');
+    const jobs = sampleJobs().map((j) => ({ ...j, sample: false }));
+    jobs[0]!.scores.risk = { ...jobs[0]!.scores.risk!, override: 9 };
+    await putSampleJobs(jobs);
+    const open = jobs.filter((j) => j.status !== 'closed').length;
+    expect(await askRescoreAll()).toBe(open);
+    expect((await getStatus()).askBatch).toMatchObject({ kind: 'all', count: open });
+    expect(p.calls).toEqual([]);
+    await startPlannedBatch('now');
+    expect((await getStatus()).batch).toMatchObject({ kind: 'all', total: open });
+    await settle();
+    expect(p.calls.filter((c) => c === 'full')).toHaveLength(open);
+    expect((await getJob(jobs[0]!.id))!.scores.risk).toMatchObject({ score: 6, override: 9 });
     expect((await getStatus()).batch).toBeNull();
   });
 });

@@ -22,7 +22,7 @@ export interface AppStatus {
   batch: {
     id: string;
     label: string;
-    kind: 'new' | 'edit' | 'mixed' | 'unscored';
+    kind: 'new' | 'edit' | 'mixed' | 'unscored' | 'all';
     done: number;
     total: number;
     /** Full-price estimate; half price is half of it. */
@@ -35,7 +35,7 @@ export interface AppStatus {
     submittedAt: number | null;
   } | null;
   /** A large batch waiting for the user's go-ahead. Costs are full price. */
-  askBatch: { kind: 'rescore' | 'unscored'; count: number; cost: number; seconds: number } | null;
+  askBatch: { kind: 'rescore' | 'unscored' | 'all'; count: number; cost: number; seconds: number } | null;
   newScoredCount: number;
 }
 

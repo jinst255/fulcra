@@ -74,14 +74,16 @@ export function Banner() {
       text:
         bt.kind === 'unscored'
           ? t('banner.scoringNew', { done: bt.done, total: bt.total })
-          : bt.kind === 'new'
-            ? t('banner.rescoreNew', { dimension: bt.label, done: bt.done, total: bt.total })
-            : t('banner.rescoreSmall', {
-                dimension: bt.label,
-                done: bt.done,
-                total: bt.total,
-                cost: formatCost(bt.cost),
-              }),
+          : bt.kind === 'all'
+            ? t('banner.rescoringAll', { done: bt.done, total: bt.total })
+            : bt.kind === 'new'
+              ? t('banner.rescoreNew', { dimension: bt.label, done: bt.done, total: bt.total })
+              : t('banner.rescoreSmall', {
+                  dimension: bt.label,
+                  done: bt.done,
+                  total: bt.total,
+                  cost: formatCost(bt.cost),
+                }),
       actions: [
         {
           label: bt.paused ? t('banner.resume') : t('banner.pause'),
@@ -98,7 +100,9 @@ export function Banner() {
       title:
         a.kind === 'unscored'
           ? t('banner.ask.titleNew', { count: a.count })
-          : t('banner.ask.title', { count: a.count }),
+          : a.kind === 'all'
+            ? t('banner.ask.titleAll', { count: a.count })
+            : t('banner.ask.title', { count: a.count }),
       text: t('banner.ask.choice', {
         time: formatDuration(a.seconds),
         cost: formatCost(a.cost),

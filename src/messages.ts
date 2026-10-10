@@ -11,6 +11,7 @@ export type Request =
   | { type: 'appOpened' }
   | { type: 'batchStart'; mode?: 'now' | 'half' }
   | { type: 'batchSpeedUp' }
+  | { type: 'rescoreAll' }
   | { type: 'batchLater' }
   | { type: 'batchPause'; paused: boolean }
   | { type: 'emailCheckNow' }

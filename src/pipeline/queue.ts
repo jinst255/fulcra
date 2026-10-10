@@ -299,6 +299,23 @@ export async function planAndMaybeStart(): Promise<void> {
     });
 }
 
+/** Jobs "Re-score all" covers: every open job, scored or not. */
+function rescoreAllPick(j: JobRecord): boolean {
+  return j.status !== 'closed' && !j.sample && j.scoring !== 'queued';
+}
+
+/** "Re-score all jobs": asks with the cost first, like any large batch. */
+export async function askRescoreAll(): Promise<number> {
+  const jobs = (await allJobs()).filter(rescoreAllPick);
+  if (!jobs.length) return 0;
+  const settings = await getSettings();
+  const cost = jobs.length * costPerJob(settings.model);
+  await updateStatus({
+    askBatch: { kind: 'all', count: jobs.length, cost, seconds: batchSeconds(jobs.length) },
+  });
+  return jobs.length;
+}
+
 type HalfPriceStarter = (batchId: string) => Promise<void>;
 let startHalfPrice: HalfPriceStarter = async () => undefined;
 /** halfprice.ts registers itself here, so the queue doesn't import the Batch API client. */
@@ -315,13 +332,15 @@ export async function startPlannedBatch(mode: 'now' | 'half' = 'now'): Promise<v
   const status = await getStatus();
   const id = `b${Date.now()}`;
   let batch: NonNullable<AppStatus['batch']>;
-  if (status.askBatch?.kind === 'unscored') {
-    const jobs = (await allJobs()).filter((j) => j.scoring === 'notScored');
+  if (status.askBatch?.kind === 'unscored' || status.askBatch?.kind === 'all') {
+    const jobs = (await allJobs()).filter((j) =>
+      status.askBatch?.kind === 'all' ? rescoreAllPick(j) : j.scoring === 'notScored',
+    );
     for (const j of jobs) await enqueue(j.id, { preliminary: j.preliminary, batch: id });
     batch = {
       id,
       label: '',
-      kind: 'unscored',
+      kind: status.askBatch.kind,
       done: 0,
       total: jobs.length,
       cost: jobs.length * costPerJob(settings.model),

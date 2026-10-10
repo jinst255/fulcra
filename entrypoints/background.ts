@@ -9,7 +9,14 @@ import { t } from '@/src/i18n/t';
 import { addPaste, describeTab, pageSeen, rescoreJob, scoreTab } from '@/src/pipeline/intake';
 import { jobIdFromNotification, maybeNotify } from '@/src/pipeline/notify';
 import { siteFor } from '@/src/readers/generic';
-import { onScored, planAndMaybeStart, pump, queueUnscored, startPlannedBatch } from '@/src/pipeline/queue';
+import {
+  askRescoreAll,
+  onScored,
+  planAndMaybeStart,
+  pump,
+  queueUnscored,
+  startPlannedBatch,
+} from '@/src/pipeline/queue';
 import { BATCH_POLL_ALARM, initHalfPrice, pollHalfPrice, speedUp } from '@/src/pipeline/halfprice';
 import { allJobs, retentionCleanup, updateJob } from '@/src/store/jobs';
 import { looksLikeJobTitle } from '@/src/readers/alerts/common';
@@ -157,6 +164,8 @@ async function handle(msg: Request): Promise<unknown> {
     case 'batchSpeedUp':
       await speedUp();
       return true;
+    case 'rescoreAll':
+      return askRescoreAll();
     case 'batchLater':
       await updateStatus({ askBatch: null });
       return true;

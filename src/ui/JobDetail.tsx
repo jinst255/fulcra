@@ -278,7 +278,11 @@ export function JobDetail({
             [t('detail.hours'), f.hours_per_week ? String(f.hours_per_week) : t('common.cantTell')],
             [
               t('detail.length'),
-              f.duration_weeks ? t('detail.weeks', { n: f.duration_weeks }) : t('common.cantTell'),
+              f.duration_weeks
+                ? t('detail.weeks', { n: f.duration_weeks })
+                : f.job_type === 'full_time' || f.job_type === 'part_time'
+                  ? t('detail.ongoing')
+                  : t('common.cantTell'),
             ],
             [t('detail.jobType'), jobTypeName(f.job_type)],
             [t('detail.remote'), remoteText],

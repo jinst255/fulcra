@@ -2385,5 +2385,42 @@
         "content": "$1"
       }
     }
+  },
+  "detail_ongoing": {
+    "message": "Ongoing"
+  },
+  "banner_ask_titleAll": {
+    "message": "Re-score all $COUNT$ jobs?",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "settings_scoring_rescoreAll": {
+    "message": "Re-score all jobs"
+  },
+  "settings_scoring_rescoreAllHint": {
+    "message": "Scores every open job again with the latest scoring, and fills in details that were blank. You'll see the cost first, with a half-price option."
+  },
+  "settings_scoring_rescoreAllButton": {
+    "message": "Re-score all"
+  },
+  "settings_scoring_rescoreAllAsked": {
+    "message": "Check the banner at the top to confirm the cost."
+  },
+  "settings_scoring_rescoreAllNone": {
+    "message": "There are no open jobs to re-score."
+  },
+  "banner_rescoringAll": {
+    "message": "Re-scoring all jobs: $DONE$ of $TOTAL$ done.",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
   }
 }
