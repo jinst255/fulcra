@@ -5,7 +5,7 @@ import type { ModelChoice } from '../../core/types';
 import { sampleJobRecords } from '../../dev/sample';
 import { t } from '../../i18n/t';
 import { send } from '../../messages';
-import { buildExport, deleteEverything, diagnostics } from '../../store/export';
+import { buildExport, diagnostics } from '../../store/export';
 import { clearSampleJobs, deleteClosedJobs, putSampleJobs } from '../../store/jobs';
 import { formatLogLine, recentLog } from '../../store/log';
 import { getApiKey } from '../../store/settings';
@@ -378,7 +378,7 @@ function ScoringSection() {
 }
 
 function DataSection() {
-  const { settings, update, confirm, toast, go } = useApp();
+  const { settings, update, confirm, toast, status: app } = useApp();
   const keep = settings.retentionDays == null ? 'forever' : String(settings.retentionDays);
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -432,25 +432,32 @@ function DataSection() {
         >
           {t('settings.data.deleteClosed')}
         </button>
+      </div>
+      <div style={{ borderTop: '1px solid var(--rule)', paddingTop: 16 }}>
+        <h3 style={{ fontSize: 15, marginBottom: 4 }}>{t('settings.data.reset')}</h3>
+        <p className="small-note" style={{ margin: '0 0 10px' }}>
+          {t('settings.data.resetHint')}
+        </p>
         <button
           type="button"
           className="btn danger-outline"
+          disabled={app.emailRunning}
           onClick={() =>
             confirm({
-              text: t('settings.data.deleteAllConfirm'),
-              confirmLabel: t('settings.data.deleteAll'),
+              text: t('settings.data.resetConfirm'),
+              confirmLabel: t('settings.data.resetButton'),
               onConfirm: async () => {
-                await deleteEverything();
-                await send({ type: 'keyChanged' }).catch(() => undefined);
-                go('');
-                toast(t('settings.data.deleteAllDone'));
-                setTimeout(() => location.reload(), 3500);
+                await send({ type: 'hardReset' });
+                // Reload so nothing on this page saves its old settings back.
+                location.hash = 'setup/0';
+                location.reload();
               },
             })
           }
         >
-          {t('settings.data.deleteAll')}
+          {t('settings.data.resetButton')}
         </button>
+        {app.emailRunning && <div className="small-note">{t('settings.data.resetWait')}</div>}
       </div>
     </div>
   );

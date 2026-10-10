@@ -7,6 +7,7 @@ import type { Request } from '@/src/messages';
 import { applyBadge } from '@/src/pipeline/badge';
 import { t } from '@/src/i18n/t';
 import { addPaste, describeTab, pageSeen, rescoreJob, scoreTab } from '@/src/pipeline/intake';
+import { hardReset } from '@/src/pipeline/reset';
 import { jobIdFromNotification, maybeNotify } from '@/src/pipeline/notify';
 import { siteFor } from '@/src/readers/generic';
 import {
@@ -32,6 +33,12 @@ const PUMP_ALARM = 'pump';
 const MENU_ID = 'score';
 const DAILY_ALARM = 'daily';
 
+/** Alarms every install has. A reset clears all alarms, then calls this again. */
+function startAlarms(): void {
+  void chrome.alarms.create(PUMP_ALARM, { periodInMinutes: 1 });
+  void chrome.alarms.create(DAILY_ALARM, { periodInMinutes: 24 * 60, delayInMinutes: 5 });
+}
+
 export default defineBackground(() => {
   chrome.runtime.onInstalled.addListener((details) => {
     if (details.reason === 'install') void chrome.runtime.openOptionsPage();
@@ -50,8 +57,7 @@ export default defineBackground(() => {
   void flagPromotions();
   initHalfPrice();
 
-  void chrome.alarms.create(PUMP_ALARM, { periodInMinutes: 1 });
-  void chrome.alarms.create(DAILY_ALARM, { periodInMinutes: 24 * 60, delayInMinutes: 5 });
+  startAlarms();
 
   chrome.alarms.onAlarm.addListener((a) => {
     if (a.name === PUMP_ALARM) void pump();
@@ -146,6 +152,10 @@ async function handle(msg: Request): Promise<unknown> {
       return runEmailCheck({ reason: 'import', importDays: msg.days, accountId: msg.accountId });
     case 'emailScheduleChanged':
       await scheduleEmail();
+      return true;
+    case 'hardReset':
+      await hardReset();
+      startAlarms();
       return true;
     case 'kick':
       await pump();

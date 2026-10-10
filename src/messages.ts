@@ -14,6 +14,7 @@ export type Request =
   | { type: 'rescoreAll' }
   | { type: 'batchLater' }
   | { type: 'batchPause'; paused: boolean }
+  | { type: 'hardReset' }
   | { type: 'emailCheckNow' }
   | { type: 'emailImport'; days: number | null; accountId?: string }
   | { type: 'emailSignInCheck'; provider: 'gmail' | 'outlook'; account?: number }

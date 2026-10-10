@@ -174,7 +174,9 @@ export async function applyResult(
   settings: Settings,
 ): Promise<void> {
   const req = scoreRequest(item, job, settings);
-  const cur = (await getJob(job.id)) ?? job;
+  const cur = await getJob(job.id);
+  // Deleted while it was being scored (or Fulcra was reset): don't bring it back.
+  if (!cur) return;
   if (item.kind === 'full') {
     let next = applyFullScore(cur, output, req.dims, raw);
     if (isPayOutlier(next.facts.pay)) next = await checkUnit(next, key, settings.model);

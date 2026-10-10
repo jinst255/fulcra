@@ -2825,5 +2825,35 @@
         "content": "$1"
       }
     }
+  },
+  "settings_data_reset": {
+    "message": "Reset $APP$",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      }
+    }
+  },
+  "settings_data_resetHint": {
+    "message": "Back to a fresh install: deletes every job, your settings and inboxes, and your saved OpenAI key from this computer, cancels any half-price batch still running, and starts setup again."
+  },
+  "settings_data_resetButton": {
+    "message": "Reset $APP$",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      }
+    }
+  },
+  "settings_data_resetConfirm": {
+    "message": "Reset $APP$? Every job, your settings, your inboxes, and your saved key are deleted from this computer, and setup starts again. This can't be undone. Your key still exists in your OpenAI account; you can delete it there.",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      }
+    }
+  },
+  "settings_data_resetWait": {
+    "message": "Wait for the email check to finish first."
   }
 }

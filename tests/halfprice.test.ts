@@ -13,7 +13,9 @@ import {
 } from '../src/pipeline/queue';
 import { db, resetDbForTests } from '../src/store/db';
 import { getJob, putJob } from '../src/store/jobs';
-import { getStatus, setApiKey } from '../src/store/settings';
+import { getApiKey, getStatus, setApiKey } from '../src/store/settings';
+import { hardReset } from '../src/pipeline/reset';
+import { allJobs } from '../src/store/jobs';
 
 const facts = {
   title: 'Front desk coordinator',
@@ -184,6 +186,24 @@ describe('half-price scoring (Batch API)', () => {
     await pollHalfPrice();
     expect(batches.deleted).toEqual(['in', 'out']);
     expect(p.calls).toBe(12);
+    expect((await getStatus()).batch).toBeNull();
+  });
+
+  it('a reset cancels batches still at OpenAI, then deletes everything', async () => {
+    const batches = new FakeBatches();
+    setBatchClientForTests(batches);
+    setProviderForTests(direct());
+    initHalfPrice();
+    await setApiKey('sk-test-0000000000000000');
+    await twelveNewJobs();
+    await queueUnscored();
+    await startPlannedBatch('half');
+    await hardReset();
+    expect(batches.cancelled).toEqual(['batch_1']);
+    expect(batches.deleted).toEqual(['in', 'out']);
+    expect(await allJobs()).toEqual([]);
+    expect(await queueSize()).toBe(0);
+    expect(await getApiKey()).toBeNull();
     expect((await getStatus()).batch).toBeNull();
   });
 });

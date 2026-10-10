@@ -213,6 +213,22 @@ export async function speedUp(): Promise<void> {
   void pump();
 }
 
+/**
+ * For a reset: cancels every batch still at OpenAI and deletes the files it can, best effort,
+ * since the key is about to be deleted and nothing could clean up later.
+ */
+export async function cancelAllRemote(): Promise<void> {
+  const key = await getApiKey();
+  if (!key) return;
+  const ids = [...((await getStatus()).batch?.remoteIds ?? []), ...(await cleanupList())];
+  for (const id of ids) {
+    await client.cancel(key, id).catch(() => undefined);
+    const info = await client.get(key, id).catch(() => null);
+    if (info) await deleteFiles(key, info);
+  }
+  await chrome.alarms.clear(BATCH_POLL_ALARM);
+}
+
 /** Wires the queue to this module. Call once in the service worker. */
 export function initHalfPrice(): void {
   setHalfPriceStarter(submitHalfPrice);
