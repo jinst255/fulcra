@@ -1,7 +1,7 @@
 // "About you". Setup step 2 and Settings > About you.
 import { useEffect, useRef, useState } from 'react';
-import type { LanguageLevel } from '../../core/types';
-import { formatMoney } from '../../core/pay';
+import type { LanguageLevel, PayUnit, Settings } from '../../core/types';
+import { convertPay, formatMoney, formatRate } from '../../core/pay';
 import { t, type MessageKey } from '../../i18n/t';
 import { useApp } from '../AppContext';
 import { Segmented } from '../components';
@@ -101,29 +101,87 @@ const SPANS: { weeks: number; key: MessageKey }[] = [
 const weeksToMonths = (w: number) => Math.max(1, Math.round((w * 12) / 52));
 const monthsToWeeks = (m: number) => Math.max(1, Math.round((m * 52) / 12));
 
-function spanName(weeks: number): string {
+export function spanName(weeks: number): string {
   const preset = SPANS.find((x) => x.weeks === weeks);
   if (preset) return t(preset.key).toLowerCase();
   const m = weeksToMonths(weeks);
   return m === 1 ? t('setup.about.oneMonth') : t('setup.about.months', { n: m });
 }
 
-/** "Compare pay over": how far ahead the person is planning, shown with a worked example. */
+/** Changes the pay unit, converting the goal and the minimum so they mean the same pay. */
+export function setPayUnit(s: Settings, to: PayUnit): void {
+  const from = s.about.payUnit;
+  if (from === to) return;
+  const w = s.about.windowWeeks;
+  if (s.about.payGoal != null) s.about.payGoal = convertPay(s.about.payGoal, from, to, w);
+  if (s.dealbreakers.minTakeHome != null)
+    s.dealbreakers.minTakeHome = convertPay(s.dealbreakers.minTakeHome, from, to, w);
+  s.about.payUnit = to;
+}
+
+/** "per hour", "per year", or "total over 6 months". */
+export function unitName(unit: PayUnit, weeks: number | null): string {
+  if (unit === 'total' && weeks) return t('pay.unit.total', { span: spanName(weeks) });
+  return unit === 'hour' ? t('pay.unit.hour') : t('pay.unit.year');
+}
+
+/** Pay unit picker shared by the pay goal and the minimum pay. */
+export function PayUnitSelect({ id, label }: { id: string; label: string }) {
+  const { settings, update } = useApp();
+  const a = settings.about;
+  return (
+    <select
+      id={id}
+      aria-label={label}
+      className="select"
+      style={{ width: 'auto' }}
+      value={a.payUnit}
+      onChange={(e) => update((s) => setPayUnit(s, e.target.value as PayUnit))}
+    >
+      <option value="hour">{unitName('hour', null)}</option>
+      <option value="year">{unitName('year', null)}</option>
+      {a.windowWeeks != null && <option value="total">{unitName('total', a.windowWeeks)}</option>}
+    </select>
+  );
+}
+
+/** What a goal in one unit means in the others, at 40 hours a week. */
+function equivalents(amount: number, unit: PayUnit, weeks: number | null): string {
+  const parts: string[] = [];
+  if (unit !== 'hour')
+    parts.push(t('pay.equiv.hour', { amount: formatRate(convertPay(amount, unit, 'hour', weeks)) }));
+  if (unit !== 'year')
+    parts.push(t('pay.equiv.year', { amount: formatMoney(convertPay(amount, unit, 'year', weeks)) }));
+  if (unit !== 'total' && weeks)
+    parts.push(
+      t('pay.equiv.total', {
+        amount: formatMoney(convertPay(amount, unit, 'total', weeks)),
+        span: spanName(weeks),
+      }),
+    );
+  return t('pay.equiv.line', { list: parts.join(t('pay.equiv.or')) });
+}
+
+/** How far ahead the person is planning (or no set time frame), and their pay goal in their own unit. */
 function PayWindow() {
   const { settings, update } = useApp();
   const a = settings.about;
-  const save = (fn: (x: typeof a) => void) => update((s) => void fn(s.about));
-  const isPreset = SPANS.some((x) => x.weeks === a.windowWeeks);
-  const [other, setOther] = useState(!isPreset);
-  const showOther = other || !isPreset;
-  const example = formatMoney(20 * 40 * a.windowWeeks);
-  const goalHourly = a.payGoal && a.windowWeeks > 0 ? formatMoney(a.payGoal / (a.windowWeeks * 40)) : null;
+  const W = a.windowWeeks;
+  const isPreset = W != null && SPANS.some((x) => x.weeks === W);
+  const [other, setOther] = useState(W != null && !isPreset);
+  const showOther = W != null && (other || !isPreset);
+  const setWindow = (weeks: number | null) =>
+    update((s) => {
+      // "Total over the time frame" needs a time frame; without one, keep the same pay per year.
+      if (weeks == null && s.about.payUnit === 'total') setPayUnit(s, 'year');
+      s.about.windowWeeks = weeks;
+    });
   return (
     <div className="pay-window">
       <fieldset>
         <legend>{t('setup.about.window')}</legend>
         <div className="field-hint" style={{ marginTop: -4, marginBottom: 10 }}>
-          {t('setup.about.windowHint')}
+          {t('setup.about.windowHint2')}
         </div>
         <div className="row-wrap">
           {SPANS.map((x) => (
@@ -131,17 +189,36 @@ function PayWindow() {
               key={x.weeks}
               type="button"
               className="seg"
-              aria-pressed={!showOther && a.windowWeeks === x.weeks}
+              aria-pressed={!showOther && W === x.weeks}
               onClick={() => {
                 setOther(false);
-                save((v) => void (v.windowWeeks = x.weeks));
+                setWindow(x.weeks);
               }}
             >
               {t(x.key)}
             </button>
           ))}
-          <button type="button" className="seg" aria-pressed={showOther} onClick={() => setOther(true)}>
+          <button
+            type="button"
+            className="seg"
+            aria-pressed={showOther}
+            onClick={() => {
+              setOther(true);
+              if (W == null) setWindow(52);
+            }}
+          >
             {t('setup.about.span.other')}
+          </button>
+          <button
+            type="button"
+            className="seg"
+            aria-pressed={W == null}
+            onClick={() => {
+              setOther(false);
+              setWindow(null);
+            }}
+          >
+            {t('setup.about.span.none')}
           </button>
           {showOther && (
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
@@ -151,33 +228,38 @@ function PayWindow() {
                 width={80}
                 min={1}
                 max={36}
-                value={weeksToMonths(a.windowWeeks)}
-                onSave={(v) => v && v > 0 && save((x) => void (x.windowWeeks = monthsToWeeks(v)))}
+                value={weeksToMonths(W)}
+                onSave={(v) => v && v > 0 && setWindow(monthsToWeeks(v))}
               />
               <span style={{ fontSize: 14 }}>{t('setup.about.monthsUnit')}</span>
             </span>
           )}
         </div>
         <div className="example-line">
-          {t('setup.about.windowExample', { total: example, span: spanName(a.windowWeeks) })}
+          {W != null
+            ? t('setup.about.windowExample', { total: formatMoney(20 * 40 * W), span: spanName(W) })
+            : t('setup.about.rateExample', { per: unitName(a.payUnit, null) })}
         </div>
       </fieldset>
       <div>
         <label htmlFor="ab-goal" className="field-label">
-          {t('setup.about.goalOver', { span: spanName(a.windowWeeks) })}
+          {t('setup.about.goalLabel')}
         </label>
-        <div className="money-input">
-          <span aria-hidden="true">$</span>
-          <NumberField
-            id="ab-goal"
-            min={0}
-            step={500}
-            value={a.payGoal}
-            onSave={(v) => save((x) => void (x.payGoal = v && v > 0 ? v : null))}
-          />
+        <div className="row-wrap" style={{ gap: 8 }}>
+          <div className="money-input">
+            <span aria-hidden="true">$</span>
+            <NumberField
+              id="ab-goal"
+              min={0}
+              step={a.payUnit === 'hour' ? 0.5 : 500}
+              value={a.payGoal}
+              onSave={(v) => update((s) => void (s.about.payGoal = v && v > 0 ? v : null))}
+            />
+          </div>
+          <PayUnitSelect id="ab-goal-unit" label={t('pay.unit.label')} />
         </div>
         <div className="field-hint">
-          {goalHourly ? t('setup.about.goalHourly', { hourly: goalHourly }) + ' ' : ''}
+          {a.payGoal ? equivalents(a.payGoal, a.payUnit, W) + ' ' : ''}
           {t('setup.about.goalHint2')}
         </div>
       </div>

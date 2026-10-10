@@ -1,7 +1,7 @@
 // Display helpers shared by the popup and the app.
 import type { FailReason } from '../core/dealbreakers';
-import { approxAmount, formatMoney } from '../core/pay';
-import type { JobRecord, JobType, PayPeriod } from '../core/types';
+import { approxAmount, formatMoney, formatRate, payMeasure, type TakeHome } from '../core/pay';
+import type { JobRecord, JobType, PayPeriod, PayUnit } from '../core/types';
 import { t } from '../i18n/t';
 
 export function failText(reasons: FailReason[]): string {
@@ -24,17 +24,36 @@ export function shortDate(at: number): string {
   return new Date(at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-/** "About $13,300 before tax over 15 weeks (estimate)." without the period. */
-export function payLine(total: number | null, weeks: number, estimate: boolean): string {
-  if (total == null) return t('ranked.notScored');
-  const line = t('detail.payLine', { amount: formatMoney(approxAmount(total)), weeks });
-  return estimate ? `${line} ${t('common.estimateParen')}` : line;
+/**
+ * The pay measure in words, without the period: "About $13,300 before tax over 15 weeks (estimate)",
+ * or with no time frame, "$18.50 an hour before tax" or "About $38,500 a year before tax".
+ */
+export function payLine(take: TakeHome): string {
+  if (take.total == null) return t('ranked.notScored');
+  const line =
+    take.per === 'hour'
+      ? t('pay.line.hour', { amount: formatRate(take.total) })
+      : take.per === 'year'
+        ? t('pay.line.year', { amount: formatMoney(approxAmount(take.total)) })
+        : t('detail.payLine', { amount: formatMoney(approxAmount(take.total)), weeks: take.weeks });
+  return take.estimate ? `${line} ${t('common.estimateParen')}` : line;
 }
 
 /** The pay dimension's reason line: "About $13,300 before tax over 15 weeks." */
-export function payReason(take: { total: number | null; weeks: number; estimate: boolean }): string {
+export function payReason(take: TakeHome): string {
   if (take.total == null) return t('ranked.notScored');
-  return payLine(take.total, take.weeks, take.estimate) + '.';
+  return payLine(take) + '.';
+}
+
+/** The listing's rate in the person's unit, when it's quoted in another: "about $53 an hour". */
+export function rateInUnit(job: JobRecord, unit: PayUnit): string | null {
+  const p = job.facts.pay.period;
+  if (unit === 'total' || p === unit || p === 'unknown') return null;
+  const m = payMeasure(job.facts, { per: unit }).total;
+  if (m == null || m <= 0) return null;
+  return unit === 'hour'
+    ? t('pay.equiv.hour', { amount: formatRate(m) })
+    : t('pay.equiv.year', { amount: formatMoney(approxAmount(m)) });
 }
 
 export function payRate(job: JobRecord): string {

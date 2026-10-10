@@ -99,11 +99,17 @@ export interface About {
   remote: 'yes' | 'maybe' | 'no';
   relocate: 'yes' | 'maybe' | 'no';
   languages: Language[];
-  windowWeeks: number;
+  /** How far ahead the person is planning, in weeks. Null: no set time frame, so pay compares as a rate. */
+  windowWeeks: number | null;
+  /** Unit of the pay goal and the minimum pay: per hour, per year, or the total over the time frame. */
+  payUnit: PayUnit;
   payGoal: number | null;
 }
 
+export type PayUnit = 'hour' | 'year' | 'total';
+
 export interface Dealbreakers {
+  /** Lowest pay the person would take, in their pay unit. */
   minTakeHome: number | null;
   maxHours: number | null;
   mustRemote: boolean;

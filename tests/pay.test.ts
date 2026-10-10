@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
+  convertPay,
   correctedPeriod,
+  inBasis,
+  payBasis,
+  payMeasure,
   isPayOutlier,
   obviousPeriod,
   payGoal,
@@ -11,7 +15,7 @@ import {
   weeklyPay,
 } from '../src/core/pay';
 import { SAMPLE_JOBS } from '../src/dev/sample';
-import { sampleJobs } from './helpers';
+import { job, sampleJobs } from './helpers';
 
 describe('pay math (5.5)', () => {
   it('reproduces every sample take-home and pay score exactly', () => {
@@ -53,6 +57,45 @@ describe('pay math (5.5)', () => {
     const jobs = sampleJobs();
     expect(payGoal(null, jobs, 22)).toBe(26700);
     expect(payGoal(30000, jobs, 22)).toBe(30000);
+  });
+
+  it('compares pay rates when there is no time frame', () => {
+    const f = (
+      min: number,
+      period: 'hour' | 'year' | 'total',
+      hours: number | null,
+      weeks: number | null,
+    ) => ({
+      ...job('analyst').facts,
+      pay: { min, max: min, period, currency: 'USD', is_estimate: false },
+      hours_per_week: hours,
+      duration_weeks: weeks,
+    });
+    // Part time at $25 an hour beats full time at $20 an hour per hour, not per year.
+    expect(payMeasure(f(25, 'hour', 20, null), { per: 'hour' }).total).toBe(25);
+    expect(payMeasure(f(52000, 'year', null, null), { per: 'hour' })).toMatchObject({
+      total: 25,
+      estimate: true,
+    });
+    expect(payMeasure(f(25, 'hour', 20, null), { per: 'year' }).total).toBe(26000);
+    // Length doesn't count without a time frame; it does with one.
+    expect(payMeasure(f(20, 'hour', 40, 10), { per: 'year' }).total).toBe(41600);
+    expect(payMeasure(f(20, 'hour', 40, 10), { per: 'window', weeks: 52 }).total).toBe(8000);
+    expect(payMeasure(f(20, 'hour', 40, 10), { per: 'hour' }, 500, true).total).toBe(0);
+  });
+
+  it("turns a goal in the person's unit into the comparison basis", () => {
+    expect(payBasis({ windowWeeks: null, payUnit: 'hour' })).toEqual({ per: 'hour' });
+    expect(payBasis({ windowWeeks: null, payUnit: 'total' })).toEqual({ per: 'year' });
+    expect(payBasis({ windowWeeks: 26, payUnit: 'hour' })).toEqual({ per: 'window', weeks: 26 });
+    expect(inBasis(20, 'hour', { per: 'window', weeks: 26 })).toBe(20800);
+    expect(inBasis(52000, 'year', { per: 'window', weeks: 26 })).toBe(26000);
+    expect(inBasis(30000, 'total', { per: 'window', weeks: 22 })).toBe(30000);
+    expect(inBasis(41600, 'year', { per: 'hour' })).toBe(20);
+    expect(inBasis(20, 'hour', { per: 'year' })).toBe(41600);
+    expect(convertPay(20, 'hour', 'year', null)).toBe(41600);
+    expect(convertPay(41600, 'year', 'hour', null)).toBe(20);
+    expect(convertPay(20, 'hour', 'total', 26)).toBe(20800);
   });
 
   it('flags pay-unit outliers (5.6)', () => {

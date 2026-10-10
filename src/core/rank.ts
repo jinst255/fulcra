@@ -2,7 +2,16 @@
 // ranked list, radar, popup, and notifications all rank the same way.
 import { evaluateDealbreakers, type FailReason } from './dealbreakers';
 import { effectiveScore, overallScore } from './overall';
-import { payGoal, payScore, round1, takeHome, type TakeHome } from './pay';
+import {
+  inBasis,
+  payBasis,
+  payGoal,
+  payMeasure,
+  payScore,
+  round1,
+  type PayBasis,
+  type TakeHome,
+} from './pay';
 import { weightOf } from './presets';
 import type { Dimension, JobRecord, JobType, Settings } from './types';
 
@@ -19,7 +28,8 @@ export interface RankedJob {
 
 export interface RankView {
   dims: Dimension[];
-  windowWeeks: number;
+  /** How pay is compared: over the time frame, or as a rate. */
+  basis: PayBasis;
   goal: number;
   all: RankedJob[];
   /** Scored open jobs that pass every dealbreaker, best first. */
@@ -85,9 +95,15 @@ export function spreadScore(score: number, sc: Scale | undefined): number {
 }
 
 export function rankJobs(jobs: JobRecord[], settings: Settings): RankView {
-  const W = settings.about.windowWeeks > 0 ? settings.about.windowWeeks : 52;
+  const about = settings.about;
+  const basis = payBasis(about);
   const dims = settings.dimensions.filter((d) => d.active);
-  const goal = payGoal(settings.about.payGoal, jobs, W);
+  const goal = payGoal(about.payGoal ? inBasis(about.payGoal, about.payUnit, basis) : null, jobs, basis);
+  const min = settings.dealbreakers.minTakeHome;
+  const rules = {
+    ...settings.dealbreakers,
+    minTakeHome: min == null ? null : inBasis(min, about.payUnit, basis),
+  };
   const scales = settings.scoring.spread ? spreadScales(jobs, dims) : new Map<string, Scale>();
   /** Your own score as given; the model's score spread across your jobs. */
   const shown = (job: JobRecord, d: Dimension, pay: number | null): number | null => {
@@ -96,17 +112,11 @@ export function rankJobs(jobs: JobRecord[], settings: Settings): RankView {
     return spreadScore(s, scales.get(d.id));
   };
   const all: RankedJob[] = jobs.map((job) => {
-    const take = takeHome(job.facts, W, job.knownCosts, job.flags.includes('unpaid'));
+    const take = payMeasure(job.facts, basis, job.knownCosts, job.flags.includes('unpaid'));
     const scored = job.scoring === 'scored' || Object.keys(job.scores).length > 0;
     const pay = scored ? payScore(take.total, goal) : null;
     const o = overallScore((d) => shown(job, d, pay), dims, settings.weights);
-    const fails = evaluateDealbreakers(
-      job.facts,
-      take.total,
-      settings.dealbreakers,
-      settings.about.languages,
-      job.flags,
-    );
+    const fails = evaluateDealbreakers(job.facts, take.total, rules, settings.about.languages, job.flags);
     return { job, take, pay, value: scored ? o.value : 0, parts: o.parts, fails, scored };
   });
   // Unscored jobs don't take a rank; the list shows them in their own group.
@@ -115,7 +125,7 @@ export function rankJobs(jobs: JobRecord[], settings: Settings): RankView {
     .sort(byValue);
   return {
     dims,
-    windowWeeks: W,
+    basis,
     goal,
     all,
     openPass,

@@ -9,7 +9,17 @@ import { deleteJob, updateJob } from '../store/jobs';
 import { setOverride } from './actions';
 import { useApp } from './AppContext';
 import { Spinner, Swatch, Tag } from './components';
-import { failText, jobSub, jobTitle, jobTypeName, payLine, payRate, payReason, shortDate } from './format';
+import {
+  failText,
+  jobSub,
+  jobTitle,
+  jobTypeName,
+  payLine,
+  payRate,
+  payReason,
+  rateInUnit,
+  shortDate,
+} from './format';
 import { Check, Close, DealbreakerMark, External, Pencil } from './Icons';
 import type { Learn } from './LearnCard';
 
@@ -164,10 +174,13 @@ export function JobDetail({
               {editPay ? t('detail.closePay') : t('detail.editPay')}
             </button>
           </div>
-          <div style={{ fontSize: 15 }}>{payRate(job)}</div>
-          <div style={{ fontSize: 14, color: 'var(--text-3)' }}>
-            {payLine(r.take.total, r.take.weeks, r.take.estimate)}
+          <div style={{ fontSize: 15 }}>
+            {payRate(job)}
+            {rateInUnit(job, settings.about.payUnit) && (
+              <span style={{ color: 'var(--text-3)' }}> · {rateInUnit(job, settings.about.payUnit)}</span>
+            )}
           </div>
+          <div style={{ fontSize: 14, color: 'var(--text-3)' }}>{payLine(r.take)}</div>
           {job.payUnitCorrection && (
             <div
               style={{

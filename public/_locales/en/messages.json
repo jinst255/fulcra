@@ -349,7 +349,7 @@
     }
   },
   "setup_deal_minPay": {
-    "message": "Minimum total pay over the time you're planning for"
+    "message": "Lowest pay you'd take"
   },
   "setup_deal_maxHours": {
     "message": "Maximum hours per week"
@@ -1482,7 +1482,7 @@
     "message": "Your score"
   },
   "fail_minPay": {
-    "message": "minimum take-home"
+    "message": "pay below your minimum"
   },
   "fail_maxHours": {
     "message": "maximum hours"
@@ -2549,5 +2549,101 @@
   },
   "setup_deal_typesMoved": {
     "message": "Only after one kind of job, like internships or contract work? Use the Job type buttons above your ranked list and radar. You can switch anytime."
+  },
+  "setup_about_span_none": {
+    "message": "No set time frame"
+  },
+  "setup_about_windowHint2": {
+    "message": "Short jobs earn less over a long stretch: $APP$ counts only the weeks a job lasts. Just looking for something better, with no date in mind? Pick No set time frame and $APP$ compares pay rates instead.",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      }
+    }
+  },
+  "setup_about_rateExample": {
+    "message": "Each job's pay is compared $PER$, however long the job lasts.",
+    "placeholders": {
+      "per": {
+        "content": "$1"
+      }
+    }
+  },
+  "setup_about_goalLabel": {
+    "message": "Pay goal (optional)"
+  },
+  "pay_unit_label": {
+    "message": "Pay goal unit"
+  },
+  "pay_unit_hour": {
+    "message": "per hour"
+  },
+  "pay_unit_year": {
+    "message": "per year"
+  },
+  "pay_unit_total": {
+    "message": "total over $SPAN$",
+    "placeholders": {
+      "span": {
+        "content": "$1"
+      }
+    }
+  },
+  "pay_equiv_hour": {
+    "message": "about $AMOUNT$ an hour",
+    "placeholders": {
+      "amount": {
+        "content": "$1"
+      }
+    }
+  },
+  "pay_equiv_year": {
+    "message": "about $AMOUNT$ a year",
+    "placeholders": {
+      "amount": {
+        "content": "$1"
+      }
+    }
+  },
+  "pay_equiv_total": {
+    "message": "about $AMOUNT$ over $SPAN$",
+    "placeholders": {
+      "amount": {
+        "content": "$1"
+      },
+      "span": {
+        "content": "$2"
+      }
+    }
+  },
+  "pay_equiv_line": {
+    "message": "At 40 hours a week, that's $LIST$.",
+    "placeholders": {
+      "list": {
+        "content": "$1"
+      }
+    }
+  },
+  "pay_equiv_or": {
+    "message": ", or "
+  },
+  "pay_line_hour": {
+    "message": "$AMOUNT$ an hour before tax",
+    "placeholders": {
+      "amount": {
+        "content": "$1"
+      }
+    }
+  },
+  "pay_line_year": {
+    "message": "About $AMOUNT$ a year before tax",
+    "placeholders": {
+      "amount": {
+        "content": "$1"
+      }
+    }
+  },
+  "setup_deal_minPayUnit": {
+    "message": "Lowest pay unit"
   }
 }

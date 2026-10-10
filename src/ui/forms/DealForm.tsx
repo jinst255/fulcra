@@ -2,7 +2,7 @@
 import { t } from '../../i18n/t';
 import { useApp } from '../AppContext';
 import { SwitchRow } from '../components';
-import { NumberField } from './AboutForm';
+import { NumberField, PayUnitSelect } from './AboutForm';
 
 export function DealForm({ showNone = false }: { showNone?: boolean }) {
   const { settings, update } = useApp();
@@ -15,15 +15,18 @@ export function DealForm({ showNone = false }: { showNone?: boolean }) {
           <label htmlFor="db-min" className="field-label">
             {t('setup.deal.minPay')}
           </label>
-          <div className="money-input">
-            <span aria-hidden="true">$</span>
-            <NumberField
-              id="db-min"
-              min={0}
-              step={500}
-              value={d.minTakeHome}
-              onSave={(v) => save((x) => void (x.minTakeHome = v))}
-            />
+          <div className="row-wrap" style={{ gap: 8 }}>
+            <div className="money-input">
+              <span aria-hidden="true">$</span>
+              <NumberField
+                id="db-min"
+                min={0}
+                step={settings.about.payUnit === 'hour' ? 0.5 : 500}
+                value={d.minTakeHome}
+                onSave={(v) => save((x) => void (x.minTakeHome = v))}
+              />
+            </div>
+            <PayUnitSelect id="db-min-unit" label={t('setup.deal.minPayUnit')} />
           </div>
         </div>
         <div>

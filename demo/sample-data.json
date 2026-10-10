@@ -17,6 +17,7 @@
       }
     ],
     "windowWeeks": 22,
+    "payUnit": "total",
     "payGoal": 30000
   },
   "dealbreakers": {

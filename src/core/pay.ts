@@ -1,16 +1,55 @@
 // Take-home pay, the pay score, and the pay-unit outlier check. Blueprint sections 5.5 and 5.6.
 import { t } from '../i18n/t';
-import type { Facts, JobRecord, Pay, PayPeriod } from './types';
+import type { About, Facts, JobRecord, Pay, PayPeriod, PayUnit } from './types';
 
 export const DEFAULT_HOURS = 40;
 
 export interface TakeHome {
-  /** Take-home over the window, before tax. Null when pay can't be worked out. */
+  /**
+   * The pay measure, before tax: take-home over the time frame, or with no time frame, the hourly
+   * rate or yearly earnings at this job's rate. Null when pay can't be worked out.
+   */
   total: number | null;
   /** Weeks counted: min(job length, window). */
   weeks: number;
   /** True when the pay or the hours were estimated. */
   estimate: boolean;
+  /** What `total` measures. */
+  per: PayBasis['per'];
+}
+
+/**
+ * How jobs' pay is compared. With a time frame: take-home over it, so short jobs and fewer hours
+ * earn less. Without one: the rate, per hour or per year, whatever the job's length.
+ */
+export type PayBasis = { per: 'window'; weeks: number } | { per: 'hour' } | { per: 'year' };
+
+export function payBasis(about: Pick<About, 'windowWeeks' | 'payUnit'>): PayBasis {
+  if (about.windowWeeks != null && about.windowWeeks > 0) return { per: 'window', weeks: about.windowWeeks };
+  return about.payUnit === 'hour' ? { per: 'hour' } : { per: 'year' };
+}
+
+/** An amount in the person's pay unit, as the basis measures it. Hourly amounts assume 40 hours a week. */
+export function inBasis(amount: number, unit: PayUnit, b: PayBasis): number {
+  if (b.per === 'window' && unit === 'total') return amount;
+  const yearly = unit === 'hour' ? amount * DEFAULT_HOURS * 52 : amount;
+  if (b.per === 'window') return (yearly * b.weeks) / 52;
+  if (b.per === 'hour') return unit === 'hour' ? amount : yearly / (52 * DEFAULT_HOURS);
+  return yearly;
+}
+
+/** Converts an amount between pay units. Hourly assumes 40 hours a week; totals cover the time frame. */
+export function convertPay(amount: number, from: PayUnit, to: PayUnit, weeks: number | null): number {
+  const w = weeks && weeks > 0 ? weeks : 52;
+  const yearly =
+    from === 'hour' ? amount * DEFAULT_HOURS * 52 : from === 'total' ? (amount * 52) / w : amount;
+  const out = to === 'hour' ? yearly / (DEFAULT_HOURS * 52) : to === 'total' ? (yearly * w) / 52 : yearly;
+  return to === 'hour' ? Math.round(out * 100) / 100 : Math.round(out / 100) * 100;
+}
+
+/** The basis's measure in the person's unit: the reverse of inBasis. */
+export function fromBasis(amount: number, unit: PayUnit, b: PayBasis): number {
+  return amount / inBasis(1, unit, b);
 }
 
 /** The middle of the pay range. Zero pay is treated as missing: listings almost never mean it. */
@@ -54,15 +93,38 @@ export function weeklyPay(
 export function takeHome(facts: Facts, windowWeeks: number, knownCosts = 0, unpaid = false): TakeHome {
   const d = facts.duration_weeks && facts.duration_weeks > 0 ? facts.duration_weeks : windowWeeks;
   const weeks = Math.min(d, windowWeeks);
-  if (unpaid) return { total: -knownCosts, weeks, estimate: false };
+  if (unpaid) return { total: -knownCosts, weeks, estimate: false, per: 'window' };
   const { weekly, hoursEstimated } = weeklyPay(
     facts.pay,
     facts.hours_per_week,
     facts.duration_weeks,
     windowWeeks,
   );
-  if (weekly == null) return { total: null, weeks, estimate: true };
-  return { total: weekly * weeks - knownCosts, weeks, estimate: facts.pay.is_estimate || hoursEstimated };
+  if (weekly == null) return { total: null, weeks, estimate: true, per: 'window' };
+  return {
+    total: weekly * weeks - knownCosts,
+    weeks,
+    estimate: facts.pay.is_estimate || hoursEstimated,
+    per: 'window',
+  };
+}
+
+/** A job's pay as the basis measures it. Known one-off costs count only against a time frame. */
+export function payMeasure(facts: Facts, b: PayBasis, knownCosts = 0, unpaid = false): TakeHome {
+  if (b.per === 'window') return takeHome(facts, b.weeks, knownCosts, unpaid);
+  if (unpaid) return { total: 0, weeks: 52, estimate: false, per: b.per };
+  const { weekly, hoursEstimated } = weeklyPay(facts.pay, facts.hours_per_week, facts.duration_weeks, 52);
+  if (weekly == null) return { total: null, weeks: 52, estimate: true, per: b.per };
+  const hourly = facts.pay.period === 'hour';
+  const hours = facts.hours_per_week && facts.hours_per_week > 0 ? facts.hours_per_week : DEFAULT_HOURS;
+  return b.per === 'hour'
+    ? {
+        total: weekly / hours,
+        weeks: 52,
+        estimate: facts.pay.is_estimate || (!hourly && !facts.hours_per_week),
+        per: 'hour',
+      }
+    : { total: weekly * 52, weeks: 52, estimate: facts.pay.is_estimate || hoursEstimated, per: 'year' };
 }
 
 export function round1(n: number): number {
@@ -77,15 +139,16 @@ export function payScore(total: number | null, goal: number): number | null {
 }
 
 /**
- * G: the user's pay goal, or the largest take-home among open, scored jobs
+ * G: the user's pay goal (already in the basis's terms), or the best pay among open, scored jobs
  * so the best-paying job scores 10.
  */
-export function payGoal(goal: number | null, jobs: JobRecord[], windowWeeks: number): number {
+export function payGoal(goal: number | null, jobs: JobRecord[], basis: PayBasis | number): number {
   if (goal && goal > 0) return goal;
+  const b: PayBasis = typeof basis === 'number' ? { per: 'window', weeks: basis } : basis;
   let best = 0;
   for (const j of jobs) {
     if (j.status === 'closed' || j.scoring !== 'scored') continue;
-    const T = takeHome(j.facts, windowWeeks, j.knownCosts).total;
+    const T = payMeasure(j.facts, b, j.knownCosts).total;
     if (T != null && T > best) best = T;
   }
   return best > 0 ? best : 1;
@@ -98,6 +161,12 @@ export function approxAmount(n: number): number {
 
 export function formatMoney(n: number): string {
   return '$' + Math.round(n).toLocaleString('en-US');
+}
+
+/** An hourly rate: cents only when they matter ("$18.50", "$20"). */
+export function formatRate(n: number): string {
+  const cents = Math.round(n * 100) / 100;
+  return Number.isInteger(cents) || cents >= 100 ? formatMoney(cents) : '$' + cents.toFixed(2);
 }
 
 const OUTLIER_BOUNDS: Partial<Record<PayPeriod, [number, number]>> = {

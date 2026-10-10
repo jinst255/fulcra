@@ -68,7 +68,16 @@ export function withDefaults(saved: Partial<Settings> | undefined): Settings {
   return {
     ...d,
     ...saved,
-    about: { ...d.about, ...saved.about },
+    about: {
+      ...d.about,
+      // Goals saved before the unit choice were totals over the time frame.
+      ...(saved.about &&
+      !saved.about.payUnit &&
+      (saved.about.payGoal != null || dealbreakers.minTakeHome != null)
+        ? { payUnit: 'total' as const }
+        : {}),
+      ...saved.about,
+    },
     dealbreakers: { ...d.dealbreakers, ...dealbreakers },
     email: migrateEmail({ ...d.email, ...saved.email }),
     scoring: { ...d.scoring, ...saved.scoring },

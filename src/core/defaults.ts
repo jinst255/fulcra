@@ -27,6 +27,7 @@ export function defaultSettings(): Settings {
       relocate: 'maybe',
       languages: [{ name: 'English', level: 'native' }],
       windowWeeks: 52,
+      payUnit: 'hour',
       payGoal: null,
     },
     dealbreakers: {
