@@ -2457,5 +2457,8 @@
         "content": "$2"
       }
     }
+  },
+  "setup_skipStep": {
+    "message": "Skip this step"
   }
 }

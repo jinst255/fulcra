@@ -1,6 +1,5 @@
 // First-run setup, steps 0 to 6. Blueprint section 10, matched to the approved demo.
 import { useState } from 'react';
-import { presetWeights } from '../../core/presets';
 import { rankJobs } from '../../core/rank';
 import { t } from '../../i18n/t';
 import { send } from '../../messages';
@@ -28,27 +27,14 @@ export function Setup({ step }: { step: number }) {
   const [testedKey, setTestedKey] = useState<string | null>(null);
   const to = (n: number) => go(`setup/${n}`);
 
-  const finish = async (skipped: boolean) => {
+  const finish = async () => {
     update((s) => {
-      if (skipped) {
-        s.weights = { ...s.weights, ...presetWeights('balanced', s.dimensions) };
-        s.profileId = 'balanced';
-        s.dealbreakers = {
-          minTakeHome: null,
-          maxHours: null,
-          mustRemote: false,
-          noRelocation: false,
-          excludeTypes: [],
-          languageGap: false,
-        };
-      }
-      s.ui.setupSkipped = skipped;
+      s.ui.setupSkipped = false;
       s.ui.showOutsideDealbreakers = null;
       s.ui.baselineOrder = rankJobs(jobs, s).passingIds;
     });
     await setSetupComplete(true);
-    if (!skipped && settings.email.provider)
-      void send({ type: 'emailImport', days: settings.email.importDays });
+    if (settings.email.provider) void send({ type: 'emailImport', days: settings.email.importDays });
     go('');
   };
 
@@ -338,7 +324,7 @@ export function Setup({ step }: { step: number }) {
             </section>
 
             <div>
-              <button type="button" className="btn primary lg" onClick={() => void finish(false)}>
+              <button type="button" className="btn primary lg" onClick={() => void finish()}>
                 {t('setup.done.button')}
               </button>
             </div>
@@ -358,8 +344,9 @@ export function Setup({ step }: { step: number }) {
             }}
           >
             {step >= 2 && (
-              <button type="button" className="link-btn quiet" onClick={() => void finish(true)}>
-                {t('common.skip')}
+              // Skips only this step; whatever it already has stays as it is.
+              <button type="button" className="link-btn quiet" onClick={() => to(step + 1)}>
+                {t('setup.skipStep')}
               </button>
             )}
             <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
