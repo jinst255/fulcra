@@ -1827,5 +1827,19 @@
   },
   "popup_emailNotYet": {
     "message": "Emails not checked yet"
+  },
+  "setup_priorities_suggestLower": {
+    "message": "Lower $DIMENSION$ from $FROM$ to $TO$",
+    "placeholders": {
+      "dimension": {
+        "content": "$1"
+      },
+      "from": {
+        "content": "$2"
+      },
+      "to": {
+        "content": "$3"
+      }
+    }
   }
 }
