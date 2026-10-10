@@ -63,7 +63,7 @@ export async function diagnostics(): Promise<string> {
       chrome: chromeVersion,
       os,
       model: s.model,
-      emailProvider: s.email.provider ?? 'none',
+      emailInboxes: s.email.accounts.map((a) => a.id).join(', ') || 'none',
       jobs: counts,
       lastLogCodes: codes,
     },

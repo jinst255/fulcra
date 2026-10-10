@@ -143,7 +143,7 @@ async function handle(msg: Request): Promise<unknown> {
     case 'emailCheckNow':
       return runEmailCheck({ reason: 'now' });
     case 'emailImport':
-      return runEmailCheck({ reason: 'import', importDays: msg.days });
+      return runEmailCheck({ reason: 'import', importDays: msg.days, accountId: msg.accountId });
     case 'emailScheduleChanged':
       await scheduleEmail();
       return true;

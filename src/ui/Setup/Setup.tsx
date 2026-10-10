@@ -10,6 +10,7 @@ import { DealForm } from '../forms/DealForm';
 import { EmailForm } from '../forms/EmailForm';
 import { KeyInput, saveKey } from '../forms/KeyForm';
 import { PriorityForm } from '../forms/PriorityForm';
+import { inboxName } from '../format';
 import { Check } from '../Icons';
 
 export const SETUP_STEPS = 7;
@@ -34,7 +35,7 @@ export function Setup({ step }: { step: number }) {
       s.ui.baselineOrder = rankJobs(jobs, s).passingIds;
     });
     await setSetupComplete(true);
-    if (settings.email.provider) void send({ type: 'emailImport', days: settings.email.importDays });
+    if (settings.email.accounts.length) void send({ type: 'emailImport', days: settings.email.importDays });
     go('');
   };
 
@@ -71,9 +72,9 @@ export function Setup({ step }: { step: number }) {
     {
       step: 5,
       ok: true,
-      text: em.provider
+      text: em.accounts.length
         ? t('setup.done.emailOn', {
-            provider: em.provider === 'gmail' ? t('setup.email.gmail') : t('setup.email.outlook'),
+            provider: em.accounts.map(inboxName).join(', '),
             range:
               em.importDays == null
                 ? t('setup.email.importAll').toLowerCase()
@@ -261,7 +262,7 @@ export function Setup({ step }: { step: number }) {
             <EmailForm
               mode="setup"
               onNotNow={() => {
-                update((s) => void (s.email.provider = null));
+                update((s) => void (s.email.accounts = []));
                 to(6);
               }}
             />

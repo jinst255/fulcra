@@ -21,6 +21,8 @@ export default defineConfig({
       'unlimitedStorage',
       'alarms',
       'tabs',
+      // A collapsed "Fulcra" group holds the inbox tab while an email check runs.
+      'tabGroups',
       'scripting',
       'activeTab',
       'contextMenus',

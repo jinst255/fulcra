@@ -167,15 +167,17 @@ export async function signInCheck(args: GmailArgs): Promise<SignInResult> {
     return { status: 'signedOut', provider: 'gmail', emailCounts: null };
   const main = await waitFor(() => document.querySelector(SEL.main), 20000);
   if (!main) return { status: 'changed', provider: 'gmail', emailCounts: null };
-  if (!args.countQueries) return { status: 'ok', provider: 'gmail', emailCounts: null };
+  // The tab title reads "Inbox (3) - name@example.com - Gmail".
+  const address = document.title.match(/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/)?.[0] ?? null;
+  if (!args.countQueries) return { status: 'ok', provider: 'gmail', emailCounts: null, address };
   const none = { n: 0, atLeast: false };
   const counts = { '7': none, '30': none, '90': none, all: none };
   for (const k of ['7', '30', '90', 'all'] as const) {
     const r = await search(args.countQueries[k]);
-    if (r === null) return { status: 'ok', provider: 'gmail', emailCounts: null };
+    if (r === null) return { status: 'ok', provider: 'gmail', emailCounts: null, address };
     counts[k] = r === 'none' ? none : resultCount();
   }
-  return { status: 'ok', provider: 'gmail', emailCounts: counts };
+  return { status: 'ok', provider: 'gmail', emailCounts: counts, address };
 }
 
 export async function readAlerts(args: GmailArgs): Promise<GmailRun> {

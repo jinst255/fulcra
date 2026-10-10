@@ -7,6 +7,7 @@ import { buildExport } from '../store/export';
 import { deleteClosedJobs, deleteWhere } from '../store/jobs';
 import { updateStatus } from '../store/settings';
 import { useApp } from './AppContext';
+import { inboxNameById } from './format';
 import { Spinner } from './components';
 import { LINKS, openExternal } from './hooks';
 import { Alert, Close, Refresh } from './Icons';
@@ -39,7 +40,7 @@ export function downloadJson(name: string, data: unknown): void {
 export function Banner() {
   const { status, key, jobs, settings, go, toast } = useApp();
   const [dismissed, setDismissed] = useState<string | null>(null);
-  const provider = settings.email.provider === 'outlook' ? t('setup.email.outlook') : t('setup.email.gmail');
+  const provider = inboxNameById(settings.email.accounts, status.emailProblemAccount);
   const toKey = () => go('settings/key');
   const waiting = jobs.filter((j) => j.scoring === 'notScored' || j.scoring === 'queued').length;
 

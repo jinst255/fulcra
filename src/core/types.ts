@@ -117,14 +117,33 @@ export interface Dealbreakers {
   languageGap: boolean;
 }
 
+export interface CheckSummary {
+  at: number;
+  /** 'ok' or a section 7 code. */
+  result: string;
+  count: number | null;
+}
+
+/** One inbox Fulcra reads. A person can have several: two Gmail accounts and an Outlook, say. */
+export interface EmailAccount {
+  /** "gmail:0", "gmail:1", or "outlook". */
+  id: string;
+  provider: 'gmail' | 'outlook';
+  /** Gmail's account number in this browser (mail/u/0, u/1, ...). 0 for Outlook. */
+  index: number;
+  /** The address, when the mail page showed it. */
+  address: string | null;
+  lastCheck: CheckSummary | null;
+  /** When a check of this inbox last finished without a problem; the next one looks back to here. */
+  lastOkAt: number | null;
+}
+
 export interface EmailSettings {
-  provider: 'gmail' | 'outlook' | null;
+  accounts: EmailAccount[];
   intervalMinutes: number;
   senders: string[];
-  lastCheck: { at: number; result: string; count: number | null } | null;
-  /** When a check last finished without a problem; the next check looks back to here. */
-  lastOkAt: number | null;
-  accountIndex: number;
+  /** The last check across every inbox. */
+  lastCheck: CheckSummary | null;
   /** Days of past alerts to import; null means everything. */
   importDays: number | null;
 }

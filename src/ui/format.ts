@@ -1,7 +1,7 @@
 // Display helpers shared by the popup and the app.
 import type { FailReason } from '../core/dealbreakers';
 import { approxAmount, formatMoney, formatRate, payMeasure, type TakeHome } from '../core/pay';
-import type { JobRecord, JobType, PayPeriod, PayUnit } from '../core/types';
+import type { EmailAccount, JobRecord, JobType, PayPeriod, PayUnit } from '../core/types';
 import { t } from '../i18n/t';
 
 export function failText(reasons: FailReason[]): string {
@@ -79,6 +79,18 @@ export function jobTypeName(jt: JobType): string {
     contract: 'contract',
   } as const;
   return jt === 'unknown' ? t('common.cantTell') : t(`jobType.${key[jt]}`);
+}
+
+/** An inbox's name: its address when known, else "Gmail (account 2)" or "Outlook". */
+export function inboxName(a: Pick<EmailAccount, 'provider' | 'index' | 'address'>): string {
+  if (a.address) return a.address;
+  return a.provider === 'gmail' ? t('email.gmailAccount', { n: a.index + 1 }) : t('setup.email.outlook');
+}
+
+/** The name of the inbox with this id, or "your email" if it's gone. */
+export function inboxNameById(accounts: EmailAccount[], id: string | null): string {
+  const a = id ? accounts.find((x) => x.id === id) : undefined;
+  return a ? inboxName(a) : t('email.yourEmail');
 }
 
 export function jobTitle(job: JobRecord): string {

@@ -140,7 +140,7 @@ export function Popup() {
   const footer = (
     <>
       <span style={{ flex: 1, fontSize: 12, color: 'var(--text-2)' }}>
-        {!settings.email.provider
+        {!settings.email.accounts.length
           ? t('popup.emailOff')
           : settings.email.lastCheck
             ? t('popup.emailStatus', { when: relativeTime(settings.email.lastCheck.at) })

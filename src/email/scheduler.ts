@@ -9,7 +9,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 export async function scheduleEmail(): Promise<void> {
   const s = await getSettings();
   await chrome.alarms.clear(EMAIL_ALARM);
-  if (!s.email.provider) return;
+  if (!s.email.accounts.length) return;
   const period = Math.max(0.5, s.email.intervalMinutes);
   await chrome.alarms.create(EMAIL_ALARM, { periodInMinutes: period, delayInMinutes: period });
 }
@@ -17,7 +17,7 @@ export async function scheduleEmail(): Promise<void> {
 /** If the last check is over a day old (Chrome was closed), check 2 minutes after startup. */
 export async function scheduleCatchUp(now = Date.now()): Promise<boolean> {
   const s = await getSettings();
-  if (!s.email.provider) return false;
+  if (!s.email.accounts.length) return false;
   const last = s.email.lastCheck?.at ?? 0;
   if (now - last <= DAY_MS) return false;
   await chrome.alarms.create(CATCHUP_ALARM, { delayInMinutes: 2 });

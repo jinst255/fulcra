@@ -15,7 +15,7 @@ export type Request =
   | { type: 'batchLater' }
   | { type: 'batchPause'; paused: boolean }
   | { type: 'emailCheckNow' }
-  | { type: 'emailImport'; days: number | null }
+  | { type: 'emailImport'; days: number | null; accountId?: string }
   | { type: 'emailSignInCheck'; provider: 'gmail' | 'outlook'; account?: number }
   | { type: 'emailScheduleChanged' }
   | { type: 'pageSeen'; page: PageExtraction };

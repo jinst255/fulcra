@@ -17,6 +17,8 @@ export interface AppStatus {
   scoringBlocked: 'KEY_INVALID' | 'NO_CREDIT' | null;
   emailRunning: boolean;
   emailProblem: 'MAIL_SIGNED_OUT' | 'MAIL_CHANGED' | null;
+  /** The inbox with the problem. */
+  emailProblemAccount: string | null;
   storageFull: boolean;
   rateLimited: boolean;
   batch: {
@@ -44,6 +46,7 @@ export function defaultStatus(): AppStatus {
     scoringBlocked: null,
     emailRunning: false,
     emailProblem: null,
+    emailProblemAccount: null,
     storageFull: false,
     rateLimited: false,
     batch: null,
@@ -87,14 +90,40 @@ export function withDefaults(saved: Partial<Settings> | undefined): Settings {
   };
 }
 
-/** The first builds guessed Handshake's sender wrong; swap in the real one. */
-function migrateEmail(e: Settings['email']): Settings['email'] {
+/** Settings saved before several inboxes were possible: one provider and one Gmail account. */
+interface OldEmail {
+  provider?: 'gmail' | 'outlook' | null;
+  accountIndex?: number;
+  lastOkAt?: number | null;
+}
+
+/** Brings saved email settings up to date. */
+function migrateEmail(saved: Settings['email'] & OldEmail): Settings['email'] {
+  const { provider, accountIndex, lastOkAt, ...e } = saved;
+  // One provider became a list of inboxes.
+  if (provider && !e.accounts.length)
+    e.accounts = [
+      {
+        id: accountId(provider, accountIndex ?? 0),
+        provider,
+        index: provider === 'gmail' ? (accountIndex ?? 0) : 0,
+        address: null,
+        lastCheck: e.lastCheck,
+        lastOkAt: lastOkAt ?? null,
+      },
+    ];
+  // The first builds guessed Handshake's sender wrong; swap in the real one.
   const old = 'notifications@joinhandshake.com';
   if (!e.senders.includes(old)) return e;
   const real = 'handshake@g.joinhandshake.com';
   const senders = e.senders.filter((x) => x !== old);
   if (!senders.includes(real)) senders.push(real);
   return { ...e, senders };
+}
+
+/** "gmail:0", "gmail:1", or "outlook": Outlook keeps one account per browser. */
+export function accountId(provider: 'gmail' | 'outlook', index: number): string {
+  return provider === 'gmail' ? `gmail:${index}` : 'outlook';
 }
 
 export async function getSettings(): Promise<Settings> {

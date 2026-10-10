@@ -140,6 +140,19 @@ describe('mail queries and ids', () => {
     expect(s.email.senders).toEqual(['jobalerts-noreply@linkedin.com', 'handshake@g.joinhandshake.com']);
   });
 
+  it('turns the one inbox of older builds into a list of inboxes', () => {
+    const s = withDefaults({
+      email: { provider: 'gmail', accountIndex: 1, lastOkAt: 123, lastCheck: null, senders: [] },
+    } as never);
+    expect(s.email.accounts).toEqual([
+      { id: 'gmail:1', provider: 'gmail', index: 1, address: null, lastCheck: null, lastOkAt: 123 },
+    ]);
+    expect('provider' in s.email).toBe(false);
+    const o = withDefaults({ email: { provider: 'outlook', accountIndex: 0 } } as never);
+    expect(o.email.accounts.map((a) => a.id)).toEqual(['outlook']);
+    expect(withDefaults({ email: { provider: null } } as never).email.accounts).toEqual([]);
+  });
+
   it('reads Gmail thread ids from either attribute', () => {
     const row = document.createElement('tr');
     row.innerHTML = '<span data-thread-id="#thread-f:1789012345678901234"></span>';

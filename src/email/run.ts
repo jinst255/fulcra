@@ -1,14 +1,24 @@
-// One email check: open the mail page in a minimized window, read new alerts, close it,
+// One email check: open each inbox in a tucked-away background tab, read new alerts, close it,
 // and queue preliminary scores. Blueprint sections 4.3, 9.4, and 12.3.
 import { isSmallBatch } from '../core/rescore';
 import { batchSeconds, costPerJob } from '../llm/cost';
-import { getApiKey, getSettings, updateSettings, updateStatus } from '../store/settings';
+import type { EmailAccount } from '../core/types';
+import { accountId, getApiKey, getSettings, updateSettings, updateStatus } from '../store/settings';
+import { t } from '../i18n/t';
 import { addLog } from '../store/log';
 import { findDuplicate, putJob, updateJob } from '../store/jobs';
 import { newJobRecord } from '../pipeline/jobs';
 import { enqueue, pump } from '../pipeline/queue';
 import type { GmailArgs, GmailRun } from '../readers/gmail';
-import type { AlertCard, EmailCheckResult, Provider, SavedCounts, SignInResult } from './types';
+import type {
+  AccountResult,
+  AlertCard,
+  CheckStatus,
+  EmailCheckResult,
+  Provider,
+  SavedCounts,
+  SignInResult,
+} from './types';
 
 const SEEN_KEY = 'emailSeen';
 const SEEN_MAX = 5000;
@@ -107,8 +117,23 @@ function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
   return Promise.race([p, new Promise<T>((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
 }
 
-/** A minimized, unfocused window, or an inactive tab if minimized windows aren't allowed. */
+/**
+ * A background tab tucked into a collapsed tab group named Fulcra, so it doesn't pop up or sit
+ * among the person's tabs. With no browser window open, a minimized window instead.
+ */
 async function openBackground(url: string): Promise<{ tabId: number; close: () => Promise<void> }> {
+  const win = await chrome.windows.getLastFocused({ windowTypes: ['normal'] }).catch(() => null);
+  if (win?.id != null && win.state !== 'minimized' && !win.incognito) {
+    const tab = await chrome.tabs.create({ windowId: win.id, url, active: false });
+    const tabId = tab.id!;
+    try {
+      const groupId = await chrome.tabs.group({ tabIds: tabId, createProperties: { windowId: win.id } });
+      await chrome.tabGroups.update(groupId, { title: t('email.tabGroup'), color: 'green', collapsed: true });
+    } catch {
+      // Tab groups aren't available: an inactive tab still works.
+    }
+    return { tabId, close: () => chrome.tabs.remove(tabId).catch(() => undefined) };
+  }
   try {
     const w = await chrome.windows.create({ url, state: 'minimized', focused: false, type: 'normal' });
     const tabId = w?.tabs?.[0]?.id;
@@ -136,6 +161,9 @@ async function inject<T>(tabId: number, provider: Provider, args: GmailArgs): Pr
   return (res?.result as T | undefined) ?? null;
 }
 
+/** The person closed the mail tab while Fulcra was reading it. */
+export class TabClosedError extends Error {}
+
 /** Opens the mail page, trying each address in turn. Null when none of them stays on the mail site. */
 async function withMailTab<T>(
   provider: Provider,
@@ -144,37 +172,61 @@ async function withMailTab<T>(
 ): Promise<T | null> {
   const urls = mailUrls(provider, account);
   const { tabId, close } = await openBackground(urls[0]!);
+  let closed = false;
+  const onRemoved = (id: number) => {
+    if (id === tabId) closed = true;
+  };
+  chrome.tabs.onRemoved.addListener(onRemoved);
   try {
     for (let i = 0; i < urls.length; i++) {
       if (i > 0) await chrome.tabs.update(tabId, { url: urls[i] });
       await waitForComplete(tabId);
       await new Promise((r) => setTimeout(r, 1500));
+      if (closed) throw new TabClosedError();
       const tab = await chrome.tabs.get(tabId);
-      if (isMailHost(tab.url, provider)) return await fn(tabId);
+      if (!isMailHost(tab.url, provider)) continue;
+      const out = await fn(tabId);
+      if (closed) throw new TabClosedError();
+      return out;
     }
     return null;
+  } catch (e) {
+    // Someone closed the tab part way: say so, rather than "something went wrong".
+    throw closed ? new TabClosedError() : e;
   } finally {
-    await close();
+    chrome.tabs.onRemoved.removeListener(onRemoved);
+    if (!closed) await close();
   }
 }
 
-/** One mail check at a time, including sign-in checks: each opens its own window. */
+/** One mail check at a time, including sign-in checks: each opens its own tab. */
 let busy = false;
 
-/** Checks the user is signed in, and counts alert emails per import range (Gmail only). */
-export async function signInCheck(provider: Provider, accountIndex?: number): Promise<SignInResult> {
+/** Saved import estimates, one per inbox. */
+export async function savedCounts(): Promise<Record<string, SavedCounts>> {
+  const v = (await chrome.storage.local.get(COUNTS_KEY))[COUNTS_KEY] as
+    Record<string, SavedCounts> | SavedCounts | undefined;
+  // Older builds saved one inbox's counts.
+  if (!v || 'counts' in v) return {};
+  return v;
+}
+
+/**
+ * Checks the user is signed in to an inbox and reads its address. For Gmail it also counts alert
+ * emails per import range.
+ */
+export async function signInCheck(provider: Provider, index = 0): Promise<SignInResult> {
   if (busy) return { status: 'busy', provider, emailCounts: null };
   busy = true;
   const s = await getSettings();
-  const account = accountIndex ?? s.email.accountIndex;
   try {
     const senders = s.email.senders;
     const r =
-      (await withMailTab<SignInResult>(provider, account, async (tabId) => {
+      (await withMailTab<SignInResult>(provider, index, async (tabId) => {
         const got = await withTimeout(
           inject<SignInResult>(tabId, provider, {
             mode: 'signin',
-            account,
+            account: index,
             countQueries:
               provider === 'gmail'
                 ? {
@@ -192,12 +244,17 @@ export async function signInCheck(provider: Provider, accountIndex?: number): Pr
     await addLog(
       r.status === 'ok' ? 'MAIL_SIGNIN_OK' : r.status === 'signedOut' ? 'MAIL_SIGNED_OUT' : 'MAIL_CHANGED',
       'background',
-      provider,
+      `${provider}:${index}`,
     );
-    if (r.status === 'ok' && r.emailCounts)
+    if (r.status === 'ok' && r.emailCounts) {
+      const id = accountId(provider, index);
       await chrome.storage.local.set({
-        [COUNTS_KEY]: { provider, at: Date.now(), counts: r.emailCounts } satisfies SavedCounts,
+        [COUNTS_KEY]: {
+          ...(await savedCounts()),
+          [id]: { account: id, at: Date.now(), counts: r.emailCounts } satisfies SavedCounts,
+        },
       });
+    }
     return { ...r, provider };
   } catch (e) {
     await addLog(
@@ -244,110 +301,139 @@ async function saveCards(cards: AlertCard[]): Promise<string[]> {
   return ids;
 }
 
-const PROBLEM: Record<'signedOut' | 'changed' | 'error', string> = {
+const PROBLEM: Record<Exclude<CheckStatus, 'ok'>, string> = {
   signedOut: 'MAIL_SIGNED_OUT',
   changed: 'MAIL_CHANGED',
   error: 'MAIL_ERROR',
+  closed: 'MAIL_CLOSED',
 };
 
 /**
- * Reads alerts and saves their jobs. A scheduled check looks back to the last check; an import
- * looks back `importDays` (null means everything). Ranges with more than one page of results are
+ * Reads one inbox's alerts and saves their jobs. Ranges with more than one page of results are
  * split until each fits. Jobs are saved as they're read, so a failure part way keeps what was read.
+ */
+async function checkAccount(
+  account: EmailAccount,
+  senders: string[],
+  days: number | null,
+  max: number,
+  newIds: string[],
+): Promise<AccountResult & { details: string[] }> {
+  const out = { id: account.id, status: 'ok' as CheckStatus, emails: 0, newJobs: 0, details: [] as string[] };
+  const { provider, index } = account;
+  let seen = ((await chrome.storage.local.get(SEEN_KEY))[SEEN_KEY] as string[] | undefined) ?? [];
+  const before = newIds.length;
+  const opened = await withMailTab(provider, index, async (tabId) => {
+    const stack: Win[] = [{ older: 0, newer: days }];
+    for (let searches = 0; stack.length && out.emails < max && searches < MAX_SEARCHES; searches++) {
+      const w = stack.shift()!;
+      const r =
+        (await withTimeout(
+          inject<GmailRun>(tabId, provider, {
+            mode: 'run',
+            account: index,
+            query: buildQuery(provider, senders, w.newer, w.older),
+            senders,
+            seen,
+            max: max - out.emails,
+          }),
+          CHUNK_TIMEOUT_MS,
+        ).catch((e: unknown): GmailRun => ({
+          status: 'error',
+          cards: [],
+          emailsRead: 0,
+          threadIds: [],
+          detail: String((e as Error)?.message ?? e).slice(0, 60),
+          more: false,
+        }))) ??
+        ({
+          status: 'changed',
+          cards: [],
+          emailsRead: 0,
+          threadIds: [],
+          detail: 'no result',
+          more: false,
+        } satisfies GmailRun);
+      out.details.push(`[${w.older}-${w.newer ?? 'all'}] ${r.detail}`);
+      // Keep whatever was read before a failure.
+      out.emails += r.emailsRead;
+      newIds.push(...(await saveCards(r.cards)));
+      seen = [...seen, ...r.threadIds].slice(-SEEN_MAX);
+      await chrome.storage.local.set({ [SEEN_KEY]: seen });
+      if (r.status !== 'ok') {
+        out.status = r.status;
+        return;
+      }
+      const parts = r.more ? splitWindow(w) : null;
+      if (parts) stack.unshift(...parts);
+    }
+  }).catch((e: unknown) => {
+    out.status = e instanceof TabClosedError ? 'closed' : 'error';
+    return true;
+  });
+  if (opened === null) out.status = 'signedOut';
+  out.newJobs = newIds.length - before;
+  return out;
+}
+
+/**
+ * Reads alerts from every inbox, one after another, and saves their jobs. A scheduled check looks
+ * back to each inbox's last good check; an import looks back `importDays` (null means everything).
  */
 export async function runEmailCheck(opts: {
   importDays?: number | null;
   reason: 'scheduled' | 'now' | 'import' | 'catchup';
+  /** Only this inbox; every inbox when left out. */
+  accountId?: string;
 }): Promise<EmailCheckResult> {
   const s = await getSettings();
-  const provider = s.email.provider;
-  const result: EmailCheckResult = { status: 'ok', provider, emails: 0, newJobs: 0, askedFirst: false };
-  if (!provider) return { ...result, status: 'off' };
+  const accounts = s.email.accounts.filter((a) => !opts.accountId || a.id === opts.accountId);
+  const result: EmailCheckResult = { status: 'ok', accounts: [], emails: 0, newJobs: 0, askedFirst: false };
+  if (!accounts.length) return { ...result, status: 'off' };
   if (busy) return { ...result, status: 'busy' };
   busy = true;
   await updateStatus({ emailRunning: true });
   const newIds: string[] = [];
-  const details: string[] = [];
   try {
-    const days = opts.reason === 'import' ? (opts.importDays ?? null) : checkWindowDays(s.email.lastOkAt);
     const max = opts.reason === 'import' ? MAX_EMAILS.import : MAX_EMAILS.check;
-    let seen = ((await chrome.storage.local.get(SEEN_KEY))[SEEN_KEY] as string[] | undefined) ?? [];
-
-    const opened = await withMailTab(provider, s.email.accountIndex, async (tabId) => {
-      const stack: Win[] = [{ older: 0, newer: days }];
-      for (let searches = 0; stack.length && result.emails < max && searches < MAX_SEARCHES; searches++) {
-        const w = stack.shift()!;
-        const r =
-          (await withTimeout(
-            inject<GmailRun>(tabId, provider, {
-              mode: 'run',
-              account: s.email.accountIndex,
-              query: buildQuery(provider, s.email.senders, w.newer, w.older),
-              senders: s.email.senders,
-              seen,
-              max: max - result.emails,
-            }),
-            CHUNK_TIMEOUT_MS,
-          ).catch((e: unknown): GmailRun => ({
-            status: 'error',
-            cards: [],
-            emailsRead: 0,
-            threadIds: [],
-            detail: String((e as Error)?.message ?? e).slice(0, 60),
-            more: false,
-          }))) ??
-          ({
-            status: 'changed',
-            cards: [],
-            emailsRead: 0,
-            threadIds: [],
-            detail: 'no result',
-            more: false,
-          } satisfies GmailRun);
-        details.push(`[${w.older}-${w.newer ?? 'all'}] ${r.detail}`);
-        // Keep whatever was read before a failure.
-        result.emails += r.emailsRead;
-        newIds.push(...(await saveCards(r.cards)));
-        seen = [...seen, ...r.threadIds].slice(-SEEN_MAX);
-        await chrome.storage.local.set({ [SEEN_KEY]: seen });
-        if (r.status !== 'ok') {
-          result.status = r.status;
-          return;
-        }
-        const parts = r.more ? splitWindow(w) : null;
-        if (parts) stack.unshift(...parts);
-      }
-    }).catch(() => {
-      result.status = 'error';
-      return true;
-    });
-    if (opened === null) result.status = 'signedOut';
+    for (const account of accounts) {
+      const days = opts.reason === 'import' ? (opts.importDays ?? null) : checkWindowDays(account.lastOkAt);
+      const r = await checkAccount(account, s.email.senders, days, max, newIds);
+      const { details, ...res } = r;
+      result.accounts.push(res);
+      result.emails += r.emails;
+      if (r.status !== 'ok' && result.status === 'ok') result.status = r.status;
+      const code = r.status === 'ok' ? 'EMAIL_CHECK' : PROBLEM[r.status];
+      await addLog(
+        code,
+        'background',
+        `${account.id} ${opts.reason} days=${days ?? 'all'} new=${r.newJobs} ${details.join(' ')}`.slice(
+          0,
+          500,
+        ),
+      );
+      const now = Date.now();
+      await updateSettings((x) => {
+        const a = x.email.accounts.find((y) => y.id === account.id);
+        if (!a) return;
+        a.lastCheck = { at: now, result: r.status === 'ok' ? 'ok' : code, count: r.newJobs };
+        if (r.status === 'ok') a.lastOkAt = now;
+      });
+    }
     result.newJobs = newIds.length;
 
-    const code = result.status === 'ok' ? 'EMAIL_CHECK' : PROBLEM[result.status as keyof typeof PROBLEM];
-    await addLog(
-      code ?? 'MAIL_ERROR',
-      'background',
-      `${provider} ${opts.reason} days=${days ?? 'all'} new=${newIds.length} ${details.join(' ')}`.slice(
-        0,
-        500,
-      ),
-    );
+    // The banner names the first inbox that needs the person's help.
+    const bad = result.accounts.find((a) => a.status === 'signedOut' || a.status === 'changed');
     await updateStatus({
-      emailProblem:
-        result.status === 'signedOut'
-          ? 'MAIL_SIGNED_OUT'
-          : result.status === 'changed'
-            ? 'MAIL_CHANGED'
-            : null,
+      emailProblem: bad ? (bad.status === 'signedOut' ? 'MAIL_SIGNED_OUT' : 'MAIL_CHANGED') : null,
+      emailProblemAccount: bad?.id ?? null,
     });
     await updateSettings((x) => {
       x.email.lastCheck = {
         at: Date.now(),
-        result: result.status === 'ok' ? 'ok' : (code ?? 'MAIL_ERROR'),
+        result: result.status === 'ok' ? 'ok' : PROBLEM[result.status as Exclude<CheckStatus, 'ok'>],
         count: newIds.length,
       };
-      if (result.status === 'ok') x.email.lastOkAt = Date.now();
     });
 
     if (newIds.length && (await getApiKey())) {

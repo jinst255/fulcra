@@ -2645,5 +2645,100 @@
   },
   "setup_deal_minPayUnit": {
     "message": "Lowest pay unit"
+  },
+  "email_gmailAccount": {
+    "message": "Gmail (account $N$)",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "email_yourEmail": {
+    "message": "your email"
+  },
+  "email_inboxes": {
+    "message": "Inboxes to read"
+  },
+  "email_inboxesHint": {
+    "message": "Add every inbox that gets job alerts, like a Gmail for Handshake and an Outlook for LinkedIn. You need to be signed in to each one in this browser."
+  },
+  "email_addGmail": {
+    "message": "Add a Gmail account"
+  },
+  "email_addOutlook": {
+    "message": "Add Outlook"
+  },
+  "email_remove": {
+    "message": "Remove"
+  },
+  "email_removeInbox": {
+    "message": "Stop reading $NAME$",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "email_notCheckedYet": {
+    "message": "Not checked yet"
+  },
+  "email_checkSignIn": {
+    "message": "Check sign-in again"
+  },
+  "email_everyInbox": {
+    "message": "Every inbox is read, one after another."
+  },
+  "email_countsNoOutlook": {
+    "message": "Estimates count your Gmail alerts only; Outlook can't be counted ahead of time. Reading is free, and you'll see the cost before anything is scored."
+  },
+  "email_result_closed": {
+    "message": "The $PROVIDER$ tab was closed before the check finished. $APP$ will try again at the next check.",
+    "placeholders": {
+      "provider": {
+        "content": "$1"
+      },
+      "app": {
+        "content": "$2"
+      }
+    }
+  },
+  "email_result_errorIn": {
+    "message": "The $PROVIDER$ check didn't finish. Try again, or copy diagnostics from Settings > Help and diagnostics.",
+    "placeholders": {
+      "provider": {
+        "content": "$1"
+      }
+    }
+  },
+  "email_problem_closed": {
+    "message": "the tab was closed"
+  },
+  "setup_email_checkingInbox": {
+    "message": "Checking that you're signed in to $PROVIDER$. $APP$ opens it in a tab it tucks away, for a moment…",
+    "placeholders": {
+      "provider": {
+        "content": "$1"
+      },
+      "app": {
+        "content": "$2"
+      }
+    }
+  },
+  "setup_email_how2": {
+    "message": "At each check, $APP$ opens each inbox in a background tab, tucked into a collapsed tab group named $APP$, reads new job alerts, and closes it. Please leave that tab open while it works. Your emails stay marked unread, and nothing else in your inbox is read.",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      }
+    }
+  },
+  "email_tabGroup": {
+    "message": "$APP$",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      }
+    }
   }
 }

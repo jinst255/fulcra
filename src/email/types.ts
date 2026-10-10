@@ -17,11 +17,14 @@ export interface SignInResult {
   provider?: Provider;
   /** Alert emails found per import range, when the check could count them. */
   emailCounts: Record<Range, RangeCount> | null;
+  /** The signed-in address, when the mail page shows it. */
+  address?: string | null;
 }
 
 /** Saved after a sign-in check so Settings can show the import estimate later. */
 export interface SavedCounts {
-  provider: Provider;
+  /** The inbox, as in EmailAccount.id. */
+  account: string;
   at: number;
   counts: Record<Range, RangeCount>;
 }
@@ -43,10 +46,21 @@ export interface MailRunResult {
   emailsRead: number;
 }
 
+export type CheckStatus = 'ok' | 'signedOut' | 'changed' | 'error' | 'closed';
+
+/** How one inbox's check went. */
+export interface AccountResult {
+  id: string;
+  status: CheckStatus;
+  emails: number;
+  newJobs: number;
+}
+
 /** What "Check now" and "Import" report back to the page that asked. */
 export interface EmailCheckResult {
-  status: 'ok' | 'signedOut' | 'changed' | 'error' | 'busy' | 'off';
-  provider: Provider | null;
+  /** ok only when every inbox was read. */
+  status: CheckStatus | 'busy' | 'off';
+  accounts: AccountResult[];
   emails: number;
   newJobs: number;
   /** New jobs are waiting for the user to approve the cost. */

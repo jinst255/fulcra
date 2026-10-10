@@ -889,3 +889,13 @@ details.disclosure summary {
 .chip[aria-pressed='true'] .chip-count {
   color: var(--teal-dark);
 }
+
+/* Inboxes in Job alert emails */
+.inbox-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}

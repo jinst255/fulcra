@@ -38,12 +38,10 @@ export function defaultSettings(): Settings {
       languageGap: true,
     },
     email: {
-      provider: null,
+      accounts: [],
       intervalMinutes: INTERVALS.daily,
       senders: DEFAULT_SENDERS.slice(),
       lastCheck: null,
-      lastOkAt: null,
-      accountIndex: 0,
       importDays: 30,
     },
     scoring: { autoScore: false, upgradeOnVisit: true, notify: true, notifyThreshold: 8, spread: true },
