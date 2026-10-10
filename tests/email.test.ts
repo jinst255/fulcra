@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { buildQuery, mailUrl } from '../src/email/run';
 import { parseAlert } from '../src/readers/alerts';
 import { unwrapLink } from '../src/readers/alerts/common';
-import { threadIdOf } from '../src/readers/gmail';
+import { countFrom, threadIdOf } from '../src/readers/gmail';
 
 const body = (name: string) =>
   new DOMParser().parseFromString(readFileSync(resolve('tests/fixtures', name), 'utf8'), 'text/html').body;
@@ -32,6 +32,14 @@ describe('alert email parsers', () => {
         site: 'linkedin',
         siteJobId: '4474959082',
       },
+    ]);
+  });
+
+  it('reads the 2026 LinkedIn layout, where one link wraps the whole card', () => {
+    const cards = parseAlert(body('alert-linkedin-2026.html'));
+    expect(cards.map((c) => [c.title, c.company, c.location, c.pay, c.siteJobId])).toEqual([
+      ['Software Engineer I', 'Acme Robotics', 'Denver, CO (Hybrid)', '$95K-$120K / year', '4400000001'],
+      ['Junior Backend Developer', 'Birch Health', 'Austin, TX', null, '4400000002'],
     ]);
   });
 
@@ -65,5 +73,12 @@ describe('mail queries and ids', () => {
     expect(threadIdOf(row)).toBe(BigInt('1789012345678901234').toString(16));
     row.innerHTML = '<span data-legacy-thread-id="18d3a1b2c3d4e5f6"></span>';
     expect(threadIdOf(row)).toBe('18d3a1b2c3d4e5f6');
+  });
+
+  it('reads Gmail result counts, including "of many"', () => {
+    expect(countFrom('1–50 of 1,234', 50)).toBe(1234);
+    expect(countFrom('1–32 of 32', 32)).toBe(32);
+    expect(countFrom('1–50 of many', 50)).toBe(50);
+    expect(countFrom('', 0)).toBeNull();
   });
 });

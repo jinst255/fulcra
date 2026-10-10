@@ -1,10 +1,11 @@
 // Reads job alert emails inside the background Gmail window and restores unread state.
-// Blueprint section 12.3. [Unverified] Every Gmail selector lives here; when Gmail changes,
-// update them and bump the version.
+// Blueprint section 12.3. Selectors checked against live Gmail on 2026-10-10 (print view's effect
+// on read state is still unknown). Every Gmail selector lives here; when Gmail changes, update
+// them and bump the version.
 import type { AlertCard, MailRunResult, SignInResult } from '../email/types';
 import { parseAlert } from './alerts';
 
-export const GMAIL_SELECTORS_VERSION = 'gmail-2026-10-10';
+export const GMAIL_SELECTORS_VERSION = 'gmail-2026-10-10b';
 
 const SEL = {
   main: 'div[role="main"]',
@@ -16,7 +17,12 @@ const SEL = {
   checkbox: 'div[role="checkbox"]',
   markUnread: ['div[aria-label="Mark as unread"]', 'div[data-tooltip="Mark as unread"]'],
   openedBody: 'div.a3s',
-  back: ['div[aria-label="Back to Search results"]', 'div[data-tooltip="Back to Search results"]'],
+  // Only a title attribute, with a capital R.
+  back: [
+    'div[role="button"][title="Back to Search Results" i]',
+    'div.T-I.lS',
+    'div[aria-label="Back to Search results" i]',
+  ],
 };
 
 export interface GmailArgs {
@@ -89,11 +95,15 @@ async function search(query: string): Promise<'rows' | 'none' | null> {
   return got as 'rows' | 'none' | null;
 }
 
-function resultCount(): number | null {
-  const el = q(SEL.count);
-  const m = /of\s+(?:about\s+)?([\d,]+)/i.exec(el?.textContent ?? '');
+/** "1–50 of 130" gives 130. "1–50 of many" has no total, so the rows on the page are a floor. */
+export function countFrom(text: string, rowsOnPage: number): number | null {
+  const m = /of\s+(?:about\s+)?([\d,]+)/i.exec(text);
   if (m) return Number(m[1]!.replace(/,/g, ''));
-  return rows().length || null;
+  return rowsOnPage || null;
+}
+
+function resultCount(): number | null {
+  return countFrom(q(SEL.count)?.textContent ?? '', rows().length);
 }
 
 async function bodyViaPrint(account: number, threadId: string): Promise<Element | null> {
@@ -199,6 +209,12 @@ export async function readAlerts(args: GmailArgs): Promise<GmailRun> {
     if (!body) continue;
     cards.push(...parseAlert(body));
     if (t.id) ids.push(t.id);
+  }
+  // If the print view marked threads read, the list only shows it after a reload.
+  if (viaPrint && wasUnread.size) {
+    location.hash = '#inbox';
+    await sleep(1000);
+    await search(args.query ?? '');
   }
   const restored = await restoreUnread(wasUnread);
   return {

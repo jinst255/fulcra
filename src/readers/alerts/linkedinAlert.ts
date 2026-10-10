@@ -1,5 +1,6 @@
-// LinkedIn job alert email body to job cards. [Unverified] Based on the alert email layout
-// as of 2025: each job is a block with a link to /comm/jobs/view/<id>, then "Company · Location".
+// LinkedIn job alert email body to job cards. Layout checked against live alerts on 2026-10-10:
+// each card has three links to /comm/jobs/view/<id> (logo, one wrapping the whole text block, and
+// the title), then lines "Company · Location", an optional pay line, and badges.
 import type { AlertCard } from '../../email/types';
 import { cardFrom, cardRoot, unwrapLink } from './common';
 
@@ -14,8 +15,10 @@ export function parseLinkedInAlert(body: Element): AlertCard[] {
   }
   const cards: AlertCard[] = [];
   for (const [id, anchors] of byId) {
-    // The title link is the one with the most text; others wrap logos or "View job".
+    // The title link is the innermost one with text; others wrap the logo, the whole card, or
+    // "View job".
     const titled = anchors
+      .filter((a) => !anchors.some((b) => b !== a && a.contains(b)))
       .map((a) => ({ a, text: (a.textContent ?? '').replace(/\s+/g, ' ').trim() }))
       .filter((x) => x.text && !/^(view job|apply)$/i.test(x.text))
       .sort((x, y) => y.text.length - x.text.length)[0];

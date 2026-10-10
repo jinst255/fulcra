@@ -85,7 +85,7 @@ See [PRIVACY.md](PRIVACY.md) for details.
 - Requires a paid OpenAI API account. There is no free scoring option.
 - Scores are a model's judgment from the posting text and can be wrong. Reasons are shown so you can judge, and you can always use your own score.
 - Pay ignores taxes, benefits, and equity unless the posting states a total. Estimated pay is labeled.
-- Email checks need Chrome to be open and you signed in to Gmail or Outlook in the same browser profile. Only the first Gmail account (`u/0`) is checked by default.
+- Email checks need Chrome to be open and you signed in to Gmail or Outlook in the same browser profile. Only the first Gmail account (`u/0`) is checked by default. If you're signed in to more than one, change it under Settings > Developer > Gmail account number (`u/1` is 1).
 - Email reading depends on Gmail's and Outlook's page layouts, which can change without notice and break checks until Fulcra is updated.
 - Jobs from alert emails get only a preliminary score until you open the posting. Fulcra can't always tell from an email that a job has closed.
 - LinkedIn, Handshake, and Indeed layouts can change and break page reading. Pasting text always works.

@@ -62,7 +62,7 @@ const PAY =
   /(\$|USD|€|£)\s?[\d,.]+(\s?[kK])?(\s?(-|–|to)\s?(\$|USD|€|£)?\s?[\d,.]+(\s?[kK])?)?(\s?(\/|per|an?)\s?(hr|hour|yr|year|week|wk|month|mo))?/;
 
 const NOISE =
-  /^(view job|apply|easy apply|see all jobs|see jobs|actively recruiting|promoted|be an early applicant|\d+ (applicants?|connections?|school alumni).*|new|save|viewed|.*matches your (preferences|job alert).*|.*ago)$/i;
+  /^(view job|apply|easy apply|see all jobs|see jobs|actively recruiting|promoted|be an early applicant|\d+ (applicants?|connections?|school alum(ni)?).*|new|save|viewed|.*matches your (preferences|job alert).*|.*ago)$/i;
 
 export function cardFrom(
   root: Element,
