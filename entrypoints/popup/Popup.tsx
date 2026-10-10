@@ -1,4 +1,5 @@
 // Popup states, in priority order. Blueprint section 9.1, matched to the approved demo.
+import { useTheme } from '@/src/ui/themeMode';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { formatScore } from '@/src/core/overall';
 import { topContributors } from '@/src/core/standouts';
@@ -33,6 +34,7 @@ type View =
 
 export function Popup() {
   const [settings] = useSettings();
+  useTheme(settings?.ui.theme);
   const [jobs] = useJobs();
   const status = useStatus();
   const key = useKeyInfo();

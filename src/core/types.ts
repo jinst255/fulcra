@@ -148,6 +148,8 @@ export interface Settings {
     learnSuppressed: Record<string, number>;
     /** Jobs per page in the ranked list; 0 shows all. */
     pageSize: number;
+    /** Light, dark, or follow the system. */
+    theme: 'system' | 'light' | 'dark';
   };
   retentionDays: number | null;
   developerMode: boolean;

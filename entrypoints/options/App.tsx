@@ -6,7 +6,8 @@ import { send } from '@/src/messages';
 import { isSetupComplete } from '@/src/store/settings';
 import { AppProvider, useApp } from '@/src/ui/AppContext';
 import { Banner } from '@/src/ui/Banner';
-import { Gear, Logo } from '@/src/ui/Icons';
+import { Gear, Logo, Moon, Sun } from '@/src/ui/Icons';
+import { isDark } from '@/src/ui/themeMode';
 import { JobDetail } from '@/src/ui/JobDetail';
 import type { Learn } from '@/src/ui/LearnCard';
 import { Radar } from '@/src/ui/Radar';
@@ -78,10 +79,10 @@ function Shell() {
                   {t('app.tab.radar')}
                 </button>
               </nav>
+              <ThemeButton />
               <button
                 type="button"
                 className="tab"
-                style={{ marginLeft: 'auto' }}
                 aria-current={screen === 'settings' ? 'page' : undefined}
                 onClick={() => go('settings')}
               >
@@ -112,5 +113,23 @@ function Shell() {
       </main>
       {detailId && <JobDetail jobId={detailId} onClose={() => go('')} onLearn={setLearn} />}
     </div>
+  );
+}
+
+/** One tap between light and dark; Settings > Appearance also offers "match the system". */
+function ThemeButton() {
+  const { settings, update } = useApp();
+  const dark = isDark(settings.ui.theme);
+  return (
+    <button
+      type="button"
+      className="tab icon-only"
+      style={{ marginLeft: 'auto' }}
+      aria-label={dark ? t('app.lightMode') : t('app.darkMode')}
+      title={dark ? t('app.lightMode') : t('app.darkMode')}
+      onClick={() => update((s) => void (s.ui.theme = dark ? 'light' : 'dark'))}
+    >
+      {dark ? <Sun /> : <Moon />}
+    </button>
   );
 }

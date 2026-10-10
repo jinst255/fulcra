@@ -57,7 +57,9 @@ export function Swatch({
   size?: number;
   style?: React.CSSProperties;
 }) {
-  return <span className="swatch" style={{ width: size, height: size, background: color, ...style }} />;
+  return (
+    <span className="swatch dim-color" style={{ width: size, height: size, background: color, ...style }} />
+  );
 }
 
 export function Segmented<T extends string>(props: {

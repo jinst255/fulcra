@@ -3,8 +3,16 @@
 export function Logo({ size = 28 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 28 28" aria-hidden="true">
-      <line x1="3" y1="11.5" x2="25" y2="7" stroke="#0F6B5F" strokeWidth="2.5" strokeLinecap="round" />
-      <path d="M14 10.5L20 22H8Z" fill="#0F6B5F" />
+      <line
+        x1="3"
+        y1="11.5"
+        x2="25"
+        y2="7"
+        style={{ stroke: 'var(--teal)' }}
+        strokeWidth="2.5"
+        strokeLinecap="round"
+      />
+      <path d="M14 10.5L20 22H8Z" style={{ fill: 'var(--teal)' }} />
     </svg>
   );
 }
@@ -51,13 +59,12 @@ export function DealbreakerMark({ size = 20, stroke = 2 }: { size?: number; stro
         cx="12"
         cy="12"
         r="9"
-        fill="#FFFFFF"
-        stroke="#B42318"
+        style={{ fill: 'var(--card)', stroke: 'var(--red)' }}
         strokeWidth={stroke}
         strokeDasharray="4 3"
       />
-      <line x1="8" y1="8" x2="16" y2="16" stroke="#B42318" strokeWidth={stroke} />
-      <line x1="16" y1="8" x2="8" y2="16" stroke="#B42318" strokeWidth={stroke} />
+      <line x1="8" y1="8" x2="16" y2="16" style={{ stroke: 'var(--red)' }} strokeWidth={stroke} />
+      <line x1="16" y1="8" x2="8" y2="16" style={{ stroke: 'var(--red)' }} strokeWidth={stroke} />
     </svg>
   );
 }
@@ -98,11 +105,11 @@ export function Refresh() {
 export function KeyIcon() {
   return (
     <svg width="48" height="48" viewBox="0 0 48 48" aria-hidden="true">
-      <circle cx="18" cy="24" r="9" fill="none" stroke="#0F6B5F" strokeWidth="2.5" />
+      <circle cx="18" cy="24" r="9" fill="none" style={{ stroke: 'var(--teal)' }} strokeWidth="2.5" />
       <path
         d="M27 24h16M37 24v6M42 24v4"
         fill="none"
-        stroke="#0F6B5F"
+        style={{ stroke: 'var(--teal)' }}
         strokeWidth="2.5"
         strokeLinecap="round"
       />
@@ -133,8 +140,48 @@ export function Search() {
       aria-hidden="true"
       style={{ position: 'absolute', left: 12, top: 14 }}
     >
-      <circle cx="7" cy="7" r="4.5" fill="none" stroke="#5A6068" strokeWidth="1.6" />
-      <path d="M10.5 10.5L14 14" stroke="#5A6068" strokeWidth="1.6" strokeLinecap="round" />
+      <circle cx="7" cy="7" r="4.5" fill="none" style={{ stroke: 'var(--text-2)' }} strokeWidth="1.6" />
+      <path
+        d="M10.5 10.5L14 14"
+        style={{ stroke: 'var(--text-2)' }}
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+export function Moon({ size = 18 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinejoin="round"
+    >
+      <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" />
+    </svg>
+  );
+}
+
+export function Sun({ size = 18 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+    >
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4" />
     </svg>
   );
 }

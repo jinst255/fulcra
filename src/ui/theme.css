@@ -62,9 +62,115 @@
   --series-6: #a8326e;
   --series-7: #5f7a1f;
   --series-8: #12839b;
+  --on-accent: #ffffff;
+  --toast-bg: #1e2226;
+  --toast-text: #ffffff;
+  --toast-line: #5a6068;
+  --knob: #ffffff;
+  --shadow: rgba(30, 34, 38, 0.25);
+  --backdrop: rgba(30, 34, 38, 0.45);
   --radius: 12px;
   --mono: 'IBM Plex Mono', ui-monospace, monospace;
   color-scheme: light;
+}
+
+/* Dark mode: follows the system unless the person picked Light, or always when they picked Dark. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #141715;
+    --card: #1d211f;
+    --border: #343a36;
+    --border-input: #4a514c;
+    --rule: #2a2f2c;
+    --track: #353b37;
+    --text: #e8ebe8;
+    --text-2: #a4aca6;
+    --text-3: #c6ccc7;
+    --teal: #3fb09c;
+    --teal-mid: #2f8c7c;
+    --teal-light: #173832;
+    --teal-line: #285c52;
+    --teal-dark: #84d6c6;
+    --amber-bg: #392b12;
+    --amber-line: #6e521f;
+    --amber-text: #f2d9a8;
+    --amber-bar: #e3a146;
+    --red: #f2766c;
+    --red-bg: #3b1a17;
+    --red-line: #6f2c26;
+    --red-text: #f7b7b0;
+    --red-soft: #8f3c35;
+    --gray-switch: #6c746e;
+    --chart-bg: #191c1a;
+    --series-1: #4fc1ae;
+    --series-2: #f0a04b;
+    --series-3: #c9ced4;
+    --series-4: #7fa7e8;
+    --series-5: #b691e0;
+    --series-6: #e07aae;
+    --series-7: #a8c562;
+    --series-8: #5bc8dd;
+    --on-accent: #0b1d19;
+    --toast-bg: #e8ebe8;
+    --toast-text: #141715;
+    --toast-line: #a4aca6;
+    --knob: #f4f5f3;
+    --shadow: rgba(0, 0, 0, 0.5);
+    --backdrop: rgba(0, 0, 0, 0.6);
+    color-scheme: dark;
+  }
+}
+:root[data-theme='dark'] {
+  --bg: #141715;
+  --card: #1d211f;
+  --border: #343a36;
+  --border-input: #4a514c;
+  --rule: #2a2f2c;
+  --track: #353b37;
+  --text: #e8ebe8;
+  --text-2: #a4aca6;
+  --text-3: #c6ccc7;
+  --teal: #3fb09c;
+  --teal-mid: #2f8c7c;
+  --teal-light: #173832;
+  --teal-line: #285c52;
+  --teal-dark: #84d6c6;
+  --amber-bg: #392b12;
+  --amber-line: #6e521f;
+  --amber-text: #f2d9a8;
+  --amber-bar: #e3a146;
+  --red: #f2766c;
+  --red-bg: #3b1a17;
+  --red-line: #6f2c26;
+  --red-text: #f7b7b0;
+  --red-soft: #8f3c35;
+  --gray-switch: #6c746e;
+  --chart-bg: #191c1a;
+  --series-1: #4fc1ae;
+  --series-2: #f0a04b;
+  --series-3: #c9ced4;
+  --series-4: #7fa7e8;
+  --series-5: #b691e0;
+  --series-6: #e07aae;
+  --series-7: #a8c562;
+  --series-8: #5bc8dd;
+  --on-accent: #0b1d19;
+  --toast-bg: #e8ebe8;
+  --toast-text: #141715;
+  --toast-line: #a4aca6;
+  --knob: #f4f5f3;
+  --shadow: rgba(0, 0, 0, 0.5);
+  --backdrop: rgba(0, 0, 0, 0.6);
+  color-scheme: dark;
+}
+/* Dimension colors are the person's own; lift them a little so they read on a dark card. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .dim-color {
+    filter: brightness(1.3) saturate(0.95);
+  }
+}
+:root[data-theme='dark'] .dim-color {
+  filter: brightness(1.3) saturate(0.95);
 }
 
 * {
@@ -179,7 +285,7 @@ p {
 .btn.primary {
   border-color: var(--teal);
   background: var(--teal);
-  color: #fff;
+  color: var(--on-accent);
   font-weight: 500;
 }
 .btn.danger {
@@ -189,7 +295,7 @@ p {
 .btn.danger-solid {
   border-color: var(--red);
   background: var(--red);
-  color: #fff;
+  color: var(--on-accent);
   font-weight: 500;
 }
 .btn.danger-outline {
@@ -277,7 +383,7 @@ p {
   width: 20px;
   height: 20px;
   border-radius: 10px;
-  background: #fff;
+  background: var(--knob);
 }
 .switch[aria-checked='true'] .track {
   background: var(--teal);
@@ -380,7 +486,7 @@ legend {
 }
 .tag.red {
   background: var(--red-bg);
-  color: #8c1d13;
+  color: var(--red-text);
 }
 
 /* Notes */
@@ -423,27 +529,27 @@ legend {
   transform: translateX(-50%);
   z-index: 70;
   max-width: calc(100% - 32px);
-  background: var(--text);
-  color: #fff;
+  background: var(--toast-bg);
+  color: var(--toast-text);
   border-radius: 8px;
   padding: 12px 16px;
   font-size: 14px;
   line-height: 1.4;
-  box-shadow: 0 8px 24px rgba(30, 34, 38, 0.25);
+  box-shadow: 0 8px 24px var(--shadow);
   display: flex;
   align-items: center;
   gap: 12px;
 }
 .toast button {
-  color: #fff;
-  border-color: #5a6068;
+  color: var(--toast-text);
+  border-color: var(--toast-line);
   background: transparent;
 }
 .dialog-backdrop {
   position: fixed;
   inset: 0;
   z-index: 60;
-  background: rgba(30, 34, 38, 0.45);
+  background: var(--backdrop);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -458,7 +564,7 @@ legend {
   display: flex;
   flex-direction: column;
   gap: 18px;
-  box-shadow: 0 12px 32px rgba(30, 34, 38, 0.25);
+  box-shadow: 0 12px 32px var(--shadow);
 }
 .dialog p {
   font-size: 16px;

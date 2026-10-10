@@ -110,7 +110,7 @@
 .banner .bar {
   width: 120px;
   height: 6px;
-  background: #ebd5ab;
+  background: var(--amber-line);
   border-radius: 3px;
   position: relative;
   flex: none;
@@ -333,7 +333,7 @@
 .drawer-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(30, 34, 38, 0.38);
+  background: var(--backdrop);
 }
 .drawer {
   position: relative;
@@ -341,7 +341,7 @@
   height: 100%;
   overflow-y: auto;
   background: var(--bg);
-  box-shadow: -8px 0 24px rgba(30, 34, 38, 0.18);
+  box-shadow: -8px 0 24px var(--shadow);
   padding: 16px clamp(16px, 3vw, 24px) 32px;
   display: flex;
   flex-direction: column;
@@ -711,11 +711,17 @@ details.disclosure summary {
   height: 26px;
   border-radius: 13px;
   background: var(--teal);
-  color: #fff;
+  color: var(--on-accent);
   font-size: 13px;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex: none;
+}
+.tab.icon-only {
+  width: 44px;
+  padding: 0;
+  justify-content: center;
+  color: var(--text-2);
 }

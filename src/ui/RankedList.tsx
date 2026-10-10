@@ -169,7 +169,7 @@ export function RankedList({
                 <span
                   role="img"
                   aria-label={t('ranked.barAria', { job: jobTitle(j), score: x.value.toFixed(1), top })}
-                  className="stack-bar"
+                  className="stack-bar dim-color"
                 >
                   {segs.map((d, k) => (
                     <span
@@ -182,7 +182,7 @@ export function RankedList({
                       style={{
                         width: `${(x.parts[d.id]! * 10).toFixed(2)}%`,
                         background: d.color,
-                        boxShadow: k < segs.length - 1 ? 'inset -2px 0 0 #FFFFFF' : undefined,
+                        boxShadow: k < segs.length - 1 ? 'inset -2px 0 0 var(--card)' : undefined,
                       }}
                     />
                   ))}
@@ -513,9 +513,9 @@ export function EmptyState() {
       }}
     >
       <svg width="64" height="48" viewBox="0 0 64 48" aria-hidden="true">
-        <rect x="4" y="8" width="56" height="8" rx="4" fill="#ECEAE3" />
-        <rect x="4" y="22" width="40" height="8" rx="4" fill="#ECEAE3" />
-        <rect x="4" y="36" width="24" height="8" rx="4" fill="#ECEAE3" />
+        <rect x="4" y="8" width="56" height="8" rx="4" style={{ fill: 'var(--rule)' }} />
+        <rect x="4" y="22" width="40" height="8" rx="4" style={{ fill: 'var(--rule)' }} />
+        <rect x="4" y="36" width="24" height="8" rx="4" style={{ fill: 'var(--rule)' }} />
       </svg>
       <h2 style={{ fontSize: 20 }}>{t('ranked.empty.title')}</h2>
       <p style={{ maxWidth: 460, fontSize: 14, lineHeight: 1.5, color: 'var(--text-3)' }}>

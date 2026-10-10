@@ -11,6 +11,7 @@ import { formatLogLine, recentLog } from '../../store/log';
 import { getApiKey } from '../../store/settings';
 import { pickProfile } from '../actions';
 import { useApp } from '../AppContext';
+import { Segmented } from '../components';
 import { downloadJson } from '../Banner';
 import { SwitchRow } from '../components';
 import { AboutForm, NumberField } from '../forms/AboutForm';
@@ -22,7 +23,18 @@ import { LINKS, openExternal } from '../hooks';
 import { Check } from '../Icons';
 import { DimensionEditor } from './DimensionEditor';
 
-const SECTIONS = ['key', 'about', 'priorities', 'deal', 'email', 'scoring', 'data', 'help', 'dev'] as const;
+const SECTIONS = [
+  'key',
+  'about',
+  'priorities',
+  'deal',
+  'email',
+  'scoring',
+  'appearance',
+  'data',
+  'help',
+  'dev',
+] as const;
 type Section = (typeof SECTIONS)[number];
 
 const TITLES: Record<Section, Parameters<typeof t>[0]> = {
@@ -32,6 +44,7 @@ const TITLES: Record<Section, Parameters<typeof t>[0]> = {
   deal: 'settings.deal',
   email: 'settings.email',
   scoring: 'settings.scoring',
+  appearance: 'settings.appearance',
   data: 'settings.data',
   help: 'settings.help',
   dev: 'settings.dev.title',
@@ -82,6 +95,7 @@ export function Settings({ section }: { section: string }) {
         {sec === 'deal' && <DealForm />}
         {sec === 'email' && <EmailForm mode="settings" />}
         {sec === 'scoring' && <ScoringSection />}
+        {sec === 'appearance' && <AppearanceSection />}
         {sec === 'data' && <DataSection />}
         {sec === 'help' && <HelpSection />}
         {sec === 'dev' && <DevSection />}
@@ -207,7 +221,7 @@ function KeySection() {
                     height: 16,
                     borderRadius: '50%',
                     border: on ? '5px solid var(--teal)' : '2px solid var(--gray-switch)',
-                    background: '#fff',
+                    background: 'var(--card)',
                   }}
                 />
                 {label}
@@ -223,6 +237,27 @@ function KeySection() {
         <p className="note-amber">{t('setup.key.limitTip')}</p>
       </div>
     </>
+  );
+}
+
+function AppearanceSection() {
+  const { settings, update } = useApp();
+  return (
+    <fieldset>
+      <legend>{t('settings.appearance.theme')}</legend>
+      <Segmented
+        options={[
+          ['system', t('settings.appearance.system')],
+          ['light', t('settings.appearance.light')],
+          ['dark', t('settings.appearance.dark')],
+        ]}
+        value={settings.ui.theme}
+        onChange={(v) => update((s) => void (s.ui.theme = v))}
+      />
+      <div className="field-hint" style={{ marginTop: 8 }}>
+        {t('settings.appearance.hint')}
+      </div>
+    </fieldset>
   );
 }
 

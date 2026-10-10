@@ -458,8 +458,9 @@ export function JobDetail({
             className="mono"
             style={{
               margin: 0,
-              background: 'var(--text)',
-              color: '#E4E1D8',
+              background: 'var(--bg)',
+              color: 'var(--text-3)',
+              border: '1px solid var(--border)',
               borderRadius: 8,
               padding: 12,
               fontSize: 11,

@@ -131,6 +131,7 @@ export function Setup({ step }: { step: number }) {
                   >
                     {w.s.map((v, i) => (
                       <span
+                        className="dim-color"
                         key={i}
                         style={{
                           display: 'block',

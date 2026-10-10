@@ -54,6 +54,7 @@ export function defaultSettings(): Settings {
       setupSkipped: false,
       learnSuppressed: {},
       pageSize: 20,
+      theme: 'system',
     },
     retentionDays: 90,
     developerMode: false,

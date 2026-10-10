@@ -13,6 +13,7 @@ import {
 import { rankJobs, type RankView } from '../core/rank';
 import type { JobRecord, Settings } from '../core/types';
 import { getSettings, onSettingsChanged, saveSettings, type AppStatus } from '../store/settings';
+import { useTheme } from './themeMode';
 import { t } from '../i18n/t';
 import { diagnostics } from '../store/export';
 import { addLog } from '../store/log';
@@ -141,6 +142,7 @@ export function AppProvider({ children, fallback }: { children: ReactNode; fallb
   }, []);
 
   const view = useMemo(() => (jobs && settings ? rankJobs(jobs, settings) : null), [jobs, settings]);
+  useTheme(settings?.ui.theme);
 
   if (!settings || !jobs || !status || !key || !view) return <>{fallback}</>;
 

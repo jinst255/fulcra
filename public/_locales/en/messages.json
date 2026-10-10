@@ -2345,5 +2345,29 @@
         "content": "$2"
       }
     }
+  },
+  "settings_appearance": {
+    "message": "Appearance"
+  },
+  "settings_appearance_theme": {
+    "message": "Theme"
+  },
+  "settings_appearance_system": {
+    "message": "Match my system"
+  },
+  "settings_appearance_light": {
+    "message": "Light"
+  },
+  "settings_appearance_dark": {
+    "message": "Dark"
+  },
+  "settings_appearance_hint": {
+    "message": "Applies to the popup and this page."
+  },
+  "app_darkMode": {
+    "message": "Switch to dark mode"
+  },
+  "app_lightMode": {
+    "message": "Switch to light mode"
   }
 }
