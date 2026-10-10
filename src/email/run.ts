@@ -42,14 +42,17 @@ export function mailUrl(provider: Provider, account: number): string {
   return mailUrls(provider, account)[0]!;
 }
 
-/** A Gmail search for the alert senders between `olderDays` and `newerDays` days ago. */
+/**
+ * A Gmail search for the alert senders between `olderDays` and `newerDays` days ago. For Outlook,
+ * one `from:` search per sender, one per line: it reads the newest alerts and ignores the range.
+ */
 export function buildQuery(
   provider: Provider,
   senders: string[],
   newerDays: number | null,
   olderDays = 0,
 ): string {
-  if (provider === 'outlook') return senders.map((s) => `from:${s}`).join(' OR ');
+  if (provider === 'outlook') return senders.map((s) => `from:${s}`).join('\n');
   const from = senders.length ? `from:(${senders.join(' OR ')})` : '';
   return [
     from,

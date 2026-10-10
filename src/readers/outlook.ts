@@ -1,12 +1,14 @@
 // Reads job alert emails in Outlook on the web (outlook.live.com or outlook.office.com) and
 // restores unread state. [Unverified] Outlook selectors are untested; every one lives here.
 // Two guards keep it from reading other mail if a selector is wrong: the search must visibly
-// change the message list, and each opened message must show an alert sender's address.
+// change the message list, and a message is read only when it shows an alert sender's address.
+// A search with no matches shows "No results found" and then loosely related mail, so other
+// mail in the results is skipped, not taken as a layout change.
 import type { AlertCard, MailRunResult, SignInResult } from '../email/types';
 import { parseAlert } from './alerts';
 import type { GmailRun } from './gmail';
 
-export const OUTLOOK_SELECTORS_VERSION = 'outlook-2026-10-10c';
+export const OUTLOOK_SELECTORS_VERSION = 'outlook-2026-10-10d';
 
 const SEL = {
   ready: [
@@ -80,6 +82,30 @@ const isUnread = (r: Element) =>
   /^unread\b/i.test(r.getAttribute('aria-label') ?? '') || r.querySelector('[aria-label^="Unread"]') != null;
 const idOf = (r: Element) =>
   r.getAttribute('data-convid') ?? r.getAttribute('data-itemid') ?? r.getAttribute('id');
+/** The sender's address when the row shows one; Outlook puts it in the sender name's title. */
+export function rowAddress(r: Element): string | null {
+  const m = r
+    .querySelector('[title*="@"]')
+    ?.getAttribute('title')
+    ?.match(/[^\s<>"]+@[^\s<>"]+/);
+  return m ? m[0].toLowerCase() : null;
+}
+/**
+ * Outlook's "No results found for …" note, which comes before its loosely related results. With
+ * `query`, only a note that names it.
+ */
+export function noResultsShown(doc: ParentNode = document, query?: string): boolean {
+  const root = doc.querySelector(SEL.list.join(', ')) ?? doc;
+  return Array.from(root.querySelectorAll('div, span, h2, h3, p')).some((el) => {
+    const text = (el.textContent ?? '').trim();
+    return (
+      el.children.length === 0 &&
+      !el.closest('[role="option"], [data-convid]') &&
+      /^no results\b/i.test(text) &&
+      (!query || text.toLowerCase().includes(query.toLowerCase()))
+    );
+  });
+}
 const rowKey = () =>
   rows()
     .slice(0, 10)
@@ -141,7 +167,9 @@ async function runSearch(query: string): Promise<'ok' | 'noBox' | 'noChange'> {
   const box = await searchBox();
   if (!box) return 'noBox';
   const before = rowKey();
-  const moved = () => rowKey() !== before || (before !== '' && rows().length === 0);
+  // Two searches with no matches in a row can show the same loose results; the note names the query.
+  const moved = () =>
+    rowKey() !== before || (before !== '' && rows().length === 0) || noResultsShown(document, query);
   typeInto(box, query);
   let changed = await waitFor(moved, 8000);
   if (!changed) {
@@ -197,19 +225,19 @@ export async function outlookReadAlerts(args: {
     more: false,
   });
   if (!onOutlook()) return fail('signedOut', 'host');
-  const changed = (step: string) => fail('changed', `${step}; ${layoutHint()}`);
-  if (!(await waitFor(() => q(SEL.ready), 20000))) return changed('not ready');
-  const searched = await runSearch(args.query);
-  if (searched === 'noBox') return changed('no search box');
-  if (searched === 'noChange') return changed('search did not change the list');
-  await waitFor(() => rows().length > 0, 8000);
-  const seen = new Set(args.seen);
-  const targets = rows()
-    .map((r) => ({ id: idOf(r), unread: isUnread(r) }))
-    .filter((x) => x.id && !seen.has(x.id))
-    .slice(0, args.max);
   const cards: AlertCard[] = [];
   const ids: string[] = [];
+  // Keep what was read before a failure.
+  const changed = (step: string): GmailRun => ({
+    ...fail('changed', `${step}; ${layoutHint()}`),
+    cards,
+    emailsRead: ids.length,
+    threadIds: ids,
+  });
+  if (!(await waitFor(() => q(SEL.ready), 20000))) return changed('not ready');
+  const senders = args.senders.map((s) => s.toLowerCase());
+  const seen = new Set(args.seen);
+  const notes: string[] = [];
   let restored = 0;
   let noBody = 0;
   const markUnread = async () => {
@@ -219,25 +247,58 @@ export async function outlookReadAlerts(args: {
     restored++;
     await sleep(400);
   };
-  for (const t of targets) {
-    const row = rows().find((r) => idOf(r) === t.id);
-    if (!row) continue;
-    row.click();
-    const body = await waitFor(() => q(SEL.body), 10000);
-    if (!body) {
-      noBody++;
+  // One search per sender: simple `from:` searches are the ones Outlook handles reliably.
+  const queries = args.query.split('\n').filter(Boolean);
+  for (const [n, query] of queries.entries()) {
+    if (ids.length >= args.max) break;
+    const searched = await runSearch(query);
+    if (searched === 'noBox') return changed(`no search box (search ${n + 1})`);
+    if (searched === 'noChange') return changed(`search ${n + 1} did not change the list`);
+    await waitFor(() => rows().length > 0 || noResultsShown(), 8000);
+    if (noResultsShown()) {
+      notes.push(`s${n + 1}:none`);
       continue;
     }
-    await sleep(500);
-    const pane = q(SEL.readingPane) ?? document;
-    if (!fromAlertSender(pane, args.senders)) {
-      // Not provably an alert: don't read it, put it back, and stop.
+    // "Top results" repeats rows from the full list.
+    const targets = [
+      ...new Map(
+        rows()
+          .filter((r) => {
+            const id = idOf(r);
+            const addr = rowAddress(r);
+            // A row that names someone else is a loose match: skip it without opening it.
+            return id && !seen.has(id) && !ids.includes(id) && (!addr || senders.includes(addr));
+          })
+          .map((r) => [idOf(r)!, { id: idOf(r)!, unread: isUnread(r) }]),
+      ).values(),
+    ].slice(0, args.max - ids.length);
+    let read = 0;
+    let other = 0;
+    for (const t of targets) {
+      // Two messages from someone else: these are loose matches, so stop opening them.
+      if (other >= 2) break;
+      const row = rows().find((r) => idOf(r) === t.id);
+      if (!row) continue;
+      row.click();
+      const body = await waitFor(() => q(SEL.body), 10000);
+      if (!body) {
+        noBody++;
+        continue;
+      }
+      await sleep(500);
+      const pane = q(SEL.readingPane) ?? document;
+      if (!fromAlertSender(pane, senders)) {
+        // Not provably an alert: don't read it, and put it back.
+        other++;
+        if (t.unread) await markUnread();
+        continue;
+      }
+      cards.push(...parseAlert(body.cloneNode(true) as Element));
+      ids.push(t.id);
+      read++;
       if (t.unread) await markUnread();
-      return { ...changed(`sender check failed after ${ids.length}`), cards, threadIds: ids };
     }
-    cards.push(...parseAlert(body.cloneNode(true) as Element));
-    ids.push(t.id!);
-    if (t.unread) await markUnread();
+    notes.push(`s${n + 1}:rows=${targets.length} read=${read}${other ? ` other=${other}` : ''}`);
   }
   // Opened messages but never found a body: the reading pane moved, not an empty search.
   if (noBody && !ids.length) return changed(`no message body in ${noBody}`);
@@ -246,7 +307,7 @@ export async function outlookReadAlerts(args: {
     cards,
     emailsRead: ids.length,
     threadIds: ids,
-    detail: `rows=${targets.length} read=${ids.length} cards=${cards.length} restored=${restored}`,
+    detail: `${notes.join(' ')} cards=${cards.length} restored=${restored}`,
     more: false,
   };
 }

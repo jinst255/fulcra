@@ -6,7 +6,13 @@ import { buildQuery, checkWindowDays, mailUrl, mailUrls, splitWindow } from '../
 import { parseAlert } from '../src/readers/alerts';
 import { looksLikeJobTitle, unwrapLink } from '../src/readers/alerts/common';
 import { countFrom, threadIdOf } from '../src/readers/gmail';
-import { fromAlertSender, isOutlookHost, layoutHint } from '../src/readers/outlook';
+import {
+  fromAlertSender,
+  isOutlookHost,
+  layoutHint,
+  noResultsShown,
+  rowAddress,
+} from '../src/readers/outlook';
 import { withDefaults } from '../src/store/settings';
 
 const body = (name: string) =>
@@ -91,7 +97,7 @@ describe('mail queries and ids', () => {
   it('builds Gmail and Outlook searches', () => {
     expect(buildQuery('gmail', ['a@x.com', 'b@y.com'], 2)).toBe('from:(a@x.com OR b@y.com) newer_than:2d');
     expect(buildQuery('gmail', ['a@x.com'], null)).toBe('from:(a@x.com)');
-    expect(buildQuery('outlook', ['a@x.com', 'b@y.com'], 30)).toBe('from:a@x.com OR from:b@y.com');
+    expect(buildQuery('outlook', ['a@x.com', 'b@y.com'], 30)).toBe('from:a@x.com\nfrom:b@y.com');
     expect(mailUrl('gmail', 1)).toBe('https://mail.google.com/mail/u/1/#inbox');
     expect(buildQuery('gmail', ['a@x.com'], 30, 15)).toBe('from:(a@x.com) older_than:15d newer_than:30d');
     expect(mailUrls('outlook', 0)).toEqual([
@@ -131,6 +137,24 @@ describe('mail queries and ids', () => {
     expect(fromAlertSender(pane, ['jobalerts-noreply@linkedin.com'])).toBe(true);
     pane.innerHTML = '<span title="friend@example.com">A friend</span><p>jobalerts-noreply@linkedin.com</p>';
     expect(fromAlertSender(pane, ['handshake@g.joinhandshake.com'])).toBe(false);
+  });
+
+  it("tells Outlook's no-results note and other people's rows apart from alerts", () => {
+    const doc = new DOMParser().parseFromString(
+      `<div aria-label="Message list"><div><span>No results found for from:a@x.com</span></div>
+       <div role="option" data-convid="a"><span title="Friend@Example.com">Friend</span> No results yet</div></div>`,
+      'text/html',
+    );
+    expect(noResultsShown(doc)).toBe(true);
+    expect(noResultsShown(doc, 'from:a@x.com')).toBe(true);
+    expect(noResultsShown(doc, 'from:b@y.com')).toBe(false);
+    expect(rowAddress(doc.querySelector('[role="option"]')!)).toBe('friend@example.com');
+    doc.querySelector('span')!.remove();
+    // Text inside a message row is never taken as Outlook's note.
+    expect(noResultsShown(doc)).toBe(false);
+    const bare = doc.createElement('div');
+    bare.innerHTML = '<span title="Friend">Friend</span>';
+    expect(rowAddress(bare)).toBe(null);
   });
 
   it('knows every Outlook mail address, including the cloud.microsoft move', () => {
