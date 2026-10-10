@@ -85,6 +85,51 @@ describe('alert email parsers', () => {
     expect(parseAlert(doc.body)).toEqual([]);
   });
 
+  it("reads Handshake's weekly round-up, where one link wraps each card", () => {
+    const expected = [
+      ['Part-time Office Assistant', 'Idaho State University', 'Pocatello, ID (Onsite)', '$7.25–10/hr'],
+      ['Customer Service Associate', 'Idaho State University', 'Pocatello, ID (Onsite)', '$12/hr'],
+      ['Social Media Manager', 'Idaho State University', 'Pocatello, ID (Onsite)', '$3K/yr'],
+      ['Entry Level Mechanical Engineer', 'Harris Group', 'Portland, OR (Onsite)', '$70–85K/yr'],
+      ['Mechanical Engineer', 'Southern Aviation Parts & Services', 'Pooler, GA (Onsite)', '$80–100K/yr'],
+    ];
+    const read = (b: Element) => parseAlert(b).map((c) => [c.title, c.company, c.location, c.pay]);
+    expect(read(body('alert-handshake-roundup.html'))).toEqual(expected);
+    // Title-only links through a tracker Fulcra doesn't know: the general reader still finds them.
+    const plain = body('alert-handshake-roundup.html');
+    for (const a of Array.from(plain.querySelectorAll('a'))) {
+      a.setAttribute('href', 'https://u123.ct.sendgrid.net/ls/click?upn=x');
+      const strong = a.querySelector('strong');
+      if (strong) {
+        const link = plain.ownerDocument.createElement('a');
+        link.href = 'https://u123.ct.sendgrid.net/ls/click?upn=t';
+        link.textContent = strong.textContent;
+        strong.replaceWith(link);
+        a.replaceWith(...Array.from(a.childNodes));
+      }
+    }
+    expect(read(plain).map((r) => r[0])).toEqual(expected.map((r) => r[0]));
+  });
+
+  it("splits a card's lines on a detached copy, where Chrome's innerText runs them together", () => {
+    const proto = HTMLElement.prototype as unknown as { innerText?: string };
+    Object.defineProperty(HTMLElement.prototype, 'innerText', {
+      configurable: true,
+      get(this: HTMLElement) {
+        return this.textContent ?? '';
+      },
+    });
+    try {
+      const copy = body('alert-handshake-roundup.html').cloneNode(true) as Element;
+      expect(parseAlert(copy)[3]).toMatchObject({
+        company: 'Harris Group',
+        location: 'Portland, OR (Onsite)',
+      });
+    } finally {
+      delete proto.innerText;
+    }
+  });
+
   it('reads job alerts from senders it has no layout for', () => {
     const html = (h: string) => new DOMParser().parseFromString(h, 'text/html').body;
     // Indeed-style: tracked job links, company and place under each title.

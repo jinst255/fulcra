@@ -19,6 +19,7 @@ First build of Fulcra.
 - Dark mode.
 - Several inboxes at once (say, a Gmail and an Outlook), checked in a collapsed "Fulcra" tab group instead of a minimized window.
 - Outlook reading copes with more layouts (folded search box, newer message list and body markup, the outlook.cloud.microsoft address), and Copy diagnostics says which step of an email check failed.
+- Alert emails keep each card's lines apart in Chrome (company and location were run together), and Handshake's weekly round-up is read: one link per card, with pay, job type, and place on one line.
 - An email check that finds nothing new says why: no job listings in the emails (with a hint about forwarding as an attachment), or every job already in your list. Copy diagnostics includes the latest check.
 - Job alerts from any sender you add (Indeed, a company's careers site, a forward from a friend) are read too, not just LinkedIn and Handshake.
 - Outlook no longer reports a layout change when you have no alerts: its "No results found" page and the loosely related mail it shows after it are skipped, one search runs per sender, and mail from other people is never opened when the row shows who sent it.

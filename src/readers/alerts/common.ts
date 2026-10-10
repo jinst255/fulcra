@@ -31,7 +31,9 @@ export function cardRoot(a: Element, stopAt: Element): Element {
 
 export function lines_(el: Element): string[] {
   const html = el as HTMLElement;
-  const text = typeof html.innerText === 'string' && html.innerText ? html.innerText : blockText(el);
+  // innerText needs layout: on a detached copy (what the readers parse) Chrome runs the lines together.
+  const text =
+    el.isConnected && typeof html.innerText === 'string' && html.innerText ? html.innerText : blockText(el);
   return cleanText(text)
     .split('\n')
     .map((s) => s.trim())
@@ -71,6 +73,33 @@ const NOISE =
 const PROMO =
   /\b(subscribe|subscription|unsubscribe|last chance|limited time|free trial|try premium|try it free|upgrade (to|now)|sign ?up|log ?in|sign ?in|newsletter|webinar|reset your|update your|manage (your )?(preferences|settings|alerts)|refer a friend|get the app|learn more|read more|shop now)\b|\d+% off/i;
 
+/** Words that name a role, for titles whose links don't say "job". */
+const ROLE =
+  /\b(engineer|developer|programmer|manager|analyst|assistant|associate|specialist|coordinator|technician|tech|nurse|rn|lpn|cna|intern(ship)?|fellow(ship)?|representative|rep|consultant|designer|administrator|director|lead|officer|clerk|cashier|driver|teacher|tutor|instructor|scientist|researcher|operator|supervisor|agent|advisor|accountant|therapist|aide|worker|attendant|cook|chef|server|barista|sales(person)?|recruiter|writer|editor|librarian|mechanic|electrician|plumber|carpenter|pharmacist|physician|counselor|coach|scheduler|planner|architect|auditor|bookkeeper|receptionist|secretary|paralegal|attorney|lifeguard|caregiver|housekeeper|janitor|custodian|laborer|installer|inspector|dispatcher|courier|warehouse|stocker|host(ess)?|bartender|dishwasher|volunteer|apprentice|trainee|part[- ]time|full[- ]time|remote)\b/i;
+
+/** True when the text names a role. */
+export const isRole = (s: string): boolean => ROLE.test(s);
+
+/** A detail line of a card: "$12/hr • Part-Time • Pocatello, ID (Onsite)". */
+const BULLETS = /\s[·•|]\s/;
+/** A place: "City, ST" first, else a work arrangement. */
+const PLACES = [/,\s*[A-Z]{2}\b/, /\b(remote|on-?site|hybrid)\b/i];
+
+/**
+ * The job title in a link: its text, or, for a link that wraps a whole card (logo, company,
+ * title, details), the line that names the role, else the last plain line (company comes first).
+ */
+export function linkTitle(a: Element, isRole: (s: string) => boolean = () => false): string | null {
+  const whole = (a.textContent ?? '').replace(/\s+/g, ' ').trim();
+  const ls = lines_(a).filter((l) => !NOISE.test(l) && !PAY.test(l) && !BULLETS.test(l));
+  if (ls.length <= 1) {
+    const one = looksLikeJobTitle(whole) ? whole : (ls[0] ?? '');
+    return looksLikeJobTitle(one) ? one : null;
+  }
+  const pick = ls.find(isRole) ?? ls[ls.length - 1]!;
+  return looksLikeJobTitle(pick) ? pick : null;
+}
+
 /** True when link text looks like a job title rather than a promotion or account notice. */
 export function looksLikeJobTitle(text: string): boolean {
   const words = text.split(/\s+/).filter(Boolean).length;
@@ -86,12 +115,30 @@ export function cardFrom(
 ): AlertCard {
   const ls = lines_(root).filter((l) => !NOISE.test(l) && l !== title);
   const payLine = ls.find((l) => PAY.test(l)) ?? null;
+  // "$12/hr • Part-Time • Pocatello, ID (Onsite)": pay and place share one line.
+  const detailPlace =
+    payLine && BULLETS.test(payLine)
+      ? (() => {
+          const parts = payLine
+            .split(BULLETS)
+            .map((x) => x.trim())
+            .filter((x) => !PAY.test(x));
+          for (const re of PLACES) {
+            const hit = parts.find((x) => re.test(x));
+            if (hit) return hit;
+          }
+          return null;
+        })()
+      : null;
   const rest = ls.filter((l) => l !== payLine);
   let company: string | null;
   let location: string | null;
   const first = rest[0];
-  if (first && /\s[·•|]\s/.test(first)) {
-    const [c, loc] = first.split(/\s[·•|]\s/);
+  if (detailPlace) {
+    company = first ?? null;
+    location = detailPlace;
+  } else if (first && BULLETS.test(first)) {
+    const [c, loc] = first.split(BULLETS);
     company = c?.trim() || null;
     location = loc?.trim() || null;
   } else {

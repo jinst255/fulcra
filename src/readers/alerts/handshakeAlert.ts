@@ -1,7 +1,7 @@
 // Handshake job alert email body to job cards. [Unverified] Handshake emails may wrap links
 // in click-tracking redirects; then the job id is unknown and dedupe falls back to the facts.
 import type { AlertCard } from '../../email/types';
-import { cardFrom, cardRoot, looksLikeJobTitle, unwrapLink } from './common';
+import { cardFrom, cardRoot, isRole, linkTitle, unwrapLink } from './common';
 
 const JOB_LINK = /joinhandshake\.com\/(?:stu\/)?(?:jobs|job-search)\/(\d+)/;
 const TRACKED = /(click|links?|email)\.[^/]*joinhandshake\.com|joinhandshake\.com\/(?:ls|e)\//;
@@ -13,8 +13,9 @@ export function parseHandshakeAlert(body: Element): AlertCard[] {
     const href = unwrapLink(a.getAttribute('href') ?? '');
     const id = JOB_LINK.exec(href)?.[1] ?? null;
     if (!id && !TRACKED.test(href)) continue;
-    const title = (a.textContent ?? '').replace(/\s+/g, ' ').trim();
-    if (!looksLikeJobTitle(title) || /^(view|apply|see|manage|explore)\b/i.test(title)) continue;
+    // The title link, or a link wrapping the whole card (the weekly round-up).
+    const title = linkTitle(a, isRole);
+    if (!title || /^(view|apply|see|manage|explore)\b/i.test(title)) continue;
     const key = id ?? title;
     if (seen.has(key)) continue;
     const root = cardRoot(a, body);
