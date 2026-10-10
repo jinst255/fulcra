@@ -2,10 +2,12 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { buildQuery, mailUrl } from '../src/email/run';
+import { buildQuery, checkWindowDays, mailUrl, mailUrls, splitWindow } from '../src/email/run';
 import { parseAlert } from '../src/readers/alerts';
 import { unwrapLink } from '../src/readers/alerts/common';
 import { countFrom, threadIdOf } from '../src/readers/gmail';
+import { fromAlertSender } from '../src/readers/outlook';
+import { withDefaults } from '../src/store/settings';
 
 const body = (name: string) =>
   new DOMParser().parseFromString(readFileSync(resolve('tests/fixtures', name), 'utf8'), 'text/html').body;
@@ -65,6 +67,51 @@ describe('mail queries and ids', () => {
     expect(buildQuery('gmail', ['a@x.com'], null)).toBe('from:(a@x.com)');
     expect(buildQuery('outlook', ['a@x.com', 'b@y.com'], 30)).toBe('from:a@x.com OR from:b@y.com');
     expect(mailUrl('gmail', 1)).toBe('https://mail.google.com/mail/u/1/#inbox');
+    expect(buildQuery('gmail', ['a@x.com'], 30, 15)).toBe('from:(a@x.com) older_than:15d newer_than:30d');
+    expect(mailUrls('outlook', 0)).toEqual([
+      'https://outlook.live.com/mail/0/',
+      'https://outlook.office.com/mail/',
+    ]);
+  });
+
+  it('looks back to the last good check, 2 to 30 days', () => {
+    const day = 86400000;
+    const now = 100 * day;
+    expect(checkWindowDays(null, now)).toBe(2);
+    expect(checkWindowDays(now - day / 2, now)).toBe(2);
+    expect(checkWindowDays(now - 6.5 * day, now)).toBe(8);
+    expect(checkWindowDays(now - 90 * day, now)).toBe(30);
+  });
+
+  it('splits ranges with more than a page of results, newer half first', () => {
+    expect(splitWindow({ older: 0, newer: 30 })).toEqual([
+      { older: 0, newer: 15 },
+      { older: 15, newer: 30 },
+    ]);
+    expect(splitWindow({ older: 4, newer: 5 })).toBeNull();
+    expect(splitWindow({ older: 0, newer: null })).toEqual([
+      { older: 0, newer: 30 },
+      { older: 30, newer: null },
+    ]);
+    expect(splitWindow({ older: 60, newer: null })).toEqual([
+      { older: 60, newer: 120 },
+      { older: 120, newer: null },
+    ]);
+  });
+
+  it('only reads an Outlook message that shows an alert sender', () => {
+    const pane = document.createElement('div');
+    pane.innerHTML = '<span title="jobalerts-noreply@linkedin.com">LinkedIn</span>';
+    expect(fromAlertSender(pane, ['jobalerts-noreply@linkedin.com'])).toBe(true);
+    pane.innerHTML = '<span title="friend@example.com">A friend</span><p>jobalerts-noreply@linkedin.com</p>';
+    expect(fromAlertSender(pane, ['handshake@g.joinhandshake.com'])).toBe(false);
+  });
+
+  it('replaces the old guessed Handshake sender', () => {
+    const s = withDefaults({
+      email: { senders: ['jobalerts-noreply@linkedin.com', 'notifications@joinhandshake.com'] },
+    } as never);
+    expect(s.email.senders).toEqual(['jobalerts-noreply@linkedin.com', 'handshake@g.joinhandshake.com']);
   });
 
   it('reads Gmail thread ids from either attribute', () => {
@@ -76,9 +123,9 @@ describe('mail queries and ids', () => {
   });
 
   it('reads Gmail result counts, including "of many"', () => {
-    expect(countFrom('1–50 of 1,234', 50)).toBe(1234);
-    expect(countFrom('1–32 of 32', 32)).toBe(32);
-    expect(countFrom('1–50 of many', 50)).toBe(50);
-    expect(countFrom('', 0)).toBeNull();
+    expect(countFrom('1–50 of 1,234', 50)).toEqual({ n: 1234, atLeast: false });
+    expect(countFrom('1–32 of 32', 32)).toEqual({ n: 32, atLeast: false });
+    expect(countFrom('1–50 of many', 50)).toEqual({ n: 50, atLeast: true });
+    expect(countFrom('', 0)).toEqual({ n: 0, atLeast: false });
   });
 });

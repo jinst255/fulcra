@@ -36,6 +36,9 @@ export default defineBackground(() => {
     void scheduleCatchUp();
   });
 
+  // A check can't be running in a service worker that just started; clear a flag left by one that died.
+  void updateStatus({ emailRunning: false });
+
   void chrome.alarms.create(PUMP_ALARM, { periodInMinutes: 1 });
   void chrome.alarms.create(DAILY_ALARM, { periodInMinutes: 24 * 60, delayInMinutes: 5 });
 
@@ -124,13 +127,11 @@ async function handle(msg: Request): Promise<unknown> {
       await pageSeen(msg.page);
       return true;
     case 'emailSignInCheck':
-      return signInCheck(msg.provider);
+      return signInCheck(msg.provider, msg.account);
     case 'emailCheckNow':
-      await runEmailCheck({ reason: 'now' });
-      return true;
+      return runEmailCheck({ reason: 'now' });
     case 'emailImport':
-      await runEmailCheck({ reason: 'import', importDays: msg.days });
-      return true;
+      return runEmailCheck({ reason: 'import', importDays: msg.days });
     case 'emailScheduleChanged':
       await scheduleEmail();
       return true;

@@ -10,6 +10,11 @@ export default defineContentScript({
     if (!args) return null;
     return args.mode === 'signin'
       ? outlookSignInCheck()
-      : outlookReadAlerts({ query: args.query ?? '', seen: args.seen ?? [], max: args.max ?? 40 });
+      : outlookReadAlerts({
+          query: args.query ?? '',
+          senders: args.senders ?? [],
+          seen: args.seen ?? [],
+          max: args.max ?? 40,
+        });
   },
 });

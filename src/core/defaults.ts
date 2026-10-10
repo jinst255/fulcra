@@ -5,8 +5,8 @@ import type { Settings } from './types';
 
 export const DEFAULT_SENDERS = [
   'jobalerts-noreply@linkedin.com',
-  // [Unverified] Handshake's alert sender. Confirm from a real alert email.
-  'notifications@joinhandshake.com',
+  // Confirmed from a real Handshake job alert (Oct 10, 2026).
+  'handshake@g.joinhandshake.com',
 ];
 
 export const INTERVALS = { daily: 1440, sixHours: 360, hourly: 60, fiveMinutes: 5, thirtySeconds: 0.5 };
@@ -42,6 +42,7 @@ export function defaultSettings(): Settings {
       intervalMinutes: INTERVALS.daily,
       senders: DEFAULT_SENDERS.slice(),
       lastCheck: null,
+      lastOkAt: null,
       accountIndex: 0,
       importDays: 30,
     },

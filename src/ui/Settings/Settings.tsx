@@ -507,22 +507,6 @@ function DevSection() {
         on={settings.showRawOutput}
         onToggle={() => update((s) => void (s.showRawOutput = !s.showRawOutput))}
       />
-      <div className="switch-row" style={{ flexWrap: 'wrap' }}>
-        <label htmlFor="dv-account" style={{ flex: '1 1 200px', fontSize: 14 }}>
-          {t('settings.dev.account')}
-        </label>
-        <NumberField
-          id="dv-account"
-          width={90}
-          mono
-          min={0}
-          max={9}
-          value={settings.email.accountIndex}
-          onSave={(v) =>
-            v != null && update((s) => void (s.email.accountIndex = Math.max(0, Math.min(9, Math.round(v)))))
-          }
-        />
-      </div>
       <div className="row-wrap" style={{ paddingTop: 12 }}>
         <button
           type="button"

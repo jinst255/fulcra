@@ -14,7 +14,7 @@ export type Request =
   | { type: 'batchPause'; paused: boolean }
   | { type: 'emailCheckNow' }
   | { type: 'emailImport'; days: number | null }
-  | { type: 'emailSignInCheck'; provider: 'gmail' | 'outlook' }
+  | { type: 'emailSignInCheck'; provider: 'gmail' | 'outlook'; account?: number }
   | { type: 'emailScheduleChanged' }
   | { type: 'pageSeen'; page: PageExtraction };
 

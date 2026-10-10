@@ -55,12 +55,22 @@ export function withDefaults(saved: Partial<Settings> | undefined): Settings {
     ...saved,
     about: { ...d.about, ...saved.about },
     dealbreakers: { ...d.dealbreakers, ...saved.dealbreakers },
-    email: { ...d.email, ...saved.email },
+    email: migrateEmail({ ...d.email, ...saved.email }),
     scoring: { ...d.scoring, ...saved.scoring },
     ui: { ...d.ui, ...saved.ui },
     dimensions: saved.dimensions?.length ? saved.dimensions : d.dimensions,
     weights: { ...d.weights, ...saved.weights },
   };
+}
+
+/** The first builds guessed Handshake's sender wrong; swap in the real one. */
+function migrateEmail(e: Settings['email']): Settings['email'] {
+  const old = 'notifications@joinhandshake.com';
+  if (!e.senders.includes(old)) return e;
+  const real = 'handshake@g.joinhandshake.com';
+  const senders = e.senders.filter((x) => x !== old);
+  if (!senders.includes(real)) senders.push(real);
+  return { ...e, senders };
 }
 
 export async function getSettings(): Promise<Settings> {

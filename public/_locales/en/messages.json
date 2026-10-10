@@ -1841,5 +1841,168 @@
         "content": "$3"
       }
     }
+  },
+  "setup_email_switchTo": {
+    "message": "Switch to $PROVIDER$",
+    "placeholders": {
+      "provider": {
+        "content": "$1"
+      }
+    }
+  },
+  "setup_email_stillUsing": {
+    "message": "$APP$ is still using $PROVIDER$.",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      },
+      "provider": {
+        "content": "$2"
+      }
+    }
+  },
+  "setup_email_busy": {
+    "message": "A check is already running. Try again in a minute."
+  },
+  "setup_email_checkingProvider": {
+    "message": "Checking that you're signed in to $PROVIDER$. A minimized window may appear for a moment…",
+    "placeholders": {
+      "provider": {
+        "content": "$1"
+      }
+    }
+  },
+  "setup_email_signedInTo": {
+    "message": "Signed in to $PROVIDER$.",
+    "placeholders": {
+      "provider": {
+        "content": "$1"
+      }
+    }
+  },
+  "setup_email_account": {
+    "message": "Which Gmail account?"
+  },
+  "setup_email_accountOption": {
+    "message": "Account $N$ (mail/u/$INDEX$)",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      },
+      "index": {
+        "content": "$2"
+      }
+    }
+  },
+  "setup_email_accountHint": {
+    "message": "If you're signed in to more than one Google account, pick the one that gets your job alerts. Account 1 is the one Gmail opens first."
+  },
+  "setup_email_frequencyHint": {
+    "message": "Each check reads alerts that arrived since the last one."
+  },
+  "setup_email_rangeEstimate": {
+    "message": "$EMAILS$ emails · about $JOBS$ jobs · about $COST$",
+    "placeholders": {
+      "emails": {
+        "content": "$1"
+      },
+      "jobs": {
+        "content": "$2"
+      },
+      "cost": {
+        "content": "$3"
+      }
+    }
+  },
+  "setup_email_rangeNone": {
+    "message": "No alert emails"
+  },
+  "setup_email_noCounts": {
+    "message": "Estimates appear after $APP$ checks your inbox.",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      }
+    }
+  },
+  "setup_email_noCountsOutlook": {
+    "message": "$APP$ can't count Outlook alerts ahead of time.",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      }
+    }
+  },
+  "setup_email_importHintSetup": {
+    "message": "$APP$ reads these when you finish setup. Reading is free; you'll see the cost before anything is scored.",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      }
+    }
+  },
+  "setup_email_importHint": {
+    "message": "Reading is free. You'll see the cost before anything is scored."
+  },
+  "setup_email_importButton": {
+    "message": "Import $RANGE$",
+    "placeholders": {
+      "range": {
+        "content": "$1"
+      }
+    }
+  },
+  "setup_email_recount": {
+    "message": "Count again"
+  },
+  "email_result_done": {
+    "message": "Checked $PROVIDER$: read $EMAILS$ alert emails and found $COUNT$ new jobs.",
+    "placeholders": {
+      "provider": {
+        "content": "$1"
+      },
+      "emails": {
+        "content": "$2"
+      },
+      "count": {
+        "content": "$3"
+      }
+    }
+  },
+  "email_result_none": {
+    "message": "Checked $PROVIDER$: no new alert emails.",
+    "placeholders": {
+      "provider": {
+        "content": "$1"
+      }
+    }
+  },
+  "email_result_asked": {
+    "message": "Found $COUNT$ new jobs. Confirm the cost in the banner above to score them.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "email_result_error": {
+    "message": "The check didn't finish. Try again, or copy diagnostics from Settings > Help and diagnostics."
+  },
+  "email_problem_signedOut": {
+    "message": "you were signed out"
+  },
+  "email_problem_changed": {
+    "message": "the page couldn't be read"
+  },
+  "email_problem_error": {
+    "message": "the check didn't finish"
+  },
+  "banner_ask_titleNew": {
+    "message": "Score $COUNT$ new jobs?",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

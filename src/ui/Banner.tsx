@@ -75,7 +75,10 @@ export function Banner() {
       id: 'ask',
       tone: 'amber',
       icon: 'refresh',
-      title: t('banner.ask.title', { count: a.count }),
+      title:
+        a.kind === 'unscored'
+          ? t('banner.ask.titleNew', { count: a.count })
+          : t('banner.ask.title', { count: a.count }),
       text: t('banner.ask.body', { time: formatDuration(a.seconds), cost: formatCost(a.cost) }),
       actions: [
         { label: t('banner.ask.start'), run: () => void send({ type: 'batchStart' }), primary: true },

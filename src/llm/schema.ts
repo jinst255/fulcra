@@ -3,6 +3,9 @@
 import { z } from 'zod';
 import type { Dimension, Facts } from '../core/types';
 
+// Extension pages forbid eval. Without this, zod probes `new Function` and Chrome logs a CSP issue.
+z.config({ jitless: true });
+
 type JsonSchema = Record<string, unknown>;
 
 const PERIODS = ['hour', 'week', 'month', 'year', 'total', 'unknown'] as const;

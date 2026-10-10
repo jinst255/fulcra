@@ -2,7 +2,7 @@
 // Blueprint section 12.3. Selectors checked against live Gmail on 2026-10-10 (print view's effect
 // on read state is still unknown). Every Gmail selector lives here; when Gmail changes, update
 // them and bump the version.
-import type { AlertCard, MailRunResult, SignInResult } from '../email/types';
+import type { AlertCard, MailRunResult, RangeCount, SignInResult } from '../email/types';
 import { parseAlert } from './alerts';
 
 export const GMAIL_SELECTORS_VERSION = 'gmail-2026-10-10b';
@@ -35,11 +35,15 @@ export interface GmailArgs {
   /** Thread ids already read in earlier checks. */
   seen?: string[];
   max?: number;
+  /** Alert sender addresses, for readers that must check each message. */
+  senders?: string[];
 }
 
 export interface GmailRun extends MailRunResult {
   threadIds: string[];
   detail: string;
+  /** The search found more conversations than one page shows; search a narrower range. */
+  more: boolean;
 }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -96,13 +100,13 @@ async function search(query: string): Promise<'rows' | 'none' | null> {
 }
 
 /** "1–50 of 130" gives 130. "1–50 of many" has no total, so the rows on the page are a floor. */
-export function countFrom(text: string, rowsOnPage: number): number | null {
+export function countFrom(text: string, rowsOnPage: number): RangeCount {
   const m = /of\s+(?:about\s+)?([\d,]+)/i.exec(text);
-  if (m) return Number(m[1]!.replace(/,/g, ''));
-  return rowsOnPage || null;
+  if (m) return { n: Number(m[1]!.replace(/,/g, '')), atLeast: /about/i.test(text) };
+  return { n: rowsOnPage, atLeast: /\bmany\b/i.test(text) };
 }
 
-function resultCount(): number | null {
+function resultCount(): RangeCount {
   return countFrom(q(SEL.count)?.textContent ?? '', rows().length);
 }
 
@@ -164,11 +168,12 @@ export async function signInCheck(args: GmailArgs): Promise<SignInResult> {
   const main = await waitFor(() => document.querySelector(SEL.main), 20000);
   if (!main) return { status: 'changed', provider: 'gmail', emailCounts: null };
   if (!args.countQueries) return { status: 'ok', provider: 'gmail', emailCounts: null };
-  const counts = { '7': 0, '30': 0, '90': 0, all: 0 };
+  const none = { n: 0, atLeast: false };
+  const counts = { '7': none, '30': none, '90': none, all: none };
   for (const k of ['7', '30', '90', 'all'] as const) {
     const r = await search(args.countQueries[k]);
     if (r === null) return { status: 'ok', provider: 'gmail', emailCounts: null };
-    counts[k] = r === 'none' ? 0 : (resultCount() ?? 0);
+    counts[k] = r === 'none' ? none : resultCount();
   }
   return { status: 'ok', provider: 'gmail', emailCounts: counts };
 }
@@ -180,14 +185,19 @@ export async function readAlerts(args: GmailArgs): Promise<GmailRun> {
     emailsRead: 0,
     threadIds: [],
     detail,
+    more: false,
   });
   if (location.hostname !== 'mail.google.com') return fail('signedOut', 'host');
   if (!(await waitFor(() => document.querySelector(SEL.main), 20000))) return fail('changed', 'no main');
   const r = await search(args.query ?? '');
   if (r === null) return fail('changed', 'no results view');
-  if (r === 'none') return { status: 'ok', cards: [], emailsRead: 0, threadIds: [], detail: 'no results' };
+  if (r === 'none')
+    return { status: 'ok', cards: [], emailsRead: 0, threadIds: [], detail: 'no results', more: false };
+  const count = resultCount();
+  const onPage = rows().length;
+  const more = count.atLeast || count.n > onPage;
   const seen = new Set(args.seen ?? []);
-  const max = args.max ?? 40;
+  const max = args.max ?? 50;
   const targets = rows()
     .map((row) => ({ row, id: threadIdOf(row), unread: row.classList.contains(SEL.unreadRowClass) }))
     .filter((x) => !x.id || !seen.has(x.id))
@@ -222,7 +232,8 @@ export async function readAlerts(args: GmailArgs): Promise<GmailRun> {
     cards,
     emailsRead: viaPrint + viaClick,
     threadIds: ids,
-    detail: `rows=${targets.length} print=${viaPrint} click=${viaClick} cards=${cards.length} unread=${wasUnread.size} restored=${restored}`,
+    detail: `rows=${targets.length}/${onPage} print=${viaPrint} click=${viaClick} cards=${cards.length} unread=${wasUnread.size} restored=${restored}`,
+    more,
   };
 }
 

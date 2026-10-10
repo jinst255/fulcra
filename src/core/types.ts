@@ -117,6 +117,8 @@ export interface EmailSettings {
   intervalMinutes: number;
   senders: string[];
   lastCheck: { at: number; result: string; count: number | null } | null;
+  /** When a check last finished without a problem; the next check looks back to here. */
+  lastOkAt: number | null;
   accountIndex: number;
   /** Days of past alerts to import; null means everything. */
   importDays: number | null;
