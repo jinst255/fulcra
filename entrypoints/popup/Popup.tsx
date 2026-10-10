@@ -19,6 +19,7 @@ import {
   useJobs,
   useKeyInfo,
   useOnline,
+  usePresence,
   useRank,
   useSettings,
   useStatus,
@@ -39,6 +40,7 @@ export function Popup() {
   const status = useStatus();
   const key = useKeyInfo();
   const online = useOnline();
+  usePresence();
   const view = useRank(jobs, settings);
   const [v, setV] = useState<View>({ kind: 'loading' });
   const [tabId, setTabId] = useState<number | null>(null);

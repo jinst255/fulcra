@@ -1,6 +1,7 @@
 // Half-price scoring through OpenAI's Batch API. Runs in the service worker.
-// The user picks it for large batches; results usually arrive within an hour and always
-// within 24. Anything the batch can't answer falls back to a normal (full-price) call.
+// Bulk scoring uses it while the person is away (presence.ts); results usually arrive within an hour
+// and always within 24. Anything the batch can't answer falls back to a normal (full-price) call.
+// "Score now" cancels what's out and scores the rest directly.
 import {
   batchClient,
   FINISHED,
@@ -33,8 +34,18 @@ async function items(batchId: string): Promise<QueueItem[]> {
   return (await (await db()).getAll('queue')).filter((i) => i.batch === batchId);
 }
 
-/** Sends the user's batch to OpenAI. On failure, the batch carries on at full price. */
-export async function submitHalfPrice(batchId: string): Promise<void> {
+let sending: Promise<void> = Promise.resolve();
+
+/**
+ * Sends the batch's items that aren't out yet to OpenAI. Calls run one at a time, so jobs added
+ * while a send is under way are never sent twice. On failure, the batch carries on at full price.
+ */
+export function submitHalfPrice(batchId: string): Promise<void> {
+  sending = sending.then(() => send(batchId)).catch(() => undefined);
+  return sending;
+}
+
+async function send(batchId: string): Promise<void> {
   const key = await getApiKey();
   if (!key) return;
   const settings = await getSettings();
@@ -195,7 +206,7 @@ export async function pollHalfPrice(): Promise<void> {
   void pump();
 }
 
-/** "Finish now at full price": cancel what's out and score the rest directly. */
+/** "Score now": cancel what's out and score the rest directly, at full price. */
 export async function speedUp(): Promise<void> {
   const status = await getStatus();
   const key = await getApiKey();

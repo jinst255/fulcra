@@ -27,6 +27,8 @@ export default defineConfig({
       'activeTab',
       'contextMenus',
       'notifications',
+      // Away from the computer: bulk scoring waits for OpenAI's half-price batch.
+      'idle',
     ],
     // Asked for one site at a time, only when you paste a link from a site not listed below.
     optional_host_permissions: ['https://*/*', 'http://*/*'],

@@ -30,7 +30,15 @@ Fulcra uses OpenAI to read and score jobs, with your own API key. OpenAI bills y
 3. Open **API keys** and select **Create new secret key**.
 4. Paste it into Fulcra's setup and select **Continue**. Fulcra tests the key first and tells you if it doesn't work.
 
-**Cost:** scoring costs about $1.20 per 1,000 jobs on the Standard model (about $4.50 on Sharper). Most people spend under $1 a month. Before any large batch (an email import, re-scoring after you change what you score, or Re-score all), Fulcra shows the count and cost and lets you pick **Score now**, **Half price** (OpenAI's Batch API: half the cost, finished within 24 hours and usually much sooner), or **Later**.
+**Cost:** scoring costs about $1.20 per 1,000 jobs on the Standard model (about $4.50 on Sharper). Most people spend under $1 a month.
+
+**Scoring now or at half price:** Fulcra picks for you, so there's nothing to approve.
+
+- **While you're using Fulcra** (the app or popup is showing and you're at your computer), jobs are scored right away.
+- **While you're away** (say, a scheduled email check finds jobs overnight), they go to OpenAI's Batch API at half the cost. Results arrive within 24 hours, usually within an hour.
+- **When you come back** before they're done, a banner shows the progress and a **Score now** button with its price, which cancels the half-price batch and scores the rest right away.
+
+Re-score all shows the count and cost before it starts. Jobs never wait on you: anything left unscored is picked up when you open Fulcra and once a day.
 
 **Set a spend limit** in your OpenAI account under Limits, so costs can never surprise you.
 

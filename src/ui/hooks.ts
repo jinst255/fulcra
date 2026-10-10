@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { rankJobs, type RankView } from '../core/rank';
 import type { JobRecord, Settings } from '../core/types';
+import { send } from '../messages';
 import { allJobs } from '../store/jobs';
 import {
   getSettings,
@@ -94,6 +95,25 @@ export function useOnline(): boolean {
     };
   }, []);
   return on;
+}
+
+/**
+ * Tells the service worker someone is looking at Fulcra, every 30 seconds while this page shows.
+ * Bulk scoring then runs right away instead of at half price (pipeline/presence.ts).
+ */
+export function usePresence(): void {
+  useEffect(() => {
+    const beat = () => {
+      if (document.visibilityState === 'visible') void send({ type: 'presence' }).catch(() => undefined);
+    };
+    beat();
+    const timer = setInterval(beat, 30_000);
+    document.addEventListener('visibilitychange', beat);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener('visibilitychange', beat);
+    };
+  }, []);
 }
 
 /** Opens the full-page app at a route, reusing an open Fulcra tab. */

@@ -1,6 +1,6 @@
 # Fulcra: project blueprint
 
-**Version 1.3, October 10, 2026.** Owner: Justin. Audience: the AI coding agent working in the Fulcra repository.
+**Version 1.6, October 10, 2026.** Owner: Justin. Audience: the AI coding agent working in the Fulcra repository.
 
 > **Read this first, agent.** The work happens in two phases, and you must not skip ahead.
 >
@@ -12,6 +12,11 @@
 
 ## Changelog
 
+- **v1.6 (October 10, 2026, half price while away):** where this list and an older section disagree, this list wins.
+  - **Cost (5.2, 12.4):** nothing asks before scoring any more; `askBatch`, the Score now / Half price / Later banner, and `batchLater` are gone. Bulk scoring (new jobs from email checks, re-scores after dimension edits, Re-score all, leftovers) goes through `scoreGroup` in `queue.ts`. If the person is present, it's scored with direct calls, with a progress banner unless it's under 10 new jobs. If they're away, it goes to the Batch API at half price, joining a half-price batch that's already out. Single jobs the person asks for (score this page, paste, rescore) are always direct.
+  - **Presence (`pipeline/presence.ts`):** present means a Fulcra page (the app or popup) reported in within 90 seconds and `chrome.idle` says the computer is active (5 minutes). Pages report every 30 seconds while visible (`usePresence`). The last report is kept in `chrome.storage.session`, so it survives a service worker restart. New permission: `idle`, which has no install warning.
+  - **Coming back:** the half-price banner says the jobs were sent while the person was away, gives the half price, and offers "Score now ($X)" at full price for what's left. This cancels the OpenAI batch and scores directly, as `speedUp` did before.
+  - **Nothing left behind:** opening the app and the daily alarm both run `queueUnscored`. Re-score all confirms the count and cost in a dialog, then starts.
 - **v1.5 (October 10, 2026, second beta round):** where this list and an older section disagree, this list wins. New strings live only in `messages.json`.
   - **Setup (10):** four steps after the welcome: OpenAI key, about you, job alert emails, done (`STEP` in `Setup.tsx`). Continue on the key step tests a typed key and saves it only if the test passes; a failed test explains itself and "I'll add it later" stays. A saved key shows "Use a different key". Priorities and dealbreakers are no longer steps (Balanced weights by default). The email step has no skip: Continue needs at least one inbox. The summary's Change links open `setup/<n>/review`, where Continue reads "Save and go back" and returns to the summary.
   - **Filters (5.3, 9.2):** dealbreakers are called filters in the UI. The filter bar above the ranked list and radar has Job type, Must have chips (remote or hybrid, no relocating, languages I speak), and More filters (lowest pay in the person's pay unit, most hours). Missing a must-have sets a job aside in "Filtered out"; unknown facts never fail.
@@ -143,7 +148,7 @@ The provider layer is an interface (`src/llm/provider.ts`) so another provider c
 $$\text{cost per job} = \frac{t_{in}\,p_{in} + t_{out}\,p_{out}}{10^6} = \frac{3000 \times 0.20 + 500 \times 1.20}{10^6} \approx \$0.0012$$
 
 - Re-scoring a single dimension returns one score, about \$0.0007 per job.
-- Batch API (50% cheaper, 24-hour window) is **not** used in v1.
+- Batch API (50% cheaper, 24-hour window): used for bulk scoring while the person is away (see v1.6 in the changelog).
 
 ### 5.3 What the model does and doesn't do
 
@@ -537,7 +542,7 @@ Custom dimensions get weight 5 under every preset.
 - **Edited dimension meaning:** the version is incremented. Old scores are marked "outdated," stay in use for ranking until the new score lands, and show a small "updating" marker.
 - **Removed dimension:** scores are hidden, not deleted. Re-adding the same id and version restores them.
 - **Small batches** (under 10 jobs and under $0.25 estimated): run automatically with a slim banner showing progress and a Pause button.
-- **Large batches:** ask first, with job count, time estimate, cost estimate, and buttons "Start now" and "Later."
+- **Large batches:** never ask. Scored directly while the person is using Fulcra and at half price while they're away (v1.6).
 - **Closed jobs** re-score from stored text. Email-only jobs stay "preliminary."
 - **Concurrency:** 3 parallel requests. The queue persists across browser restarts.
 
@@ -681,7 +686,7 @@ Pin every version exactly (no `^` or `~`). Pick versions at least two weeks old.
 
 **Not allowed:** chart libraries (charts are hand-drawn SVG), analytics SDKs, remote fonts or scripts, and anything that phones home.
 
-**Manifest permissions:** `storage`, `unlimitedStorage`, `alarms`, `tabs`, `tabGroups` (v1.4), `scripting`, `activeTab`, `contextMenus`, `notifications`.
+**Manifest permissions:** `storage`, `unlimitedStorage`, `alarms`, `tabs`, `tabGroups` (v1.4), `scripting`, `activeTab`, `contextMenus`, `notifications`, `idle` (v1.6).
 
 **Host permissions:** `https://www.linkedin.com/*`, `https://app.joinhandshake.com/*`, `https://*.joinhandshake.com/*`, `https://www.indeed.com/*`, `https://mail.google.com/*`, `https://outlook.live.com/*`, `https://outlook.office.com/*`, `https://api.openai.com/*`.
 
@@ -989,10 +994,6 @@ No `<all_urls>`. Other sites work through `activeTab` when the user clicks.
 | `banner.rescoreNew` | Scoring {dimension} for your saved jobs: {done} of {total} done. |
 | `banner.pause` | Pause |
 | `banner.resume` | Resume |
-| `banner.ask.title` | Re-score {count} jobs? |
-| `banner.ask.body` | This takes about {time} and costs about {cost}. |
-| `banner.ask.start` | Start now |
-| `banner.ask.later` | Later |
 | `banner.waiting` | {count} jobs are waiting for your OpenAI key. |
 | `banner.emailRunning` | Checking your job alerts… |
 | `notify.strongMatch.title` | Strong match: {score} |

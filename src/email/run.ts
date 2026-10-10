@@ -1,14 +1,12 @@
 // One email check: open each inbox in a tucked-away background tab, read new alerts, close it,
 // and queue preliminary scores. Blueprint sections 4.3, 9.4, and 12.3.
-import { isSmallBatch } from '../core/rescore';
-import { batchSeconds, costPerJob } from '../llm/cost';
 import type { EmailAccount } from '../core/types';
 import { accountId, getApiKey, getSettings, updateSettings, updateStatus } from '../store/settings';
 import { t } from '../i18n/t';
 import { addLog } from '../store/log';
 import { findDuplicate, putJob, updateJob } from '../store/jobs';
 import { newJobRecord } from '../pipeline/jobs';
-import { enqueue, pump } from '../pipeline/queue';
+import { queueUnscored } from '../pipeline/queue';
 import type { GmailArgs, GmailRun } from '../readers/gmail';
 import type {
   AccountResult,
@@ -388,7 +386,7 @@ export async function runEmailCheck(opts: {
 }): Promise<EmailCheckResult> {
   const s = await getSettings();
   const accounts = s.email.accounts.filter((a) => !opts.accountId || a.id === opts.accountId);
-  const result: EmailCheckResult = { status: 'ok', accounts: [], emails: 0, newJobs: 0, askedFirst: false };
+  const result: EmailCheckResult = { status: 'ok', accounts: [], emails: 0, newJobs: 0 };
   if (!accounts.length) return { ...result, status: 'off' };
   if (busy) return { ...result, status: 'busy' };
   busy = true;
@@ -437,17 +435,8 @@ export async function runEmailCheck(opts: {
     });
 
     if (newIds.length && (await getApiKey())) {
-      const cost = newIds.length * costPerJob(s.model);
-      if (isSmallBatch(newIds.length, cost)) {
-        for (const id of newIds) await enqueue(id, { preliminary: true });
-        void pump();
-      } else {
-        // Many new jobs: ask before spending.
-        await updateStatus({
-          askBatch: { kind: 'unscored', count: newIds.length, cost, seconds: batchSeconds(newIds.length) },
-        });
-        result.askedFirst = true;
-      }
+      // Scored now if the person is using Fulcra, at half price if they're away.
+      await queueUnscored();
       await chrome.storage.local.set({ [NOTIFY_KEY]: { ids: newIds, at: Date.now() } });
     }
     return result;

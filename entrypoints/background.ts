@@ -10,14 +10,8 @@ import { addPaste, describeTab, pageSeen, rescoreJob, scoreTab } from '@/src/pip
 import { hardReset } from '@/src/pipeline/reset';
 import { jobIdFromNotification, maybeNotify } from '@/src/pipeline/notify';
 import { siteFor } from '@/src/readers/generic';
-import {
-  askRescoreAll,
-  onScored,
-  planAndMaybeStart,
-  pump,
-  queueUnscored,
-  startPlannedBatch,
-} from '@/src/pipeline/queue';
+import { onScored, planAndMaybeStart, pump, queueUnscored, rescoreAll } from '@/src/pipeline/queue';
+import { markPresent } from '@/src/pipeline/presence';
 import { BATCH_POLL_ALARM, initHalfPrice, pollHalfPrice, speedUp } from '@/src/pipeline/halfprice';
 import { allJobs, retentionCleanup, updateJob } from '@/src/store/jobs';
 import { looksLikeJobTitle } from '@/src/readers/alerts/common';
@@ -64,7 +58,11 @@ export default defineBackground(() => {
     if (a.name === BATCH_POLL_ALARM) void pollHalfPrice();
     if (a.name === EMAIL_ALARM) void runEmailCheck({ reason: 'scheduled' });
     if (a.name === CATCHUP_ALARM) void runEmailCheck({ reason: 'catchup' });
-    if (a.name === DAILY_ALARM) void getSettings().then((s) => retentionCleanup(s.retentionDays));
+    if (a.name === DAILY_ALARM) {
+      void getSettings().then((s) => retentionCleanup(s.retentionDays));
+      // Anything left unscored (no key at the time, say) gets scored.
+      void queueUnscored();
+    }
   });
 
   onStatusChanged((s) => void applyBadge(s));
@@ -166,19 +164,18 @@ async function handle(msg: Request): Promise<unknown> {
       await pump();
       return true;
     case 'appOpened':
+      await markPresent();
       await updateStatus({ newScoredCount: 0 });
+      await queueUnscored();
       return true;
-    case 'batchStart':
-      await startPlannedBatch(msg.mode ?? 'now');
+    case 'presence':
+      await markPresent();
       return true;
     case 'batchSpeedUp':
       await speedUp();
       return true;
     case 'rescoreAll':
-      return askRescoreAll();
-    case 'batchLater':
-      await updateStatus({ askBatch: null });
-      return true;
+      return rescoreAll();
     case 'batchPause':
       await updateStatus((s) => (s.batch ? { batch: { ...s.batch, paused: msg.paused } } : {}));
       if (!msg.paused) await pump();

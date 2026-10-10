@@ -4,13 +4,8 @@ import { BatchClient, type BatchInfo, type BatchLine, type BatchResult } from '.
 import type { Provider } from '../src/llm/provider';
 import { initHalfPrice, pollHalfPrice, setBatchClientForTests, speedUp } from '../src/pipeline/halfprice';
 import { newJobRecord } from '../src/pipeline/jobs';
-import {
-  pump,
-  queueSize,
-  queueUnscored,
-  setProviderForTests,
-  startPlannedBatch,
-} from '../src/pipeline/queue';
+import { isPresent, markPresent, resetPresenceForTests } from '../src/pipeline/presence';
+import { pump, queueSize, queueUnscored, setProviderForTests } from '../src/pipeline/queue';
 import { db, resetDbForTests } from '../src/store/db';
 import { getJob, putJob } from '../src/store/jobs';
 import { getApiKey, getStatus, setApiKey } from '../src/store/settings';
@@ -127,10 +122,11 @@ async function settle() {
 beforeEach(() => {
   globalThis.indexedDB = new IDBFactory();
   resetDbForTests();
+  resetPresenceForTests();
 });
 
 describe('half-price scoring (Batch API)', () => {
-  it('sends an approved batch to OpenAI, applies results, and scores bad answers directly', async () => {
+  it('while you are away, sends new jobs to OpenAI, applies results, and scores bad answers directly', async () => {
     const batches = new FakeBatches();
     setBatchClientForTests(batches);
     const p = direct();
@@ -139,9 +135,6 @@ describe('half-price scoring (Batch API)', () => {
     await setApiKey('sk-test-0000000000000000');
     const ids = await twelveNewJobs();
     await queueUnscored();
-    expect((await getStatus()).askBatch).toMatchObject({ kind: 'unscored', count: 12 });
-
-    await startPlannedBatch('half');
     expect(batches.sent).toHaveLength(1);
     expect(batches.sent[0]).toHaveLength(12);
     const body = batches.sent[0]![0]!.body as { model: string; store: boolean };
@@ -167,7 +160,7 @@ describe('half-price scoring (Batch API)', () => {
     expect((await getStatus()).batch).toBeNull();
   });
 
-  it('finishes at full price when asked, cancelling the OpenAI batch', async () => {
+  it('Score now finishes at full price, cancelling the OpenAI batch', async () => {
     const batches = new FakeBatches();
     setBatchClientForTests(batches);
     const p = direct();
@@ -176,7 +169,6 @@ describe('half-price scoring (Batch API)', () => {
     await setApiKey('sk-test-0000000000000000');
     await twelveNewJobs();
     await queueUnscored();
-    await startPlannedBatch('half');
     expect((await (await db()).getAll('queue')).every((i) => i.remote === 'batch_1')).toBe(true);
     await speedUp();
     await settle();
@@ -197,7 +189,6 @@ describe('half-price scoring (Batch API)', () => {
     await setApiKey('sk-test-0000000000000000');
     await twelveNewJobs();
     await queueUnscored();
-    await startPlannedBatch('half');
     await hardReset();
     expect(batches.cancelled).toEqual(['batch_1']);
     expect(batches.deleted).toEqual(['in', 'out']);
@@ -205,5 +196,47 @@ describe('half-price scoring (Batch API)', () => {
     expect(await queueSize()).toBe(0);
     expect(await getApiKey()).toBeNull();
     expect((await getStatus()).batch).toBeNull();
+  });
+
+  it('adds jobs found while a batch is out to it, sending only the new ones', async () => {
+    const batches = new FakeBatches();
+    setBatchClientForTests(batches);
+    setProviderForTests(direct());
+    initHalfPrice();
+    await setApiKey('sk-test-0000000000000000');
+    await twelveNewJobs();
+    await queueUnscored();
+    await twelveNewJobs();
+    await queueUnscored();
+    expect(batches.sent.map((l) => l.length)).toEqual([12, 12]);
+    expect((await getStatus()).batch).toMatchObject({
+      mode: 'half',
+      total: 24,
+      remoteIds: ['batch_1', 'batch_2'],
+    });
+  });
+
+  it('while you are using Fulcra, scores even a large group right away', async () => {
+    const batches = new FakeBatches();
+    setBatchClientForTests(batches);
+    const p = direct();
+    setProviderForTests(p);
+    initHalfPrice();
+    await setApiKey('sk-test-0000000000000000');
+    await markPresent();
+    await twelveNewJobs();
+    await queueUnscored();
+    expect((await getStatus()).batch).toMatchObject({ mode: 'now', total: 12 });
+    await settle();
+    expect(batches.sent).toEqual([]);
+    expect(p.calls).toBe(12);
+    expect((await getStatus()).batch).toBeNull();
+  });
+
+  it('counts you as away 90 seconds after the last Fulcra page reported in', async () => {
+    const now = Date.now();
+    await markPresent(now);
+    expect(await isPresent(now + 60_000)).toBe(true);
+    expect(await isPresent(now + 120_000)).toBe(false);
   });
 });

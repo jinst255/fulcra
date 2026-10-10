@@ -1,11 +1,11 @@
 // The scoring queue. Runs in the service worker, persists in IndexedDB, 6 requests in flight.
-// Large batches can instead go through OpenAI's Batch API at half price (halfprice.ts).
+// Bulk scoring while the person is away goes through OpenAI's Batch API at half price (halfprice.ts).
 // Blueprint sections 4, 7, and 12.4.
 import { modelDimensions } from '../core/dimensions';
 import { isPayOutlier, obviousPeriod, thousandsFix } from '../core/pay';
-import { planRescore, isSmallBatch, markOutdated } from '../core/rescore';
+import { planRescore, isSmallBatch, markOutdated, rescoreAllPick } from '../core/rescore';
 import type { JobRecord, Settings } from '../core/types';
-import { batchSeconds, costPerJob } from '../llm/cost';
+import { costPerJob } from '../llm/cost';
 import { openai } from '../llm/openai';
 import type { ScoringOutput } from '../llm/schema';
 import { ProviderError, type Provider, type ScoreRequest } from '../llm/provider';
@@ -14,6 +14,7 @@ import { getJob, putJob, allJobs } from '../store/jobs';
 import { addLog } from '../store/log';
 import { getApiKey, getSettings, getStatus, updateStatus, type AppStatus } from '../store/settings';
 import { applyDimScores, applyFullScore, applyPayUnit } from './jobs';
+import { isPresent } from './presence';
 
 export const CONCURRENCY = 6;
 const REQUEUE_MS = 5 * 60 * 1000;
@@ -273,64 +274,13 @@ async function handleError(e: unknown, item: QueueItem, job: JobRecord): Promise
   }
 }
 
-/** Queues every job that has no score yet, asking first when the batch is large. */
-export async function queueUnscored(): Promise<void> {
-  const jobs = (await allJobs()).filter((j) => j.scoring === 'notScored' || j.scoring === 'queued');
-  if (!jobs.length) return;
-  const settings = await getSettings();
-  const cost = jobs.length * costPerJob(settings.model);
-  if (isSmallBatch(jobs.length, cost)) {
-    for (const j of jobs) await enqueue(j.id, { preliminary: j.preliminary });
-    void pump();
-  } else {
-    await updateStatus({
-      askBatch: { kind: 'unscored', count: jobs.length, cost, seconds: batchSeconds(jobs.length) },
-    });
-  }
-}
+type Batch = NonNullable<AppStatus['batch']>;
 
-/**
- * After dimensions change: mark edited scores outdated and plan the re-score.
- * Small batches start right away with a progress banner; large ones ask first.
- */
-export async function planAndMaybeStart(): Promise<void> {
-  const settings = await getSettings();
-  const jobs = await allJobs();
-  for (const j of jobs) {
-    const m = markOutdated(j, settings.dimensions);
-    if (m !== j) await putJob(m);
-  }
-  const plan = planRescore(jobs, settings.dimensions, settings.model);
-  if (!plan.tasks.length) return;
-  const status = await getStatus();
-  if (status.batch) return;
-  if (isSmallBatch(plan.tasks.length, plan.cost)) await startPlannedBatch();
-  else
-    await updateStatus({
-      askBatch: {
-        kind: 'rescore',
-        count: plan.tasks.length,
-        cost: plan.cost,
-        seconds: batchSeconds(plan.tasks.length),
-      },
-    });
-}
-
-/** Jobs "Re-score all" covers: every open job, scored or not. */
-function rescoreAllPick(j: JobRecord): boolean {
-  return j.status !== 'closed' && !j.sample && j.scoring !== 'queued';
-}
-
-/** "Re-score all jobs": asks with the cost first, like any large batch. */
-export async function askRescoreAll(): Promise<number> {
-  const jobs = (await allJobs()).filter(rescoreAllPick);
-  if (!jobs.length) return 0;
-  const settings = await getSettings();
-  const cost = jobs.length * costPerJob(settings.model);
-  await updateStatus({
-    askBatch: { kind: 'all', count: jobs.length, cost, seconds: batchSeconds(jobs.length) },
-  });
-  return jobs.length;
+interface Work {
+  jobId: string;
+  kind: QueueItem['kind'];
+  dimIds?: string[];
+  preliminary?: boolean;
 }
 
 type HalfPriceStarter = (batchId: string) => Promise<void>;
@@ -341,56 +291,110 @@ export function setHalfPriceStarter(fn: HalfPriceStarter): void {
 }
 
 /**
- * Starts the batch the user approved. "now" scores with direct calls, 6 at a time;
- * "half" sends everything through OpenAI's Batch API at half price.
+ * Scores a group of jobs without asking. When the person is using Fulcra, they're scored now with
+ * direct calls, with a progress banner unless it's a few new jobs. When they're away, they go to OpenAI's
+ * Batch API at half price (joining a half-price batch already out); the banner then offers
+ * "Score now" for when they come back.
  */
-export async function startPlannedBatch(mode: 'now' | 'half' = 'now'): Promise<void> {
-  const settings = await getSettings();
-  const status = await getStatus();
-  const id = `b${Date.now()}`;
-  let batch: NonNullable<AppStatus['batch']>;
-  if (status.askBatch?.kind === 'unscored' || status.askBatch?.kind === 'all') {
-    const jobs = (await allJobs()).filter((j) =>
-      status.askBatch?.kind === 'all' ? rescoreAllPick(j) : j.scoring === 'notScored',
+function scoreGroup(work: Work[], meta: GroupMeta): Promise<void> {
+  // One at a time, so two groups (an email check as the app opens, say) can't both start a batch.
+  const run = grouping.then(() => group(work, meta));
+  grouping = run.catch(() => undefined);
+  return run;
+}
+
+type GroupMeta = { kind: Batch['kind']; label: string; cost: number };
+let grouping: Promise<void> = Promise.resolve();
+
+async function group(work: Work[], meta: GroupMeta): Promise<void> {
+  const d = await db();
+  const fresh: Work[] = [];
+  for (const w of work) {
+    // Already queued: keep its place, adding any newly changed dimensions.
+    if (await d.get('queue', itemId(w.jobId, w.kind))) {
+      if (w.kind === 'dims') await enqueue(w.jobId, w);
+    } else fresh.push(w);
+  }
+  if (!fresh.length) return void pump();
+  const cost = (meta.cost * fresh.length) / work.length;
+  const here = await isPresent();
+  const cur = (await getStatus()).batch;
+  const direct = async () => {
+    for (const w of fresh) await enqueue(w.jobId, w);
+    void pump();
+  };
+  // Without a key nothing can be sent; the jobs wait in the queue for one.
+  if (!(await getApiKey())) return direct();
+  // A few new jobs don't need a progress banner; re-scores always show one.
+  if (here && (cur || (meta.kind === 'unscored' && isSmallBatch(fresh.length, cost)))) return direct();
+  if (cur?.mode === 'half') {
+    for (const w of fresh) await enqueue(w.jobId, { ...w, batch: cur.id });
+    await updateStatus((s) =>
+      s.batch?.id === cur.id
+        ? { batch: { ...s.batch, total: s.batch.total + fresh.length, cost: s.batch.cost + cost } }
+        : {},
     );
-    for (const j of jobs) await enqueue(j.id, { preliminary: j.preliminary, batch: id });
-    batch = {
-      id,
-      label: '',
-      kind: status.askBatch.kind,
-      done: 0,
-      total: jobs.length,
-      cost: jobs.length * costPerJob(settings.model),
-      paused: false,
-      mode,
-      remoteIds: [],
-      submittedAt: null,
-    };
-  } else {
-    const plan = planRescore(await allJobs(), settings.dimensions, settings.model);
-    if (!plan.tasks.length) {
-      await updateStatus({ askBatch: null });
-      return;
-    }
-    for (const t of plan.tasks) await enqueue(t.jobId, { kind: 'dims', dimIds: t.dimIds, batch: id });
-    batch = {
-      id,
-      label: plan.dimNames.join(', '),
-      kind: plan.kind,
-      done: 0,
-      total: plan.tasks.length,
-      cost: plan.cost,
-      paused: false,
-      mode,
-      remoteIds: [],
-      submittedAt: null,
-    };
+    return startHalfPrice(cur.id);
   }
-  if (!batch.total) {
-    await updateStatus({ askBatch: null });
-    return;
-  }
-  await updateStatus({ askBatch: null, batch });
-  if (mode === 'half') await startHalfPrice(id);
+  // A full-price batch is already running; one batch at a time, so these go direct too.
+  if (cur) return direct();
+  const batch: Batch = {
+    id: `b${Date.now()}`,
+    label: meta.label,
+    kind: meta.kind,
+    done: 0,
+    total: fresh.length,
+    cost,
+    paused: false,
+    mode: here ? 'now' : 'half',
+    remoteIds: [],
+    submittedAt: null,
+  };
+  for (const w of fresh) await enqueue(w.jobId, { ...w, batch: batch.id });
+  await updateStatus({ batch });
+  await addLog('BATCH_START', 'background', `${batch.kind} ${batch.total} ${batch.mode}`);
+  if (batch.mode === 'half') await startHalfPrice(batch.id);
   else void pump();
+}
+
+/**
+ * Scores every job that has no score yet. Runs after an email check, when a key is added,
+ * when the app opens, and daily, so no job is left unscored.
+ */
+export async function queueUnscored(): Promise<void> {
+  const jobs = (await allJobs()).filter((j) => j.scoring === 'notScored' || j.scoring === 'queued');
+  if (!jobs.length) return;
+  const settings = await getSettings();
+  await scoreGroup(
+    jobs.map((j) => ({ jobId: j.id, kind: 'full', preliminary: j.preliminary })),
+    { kind: 'unscored', label: '', cost: jobs.length * costPerJob(settings.model) },
+  );
+}
+
+/** After dimensions change: mark edited scores outdated and re-score what changed. */
+export async function planAndMaybeStart(): Promise<void> {
+  const settings = await getSettings();
+  const jobs = await allJobs();
+  for (const j of jobs) {
+    const m = markOutdated(j, settings.dimensions);
+    if (m !== j) await putJob(m);
+  }
+  const plan = planRescore(jobs, settings.dimensions, settings.model);
+  if (!plan.tasks.length) return;
+  await scoreGroup(
+    plan.tasks.map((t) => ({ jobId: t.jobId, kind: 'dims', dimIds: t.dimIds })),
+    { kind: plan.kind, label: plan.dimNames.join(', '), cost: plan.cost },
+  );
+}
+
+/** "Re-score all jobs", after the person confirms the cost. Returns how many. */
+export async function rescoreAll(): Promise<number> {
+  const jobs = (await allJobs()).filter(rescoreAllPick);
+  if (!jobs.length) return 0;
+  const settings = await getSettings();
+  await scoreGroup(
+    jobs.map((j) => ({ jobId: j.id, kind: 'full', preliminary: j.preliminary })),
+    { kind: 'all', label: '', cost: jobs.length * costPerJob(settings.model) },
+  );
+  return jobs.length;
 }

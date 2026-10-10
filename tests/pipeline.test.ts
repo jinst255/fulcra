@@ -12,9 +12,9 @@ import {
   setProviderForTests,
   planAndMaybeStart,
   queueUnscored,
-  startPlannedBatch,
-  askRescoreAll,
+  rescoreAll,
 } from '../src/pipeline/queue';
+import { markPresent, resetPresenceForTests } from '../src/pipeline/presence';
 import { resetDbForTests } from '../src/store/db';
 import { getJob, putJob, putSampleJobs } from '../src/store/jobs';
 import { defaultStatus, getStatus, setApiKey, updateSettings, updateStatus } from '../src/store/settings';
@@ -93,6 +93,7 @@ async function settle() {
 beforeEach(() => {
   globalThis.indexedDB = new IDBFactory();
   resetDbForTests();
+  resetPresenceForTests();
 });
 
 describe('job records', () => {
@@ -205,6 +206,7 @@ describe('queue', () => {
     const p = fakeProvider();
     setProviderForTests(p);
     await setApiKey('sk-test-0000000000000000');
+    await markPresent();
     await putSampleJobs(sampleJobs().slice(0, 3));
     await updateSettings((s) => {
       s.dimensions = addDimension(s.dimensions, {
@@ -222,9 +224,11 @@ describe('queue', () => {
     expect((await getStatus()).batch).toBeNull();
   });
 
-  it('asks before scoring a large backlog', async () => {
-    setProviderForTests(fakeProvider());
+  it('scores a large backlog right away, with a progress banner, while you are here', async () => {
+    const p = fakeProvider();
+    setProviderForTests(p);
     await setApiKey('sk-test-0000000000000000');
+    await markPresent();
     for (let i = 0; i < 12; i++)
       await putJob({
         ...newJobRecord({
@@ -237,16 +241,19 @@ describe('queue', () => {
         }),
       });
     await queueUnscored();
-    expect((await getStatus()).askBatch).toMatchObject({ kind: 'unscored', count: 12 });
-    expect(await queueSize()).toBe(0);
+    expect((await getStatus()).batch).toMatchObject({ kind: 'unscored', total: 12, mode: 'now' });
+    await settle();
+    expect(p.calls).toHaveLength(12);
+    expect((await getStatus()).batch).toBeNull();
   });
 });
 
 describe('re-scoring engine (12.4)', () => {
-  it('asks before a large edit re-score, marks scores outdated, and honors pause', async () => {
+  it('re-scores a large edit with a progress banner, marks scores outdated, and honors pause', async () => {
     const p = fakeProvider();
     setProviderForTests(p);
     await setApiKey('sk-test-0000000000000000');
+    await markPresent();
     const many = Array.from({ length: 12 }, (_, i) => ({
       ...sampleJobs()[0]!,
       id: `j${i}`,
@@ -261,14 +268,12 @@ describe('re-scoring engine (12.4)', () => {
         anchorHigh: 'b',
       });
     });
+    // Hold the queue so the outdated marks can be checked before re-scoring starts.
+    await updateStatus({ scoringBlocked: 'KEY_INVALID' });
     await planAndMaybeStart();
-    expect((await getStatus()).askBatch).toMatchObject({ kind: 'rescore', count: 12 });
     expect((await getJob('j0'))!.scores.risk!.state).toBe('outdated');
-    expect(p.calls).toEqual([]);
-    await startPlannedBatch();
-    const st = await getStatus();
-    expect(st.askBatch).toBeNull();
-    expect(st.batch).toMatchObject({ total: 12, kind: 'edit' });
+    expect((await getStatus()).batch).toMatchObject({ total: 12, kind: 'edit', mode: 'now' });
+    await updateStatus({ scoringBlocked: null });
     await updateStatus((s) => ({ batch: { ...s.batch!, paused: true } }));
     const before = p.calls.length;
     await new Promise((r) => setTimeout(r, 30));
@@ -284,19 +289,16 @@ describe('re-scoring engine (12.4)', () => {
 });
 
 describe('re-score all', () => {
-  it('asks with the cost, then re-scores every open job and keeps your own scores', async () => {
+  it('re-scores every open job and keeps your own scores', async () => {
     const p = fakeProvider();
     setProviderForTests(p);
     await setApiKey('sk-test-0000000000000000');
+    await markPresent();
     const jobs = sampleJobs().map((j) => ({ ...j, sample: false }));
     jobs[0]!.scores.risk = { ...jobs[0]!.scores.risk!, override: 9 };
     await putSampleJobs(jobs);
     const open = jobs.filter((j) => j.status !== 'closed').length;
-    expect(await askRescoreAll()).toBe(open);
-    expect((await getStatus()).askBatch).toMatchObject({ kind: 'all', count: open });
-    expect(p.calls).toEqual([]);
-    await startPlannedBatch('now');
-    expect((await getStatus()).batch).toMatchObject({ kind: 'all', total: open });
+    expect(await rescoreAll()).toBe(open);
     await settle();
     expect(p.calls.filter((c) => c === 'full')).toHaveLength(open);
     expect((await getJob(jobs[0]!.id))!.scores.risk).toMatchObject({ score: 6, override: 9 });

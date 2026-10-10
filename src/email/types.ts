@@ -63,6 +63,4 @@ export interface EmailCheckResult {
   accounts: AccountResult[];
   emails: number;
   newJobs: number;
-  /** New jobs are waiting for the user to approve the cost. */
-  askedFirst: boolean;
 }

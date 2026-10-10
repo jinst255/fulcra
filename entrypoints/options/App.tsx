@@ -5,6 +5,7 @@ import { t } from '@/src/i18n/t';
 import { send } from '@/src/messages';
 import { isSetupComplete } from '@/src/store/settings';
 import { AppProvider, useApp } from '@/src/ui/AppContext';
+import { usePresence } from '@/src/ui/hooks';
 import { Banner } from '@/src/ui/Banner';
 import { Gear, Logo, Moon, Sun } from '@/src/ui/Icons';
 import { isDark } from '@/src/ui/themeMode';
@@ -34,6 +35,7 @@ function Shell() {
   const { route, go, update } = useApp();
   const [learn, setLearn] = useState<Learn | null>(null);
   const [checked, setChecked] = useState(false);
+  usePresence();
 
   useEffect(() => {
     void send({ type: 'appOpened' }).catch(() => undefined);

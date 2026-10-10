@@ -1006,31 +1006,6 @@
   "banner_resume": {
     "message": "Resume"
   },
-  "banner_ask_title": {
-    "message": "Re-score $COUNT$ jobs?",
-    "placeholders": {
-      "count": {
-        "content": "$1"
-      }
-    }
-  },
-  "banner_ask_body": {
-    "message": "This takes about $TIME$ and costs about $COST$.",
-    "placeholders": {
-      "time": {
-        "content": "$1"
-      },
-      "cost": {
-        "content": "$2"
-      }
-    }
-  },
-  "banner_ask_start": {
-    "message": "Start now"
-  },
-  "banner_ask_later": {
-    "message": "Later"
-  },
   "banner_waiting": {
     "message": "$COUNT$ jobs are waiting for your OpenAI key.",
     "placeholders": {
@@ -1977,14 +1952,6 @@
       }
     }
   },
-  "email_result_asked": {
-    "message": "Found $COUNT$ new jobs. Confirm the cost in the banner above to score them.",
-    "placeholders": {
-      "count": {
-        "content": "$1"
-      }
-    }
-  },
   "email_result_error": {
     "message": "The check didn't finish. Try again, or copy diagnostics from Settings > Help and diagnostics."
   },
@@ -1996,14 +1963,6 @@
   },
   "email_problem_error": {
     "message": "the check didn't finish"
-  },
-  "banner_ask_titleNew": {
-    "message": "Score $COUNT$ new jobs?",
-    "placeholders": {
-      "count": {
-        "content": "$1"
-      }
-    }
   },
   "settings_scoring_spread": {
     "message": "Spread scores across your jobs"
@@ -2275,65 +2234,30 @@
   "detail_notAJob": {
     "message": "This doesn't look like a job listing, so it isn't ranked. If it is one, select It's a job below."
   },
-  "banner_ask_choice": {
-    "message": "Scoring now takes about $TIME$ and costs about $COST$. At half price ($HALF$), OpenAI finishes within 24 hours, usually much sooner.",
-    "placeholders": {
-      "time": {
-        "content": "$1"
-      },
-      "cost": {
-        "content": "$2"
-      },
-      "half": {
-        "content": "$3"
-      }
-    }
-  },
-  "banner_ask_now": {
-    "message": "Score now ($COST$)",
-    "placeholders": {
-      "cost": {
-        "content": "$1"
-      }
-    }
-  },
-  "banner_ask_half": {
-    "message": "Half price ($COST$)",
-    "placeholders": {
-      "cost": {
-        "content": "$1"
-      }
-    }
-  },
   "banner_half_title": {
-    "message": "Scoring at half price: $DONE$ of $TOTAL$ done.",
+    "message": "You were away, so $APP$ is scoring $TOTAL$ jobs at half price: $DONE$ done.",
     "placeholders": {
-      "done": {
+      "app": {
         "content": "$1"
       },
       "total": {
         "content": "$2"
+      },
+      "done": {
+        "content": "$3"
       }
     }
   },
   "banner_half_body": {
-    "message": "OpenAI is working through them and usually finishes within an hour; it can take up to 24 hours. $APP$ checks every few minutes while Chrome is open.",
+    "message": "Results arrive within 24 hours, usually within an hour, for about $COST$. Want them now?",
     "placeholders": {
-      "app": {
+      "cost": {
         "content": "$1"
       }
     }
   },
   "banner_half_sending": {
     "message": "Sending the jobs to OpenAI…"
-  },
-  "banner_half_speedUp": {
-    "message": "Finish now at full price (about $COST$ more)",
-    "placeholders": {
-      "cost": {
-        "content": "$1"
-      }
-    }
   },
   "banner_scoringNew": {
     "message": "Scoring new jobs: $DONE$ of $TOTAL$ done.",
@@ -2389,25 +2313,14 @@
   "detail_ongoing": {
     "message": "Ongoing"
   },
-  "banner_ask_titleAll": {
-    "message": "Re-score all $COUNT$ jobs?",
-    "placeholders": {
-      "count": {
-        "content": "$1"
-      }
-    }
-  },
   "settings_scoring_rescoreAll": {
     "message": "Re-score all jobs"
   },
   "settings_scoring_rescoreAllHint": {
-    "message": "Scores every open job again with the latest scoring, and fills in details that were blank. You'll see the cost first, with a half-price option."
+    "message": "Scores every open job again with the latest scoring, and fills in details that were blank. You'll see the cost first."
   },
   "settings_scoring_rescoreAllButton": {
     "message": "Re-score all"
-  },
-  "settings_scoring_rescoreAllAsked": {
-    "message": "Check the banner at the top to confirm the cost."
   },
   "settings_scoring_rescoreAllNone": {
     "message": "There are no open jobs to re-score."
@@ -2855,5 +2768,32 @@
   },
   "settings_data_resetWait": {
     "message": "Wait for the email check to finish first."
+  },
+  "banner_half_scoreNow": {
+    "message": "Score now ($COST$)",
+    "placeholders": {
+      "cost": {
+        "content": "$1"
+      }
+    }
+  },
+  "settings_scoring_rescoreAllConfirm": {
+    "message": "Re-score all $COUNT$ open jobs? It costs about $COST$.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "cost": {
+        "content": "$2"
+      }
+    }
+  },
+  "settings_scoring_rescoreAllStarted": {
+    "message": "Re-scoring $COUNT$ jobs.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

@@ -53,7 +53,12 @@ export function planRescore(jobs: JobRecord[], dims: Dimension[], model: ModelCh
   return { tasks, cost, dimNames: [...names], kind: anyNew && anyEdit ? 'mixed' : anyNew ? 'new' : 'edit' };
 }
 
-/** Small batches run on their own; large ones ask first. */
+/** Jobs "Re-score all" covers: every open job, scored or not. */
+export function rescoreAllPick(j: JobRecord): boolean {
+  return j.status !== 'closed' && !j.sample && j.scoring !== 'queued';
+}
+
+/** Small batches score without a progress banner. */
 export function isSmallBatch(count: number, cost: number): boolean {
   return count < 10 && cost < 0.25;
 }

@@ -1,6 +1,6 @@
 # Fulcra privacy policy
 
-_Last updated: October 10, 2026 (half-price scoring added)_
+_Last updated: October 10, 2026 (half-price scoring while you're away)_
 
 Fulcra is a browser extension that scores job postings. It has no servers, no accounts, and no analytics. This page explains exactly what it does with your data.
 
@@ -8,7 +8,7 @@ Fulcra is a browser extension that scores job postings. It has no servers, no ac
 
 Only one thing, and only when a job is scored: Fulcra sends the job listing text, your answers from "About you" (the work you're aiming for, what you enjoy, your home base, your languages, and whether you're open to remote work or relocating), and the definitions of what you've chosen to score to **OpenAI's API at `api.openai.com`**, using your own OpenAI API key. OpenAI's handling of that data is covered by [OpenAI's policies](https://openai.com/policies). Fulcra asks OpenAI not to store responses (`store: false`).
 
-**Half-price scoring.** If you choose Half price for a large batch, Fulcra sends the same information through OpenAI's Batch API: it uploads the requests as a file to your OpenAI account, and OpenAI returns the results as another file. Fulcra deletes both files once the results are in (or, if you cancel, once the cancel completes).
+**Half-price scoring.** When jobs need scoring while you're away from Fulcra (say, from an overnight email check), Fulcra sends the same information through OpenAI's Batch API: it uploads the requests as a file to your OpenAI account, and OpenAI returns the results as another file. Fulcra deletes both files once the results are in (or, if you cancel, once the cancel completes).
 
 Fulcra sends nothing else, to anyone, ever. It has no analytics, crash reporting, or telemetry, and it loads no remote code or fonts.
 
@@ -38,18 +38,19 @@ Fulcra keeps jobs for 90 days after you last saw them by default (Settings > You
 
 ## Permissions
 
-| Permission                       | Why                                                                               |
-| -------------------------------- | --------------------------------------------------------------------------------- |
-| `storage`, `unlimitedStorage`    | Save your jobs and settings on this computer                                      |
-| `alarms`                         | Run scheduled email checks and retry scoring                                      |
-| `tabs`, `scripting`, `activeTab` | Read the job page you ask Fulcra to score, and run email checks                   |
-| `tabGroups`                      | Keep the email-check tab in a collapsed "Fulcra" group instead of among your tabs |
-| `contextMenus`                   | "Score this job with Fulcra" on right-click                                       |
-| `notifications`                  | Tell you about strong matches from email checks                                   |
-| LinkedIn, Handshake, Indeed      | Read job postings on these sites                                                  |
-| Gmail, Outlook                   | Read job alert emails, if you connect an inbox                                    |
-| `api.openai.com`                 | Score jobs with your key                                                          |
-| Other sites (optional)           | Asked one site at a time, only when you paste a link from a site not listed above |
+| Permission                       | Why                                                                                |
+| -------------------------------- | ---------------------------------------------------------------------------------- |
+| `storage`, `unlimitedStorage`    | Save your jobs and settings on this computer                                       |
+| `alarms`                         | Run scheduled email checks and retry scoring                                       |
+| `tabs`, `scripting`, `activeTab` | Read the job page you ask Fulcra to score, and run email checks                    |
+| `tabGroups`                      | Keep the email-check tab in a collapsed "Fulcra" group instead of among your tabs  |
+| `contextMenus`                   | "Score this job with Fulcra" on right-click                                        |
+| `notifications`                  | Tell you about strong matches from email checks                                    |
+| `idle`                           | Tell whether you're at your computer, to choose between scoring now and half price |
+| LinkedIn, Handshake, Indeed      | Read job postings on these sites                                                   |
+| Gmail, Outlook                   | Read job alert emails, if you connect an inbox                                     |
+| `api.openai.com`                 | Score jobs with your key                                                           |
+| Other sites (optional)           | Asked one site at a time, only when you paste a link from a site not listed above  |
 
 ## Contact
 

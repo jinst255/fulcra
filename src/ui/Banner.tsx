@@ -1,6 +1,6 @@
 // In-app banners, one at a time, most urgent first. Blueprint sections 7, 12.4, 13, and 19.5.
 import { useState } from 'react';
-import { formatCost, formatDuration, halfPrice } from '../llm/cost';
+import { formatCost, halfPrice } from '../llm/cost';
 import { t } from '../i18n/t';
 import { send } from '../messages';
 import { buildExport } from '../store/export';
@@ -48,19 +48,22 @@ export function Banner() {
   if (status.emailRunning) {
     b = { id: 'email', tone: 'info', icon: 'spin', text: t('banner.emailRunning'), actions: [] };
   } else if (status.batch?.mode === 'half') {
+    // Started while the person was away. Now they're here, they can have the results right away.
     const bt = status.batch;
+    const left = bt.cost * (1 - bt.done / Math.max(1, bt.total));
     b = {
       id: 'half',
       tone: 'info',
       icon: 'refresh',
       progress: bt.total ? bt.done / bt.total : 0,
       title: t('banner.half.title', { done: bt.done, total: bt.total }),
-      text: bt.remoteIds.length ? t('banner.half.body') : t('banner.half.sending'),
+      text: bt.remoteIds.length
+        ? t('banner.half.body', { cost: formatCost(halfPrice(left)) })
+        : t('banner.half.sending'),
       actions: [
         {
-          label: t('banner.half.speedUp', {
-            cost: formatCost(halfPrice(bt.cost * (1 - bt.done / Math.max(1, bt.total)))),
-          }),
+          label: t('banner.half.scoreNow', { cost: formatCost(left) }),
+          primary: true,
           run: () => void send({ type: 'batchSpeedUp' }),
         },
       ],
@@ -90,36 +93,6 @@ export function Banner() {
           label: bt.paused ? t('banner.resume') : t('banner.pause'),
           run: () => void send({ type: 'batchPause', paused: !bt.paused }),
         },
-      ],
-    };
-  } else if (status.askBatch) {
-    const a = status.askBatch;
-    b = {
-      id: 'ask',
-      tone: 'amber',
-      icon: 'refresh',
-      title:
-        a.kind === 'unscored'
-          ? t('banner.ask.titleNew', { count: a.count })
-          : a.kind === 'all'
-            ? t('banner.ask.titleAll', { count: a.count })
-            : t('banner.ask.title', { count: a.count }),
-      text: t('banner.ask.choice', {
-        time: formatDuration(a.seconds),
-        cost: formatCost(a.cost),
-        half: formatCost(halfPrice(a.cost)),
-      }),
-      actions: [
-        {
-          label: t('banner.ask.now', { cost: formatCost(a.cost) }),
-          run: () => void send({ type: 'batchStart', mode: 'now' }),
-          primary: true,
-        },
-        {
-          label: t('banner.ask.half', { cost: formatCost(halfPrice(a.cost)) }),
-          run: () => void send({ type: 'batchStart', mode: 'half' }),
-        },
-        { label: t('banner.ask.later'), run: () => void send({ type: 'batchLater' }) },
       ],
     };
   } else if (status.storageFull) {

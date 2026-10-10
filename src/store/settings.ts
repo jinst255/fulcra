@@ -36,8 +36,6 @@ export interface AppStatus {
     remoteIds: string[];
     submittedAt: number | null;
   } | null;
-  /** A large batch waiting for the user's go-ahead. Costs are full price. */
-  askBatch: { kind: 'rescore' | 'unscored' | 'all'; count: number; cost: number; seconds: number } | null;
   newScoredCount: number;
 }
 
@@ -50,7 +48,6 @@ export function defaultStatus(): AppStatus {
     storageFull: false,
     rateLimited: false,
     batch: null,
-    askBatch: null,
     newScoredCount: 0,
   };
 }

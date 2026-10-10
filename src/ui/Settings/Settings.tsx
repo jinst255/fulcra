@@ -1,9 +1,11 @@
 // Settings, nine sections, saved instantly with "Saved". Blueprint section 11, matched to the approved demo.
 import { useEffect, useState } from 'react';
 import { INTERVALS } from '../../core/defaults';
+import { rescoreAllPick } from '../../core/rescore';
 import type { ModelChoice } from '../../core/types';
 import { sampleJobRecords } from '../../dev/sample';
 import { t } from '../../i18n/t';
+import { costPerJob, formatCost } from '../../llm/cost';
 import { send } from '../../messages';
 import { buildExport, diagnostics } from '../../store/export';
 import { clearSampleJobs, deleteClosedJobs, putSampleJobs } from '../../store/jobs';
@@ -277,8 +279,9 @@ function PrioritiesSection() {
 }
 
 function ScoringSection() {
-  const { settings, update, toast, key } = useApp();
+  const { settings, update, toast, key, jobs, confirm } = useApp();
   const sc = settings.scoring;
+  const toRescore = jobs.filter(rescoreAllPick).length;
   const [shortcut, setShortcut] = useState<string | null>(null);
   useEffect(() => {
     void chrome.commands
@@ -300,9 +303,19 @@ function ScoringSection() {
           className="btn"
           disabled={!key.hasKey}
           onClick={() =>
-            void send<number>({ type: 'rescoreAll' }).then((n) =>
-              toast(n ? t('settings.scoring.rescoreAllAsked') : t('settings.scoring.rescoreAllNone')),
-            )
+            toRescore
+              ? confirm({
+                  text: t('settings.scoring.rescoreAllConfirm', {
+                    count: toRescore,
+                    cost: formatCost(toRescore * costPerJob(settings.model)),
+                  }),
+                  confirmLabel: t('settings.scoring.rescoreAllButton'),
+                  onConfirm: () =>
+                    void send<number>({ type: 'rescoreAll' }).then((n) =>
+                      toast(t('settings.scoring.rescoreAllStarted', { count: n })),
+                    ),
+                })
+              : toast(t('settings.scoring.rescoreAllNone'))
           }
         >
           {t('settings.scoring.rescoreAllButton')}

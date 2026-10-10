@@ -69,14 +69,12 @@ function accountResultText(r: AccountResult, name: string): string {
   }
 }
 
-/** The lines shown after "Check now" or "Import": one per inbox, then the cost question. */
+/** The lines shown after "Check now" or "Import": one per inbox. */
 export function checkResultLines(r: EmailCheckResult, accounts: EmailAccount[]): string[] {
   if (r.status === 'busy') return [t('setup.email.busy')];
   if (r.status === 'off') return [];
   if (!r.accounts.length) return [t('email.result.error')];
-  const lines = r.accounts.map((a) => accountResultText(a, inboxNameById(accounts, a.id)));
-  if (r.askedFirst) lines.push(t('email.result.asked', { count: r.newJobs }));
-  return lines;
+  return r.accounts.map((a) => accountResultText(a, inboxNameById(accounts, a.id)));
 }
 
 function lastCheckText(last: CheckSummary): string {
@@ -175,7 +173,6 @@ export function EmailForm({ mode, onNotNow }: { mode: 'setup' | 'settings'; onNo
         accounts: [],
         emails: 0,
         newJobs: 0,
-        askedFirst: false,
       } satisfies EmailCheckResult);
     setRunning(false);
     setRunResult(r);
