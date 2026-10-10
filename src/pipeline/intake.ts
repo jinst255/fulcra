@@ -102,12 +102,12 @@ export async function scoreTab(tabId: number): Promise<ScoreTabResult> {
   return intakePage(page);
 }
 
-function waitForLoad(tabId: number): Promise<void> {
+export function waitForLoad(tabId: number, settleMs = SETTLE_MS): Promise<void> {
   return new Promise((resolve) => {
     const done = () => {
       chrome.tabs.onUpdated.removeListener(l);
       clearTimeout(timer);
-      setTimeout(resolve, SETTLE_MS);
+      setTimeout(resolve, settleMs);
     };
     const l = (id: number, info: { status?: string }) => {
       if (id === tabId && info.status === 'complete') done();

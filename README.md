@@ -123,6 +123,7 @@ flowchart LR
 |---|---|
 | The posting you're looking at | Select the Fulcra icon → **Score this job**, or press <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd> |
 | A link on any page | Right-click it → **Score this job with Fulcra** |
+| Every job on a page | On a search page, an employer's job list, or a careers page, select the Fulcra icon → **Score all**. Fulcra opens each one in a collapsed tab group, reads it, and closes it |
 | An offer with no posting | Paste the text (a message from a friend, say) or a link into the popup |
 | Jobs in your alert emails | Nothing. Fulcra checks your inbox on a schedule |
 

@@ -1,5 +1,6 @@
 // Messages between the popup, the full-page app, content scripts, and the service worker.
 import type { PageExtraction } from './readers/extract';
+import type { JobLink } from './readers/links';
 
 export type Request =
   | { type: 'scoreTab'; tabId: number }
@@ -18,7 +19,12 @@ export type Request =
   | { type: 'emailImport'; days: number | null; accountId?: string }
   | { type: 'emailSignInCheck'; provider: 'gmail' | 'outlook'; account?: number }
   | { type: 'emailScheduleChanged' }
-  | { type: 'pageSeen'; page: PageExtraction };
+  | { type: 'pageSeen'; page: PageExtraction }
+  | { type: 'listJobLinks'; tabId: number }
+  | { type: 'scanJobs'; links: JobLink[] }
+  | { type: 'scanStop' };
+
+export type JobLinksResult = { links: JobLink[]; more: boolean };
 
 export type ScoreTabResult =
   | { ok: true; jobId: string; already: boolean }

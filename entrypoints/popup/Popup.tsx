@@ -4,11 +4,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { formatScore } from '@/src/core/overall';
 import { topContributors } from '@/src/core/standouts';
 import { t } from '@/src/i18n/t';
-import { send, type ReadTabResult, type ScoreTabResult } from '@/src/messages';
+import { costPerJob, formatCost } from '@/src/llm/cost';
+import { send, type JobLinksResult, type ReadTabResult, type ScoreTabResult } from '@/src/messages';
 import type { PageExtraction } from '@/src/readers/extract';
 import { isUrl, siteFor } from '@/src/readers/generic';
 import { allJobs } from '@/src/store/jobs';
-import { isSetupComplete } from '@/src/store/settings';
+import { isSetupComplete, type AppStatus } from '@/src/store/settings';
 import { Spinner, Swatch, Tag } from '@/src/ui/components';
 import { failText, jobSub, jobTitle, payReason, relativeTime } from '@/src/ui/format';
 import { Check, DealbreakerMark, Gear, KeyIcon, Logo } from '@/src/ui/Icons';
@@ -47,6 +48,11 @@ export function Popup() {
   const [paste, setPaste] = useState('');
   const [showPaste, setShowPaste] = useState(false);
   const [rescoring, setRescoring] = useState<number | null>(null);
+  const [found, setFound] = useState<JobLinksResult | null>(null);
+  const [scanNote, setScanNote] = useState<'denied' | null>(null);
+  // The last progress seen, to say how it went once the scan finishes.
+  const [scanLast, setScanLast] = useState<NonNullable<AppStatus['scan']> | null>(null);
+  const [scanDone, setScanDone] = useState<NonNullable<AppStatus['scan']> | null>(null);
 
   // Read the current tab once. The popup's click grants activeTab.
   useEffect(() => {
@@ -54,6 +60,10 @@ export function Popup() {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       if (tab?.id == null) return setV({ kind: 'home' });
       setTabId(tab.id);
+      // The jobs this page links to, for "Score all". Doesn't hold up the rest.
+      void send<JobLinksResult>({ type: 'listJobLinks', tabId: tab.id })
+        .then(setFound)
+        .catch(() => undefined);
       const r = await send<ReadTabResult>({ type: 'readTab', tabId: tab.id }).catch(
         () => ({ ok: false }) as ReadTabResult,
       );
@@ -80,6 +90,30 @@ export function Popup() {
     if (rescoring != null && resultJob && resultJob.updatedAt > rescoring && resultJob.scoring !== 'queued')
       setRescoring(null);
   }, [rescoring, resultJob]);
+
+  const scan = status?.scan ?? null;
+  useEffect(() => {
+    if (scan) setScanLast(scan);
+    else if (scanLast) {
+      setScanDone(scanLast);
+      setScanLast(null);
+      setFound(null);
+    }
+  }, [scan, scanLast]);
+
+  const scanAll = async () => {
+    if (!found) return;
+    // Fulcra can read LinkedIn, Indeed, and Handshake already; any other site needs asking, once.
+    const origins = [
+      ...new Set(found.links.filter((l) => !siteFor(l.url)).map((l) => new URL(l.url).origin + '/*')),
+    ];
+    const granted = !origins.length || (await chrome.permissions.request({ origins }).catch(() => false));
+    const links = granted ? found.links : found.links.filter((l) => siteFor(l.url));
+    setScanNote(granted ? null : 'denied');
+    if (!links.length) return;
+    setScanDone(null);
+    await send({ type: 'scanJobs', links });
+  };
 
   const handleResult = useCallback((r: ScoreTabResult) => {
     if (r.ok) {
@@ -222,6 +256,45 @@ export function Popup() {
       </button>
     </div>
   );
+
+  const n = found?.links.length ?? 0;
+  const scanCard = scan ? (
+    <div role="status" className="card col" style={{ padding: '14px 16px', gap: 8 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, fontWeight: 500 }}>
+        <Spinner />
+        {t('popup.scan.reading', { done: scan.done, total: scan.total })}
+      </div>
+      <div style={{ fontSize: 12, color: 'var(--text-2)' }}>{t('popup.scan.readingHint')}</div>
+      <button type="button" className="btn" onClick={() => void send({ type: 'scanStop' })}>
+        {t('popup.scan.stop')}
+      </button>
+    </div>
+  ) : scanDone ? (
+    <div role="status" className="card col" style={{ padding: '14px 16px', gap: 8 }}>
+      <div style={{ fontSize: 14, fontWeight: 500 }}>{t('popup.scan.done', { count: scanDone.saved })}</div>
+      {scanDone.failed > 0 && (
+        <div style={{ fontSize: 12, color: 'var(--text-2)' }}>
+          {t('popup.scan.failed', { count: scanDone.failed })}
+        </div>
+      )}
+      <button type="button" className="btn primary" onClick={() => void openApp().then(() => window.close())}>
+        {t('popup.scan.compare')}
+      </button>
+    </div>
+  ) : n >= 2 ? (
+    <div className="card col" style={{ padding: '14px 16px', gap: 8 }}>
+      <div style={{ fontSize: 14, fontWeight: 500 }}>
+        {found!.more ? t('popup.scan.more', { count: n }) : t('popup.scan.found', { count: n })}
+      </div>
+      {scanNote && <div className="note-amber">{t('popup.scan.denied')}</div>}
+      <button type="button" className="btn primary" disabled={!!err} onClick={() => void scanAll()}>
+        {found!.more ? t('popup.scan.buttonFirst', { count: n }) : t('popup.scan.button', { count: n })}
+      </button>
+      <div style={{ fontSize: 12, color: 'var(--text-2)' }}>
+        {t('popup.scan.cost', { cost: formatCost(n * costPerJob(settings.model)) })}
+      </div>
+    </div>
+  ) : null;
 
   let body: React.ReactNode;
 
@@ -451,6 +524,7 @@ export function Popup() {
     body = (
       <>
         {errBox}
+        {scanCard}
         <div className="card col" style={{ padding: '14px 16px', gap: 6 }}>
           <h2 style={{ fontSize: 14, marginBottom: 4 }}>{t('popup.topJobs')}</h2>
           {top3.length === 0 ? (
@@ -490,7 +564,12 @@ export function Popup() {
     );
   }
 
-  return <Shell footer={footer}>{body}</Shell>;
+  return (
+    <Shell footer={footer}>
+      {body}
+      {(v.kind === 'job' || v.kind === 'result') && scanCard}
+    </Shell>
+  );
 }
 
 function Shell({ children, footer }: { children: React.ReactNode; footer: React.ReactNode }) {

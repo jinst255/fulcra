@@ -37,6 +37,8 @@ export interface AppStatus {
     submittedAt: number | null;
   } | null;
   newScoredCount: number;
+  /** "Score all" from the popup: reading the jobs a page links to. */
+  scan: { total: number; done: number; saved: number; failed: number } | null;
 }
 
 export function defaultStatus(): AppStatus {
@@ -49,6 +51,7 @@ export function defaultStatus(): AppStatus {
     rateLimited: false,
     batch: null,
     newScoredCount: 0,
+    scan: null,
   };
 }
 

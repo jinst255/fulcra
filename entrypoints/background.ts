@@ -8,6 +8,7 @@ import { applyBadge } from '@/src/pipeline/badge';
 import { t } from '@/src/i18n/t';
 import { addPaste, describeTab, pageSeen, rescoreJob, scoreTab } from '@/src/pipeline/intake';
 import { hardReset } from '@/src/pipeline/reset';
+import { listJobLinks, scanJobs, stopScan } from '@/src/pipeline/scan';
 import { jobIdFromNotification, maybeNotify } from '@/src/pipeline/notify';
 import { siteFor } from '@/src/readers/generic';
 import { onScored, planAndMaybeStart, pump, queueUnscored, rescoreAll } from '@/src/pipeline/queue';
@@ -46,8 +47,8 @@ export default defineBackground(() => {
     void scheduleCatchUp();
   });
 
-  // A check can't be running in a service worker that just started; clear a flag left by one that died.
-  void updateStatus({ emailRunning: false });
+  // A check or a scan can't be running in a service worker that just started; clear flags left by one that died.
+  void updateStatus({ emailRunning: false, scan: null });
   void flagPromotions();
   initHalfPrice();
 
@@ -141,6 +142,15 @@ async function handle(msg: Request): Promise<unknown> {
       return rescoreJob(msg.jobId);
     case 'pageSeen':
       await pageSeen(msg.page);
+      return true;
+    case 'listJobLinks':
+      return listJobLinks(msg.tabId);
+    case 'scanJobs':
+      // Runs on after the popup closes; progress shows in the status.
+      void scanJobs(msg.links);
+      return true;
+    case 'scanStop':
+      stopScan();
       return true;
     case 'emailSignInCheck':
       return signInCheck(msg.provider, msg.account);

@@ -7,6 +7,7 @@ The first release of Fulcra.
 ### Scoring
 
 - Score any job posting on LinkedIn, Handshake, Indeed, or any other site, or paste a link or the text of an offer. Use the popup, the right-click menu, or <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd>.
+- Score every job on a page at once: a search page, an employer's job list, or a careers page. The popup shows how many it found and what it will cost, then reads each one in a collapsed tab group.
 - Seven dimensions to start with: pay, enjoyment, impact, career leverage, life cost, risk, and location and social. Rename or remove them, or add up to 12 of your own. Each built-in one gives the AI a rubric, and every score comes with a one-line reason.
 - Pay and the overall score are worked out by Fulcra, not the AI. Pay can be compared over a time frame or as a rate, with your goal and minimum per hour, per year, or in total. Impossible pay units, like "$110,000 an hour", are fixed, with an Undo.
 - Scores are spread across your jobs, so the best and weakest on each dimension are easy to see. You can turn this off.

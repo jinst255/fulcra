@@ -577,6 +577,85 @@
       }
     }
   },
+  "popup_scan_found": {
+    "message": "$COUNT$ jobs on this page",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popup_scan_more": {
+    "message": "More than $COUNT$ jobs on this page",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popup_scan_button": {
+    "message": "Score all $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popup_scan_buttonFirst": {
+    "message": "Score the first $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popup_scan_cost": {
+    "message": "About $COST$. Each opens in a tucked-away tab to be read.",
+    "placeholders": {
+      "cost": {
+        "content": "$1"
+      }
+    }
+  },
+  "popup_scan_reading": {
+    "message": "Reading jobs: $DONE$ of $TOTAL$",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "popup_scan_readingHint": {
+    "message": "Each is scored as soon as it's read. You can close this."
+  },
+  "popup_scan_stop": {
+    "message": "Stop"
+  },
+  "popup_scan_done": {
+    "message": "Read $COUNT$ jobs",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popup_scan_failed": {
+    "message": "$COUNT$ couldn't be read.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popup_scan_compare": {
+    "message": "Compare them"
+  },
+  "popup_scan_denied": {
+    "message": "Fulcra needs permission to open those jobs."
+  },
   "popup_emailStatus": {
     "message": "Emails checked $WHEN$",
     "placeholders": {

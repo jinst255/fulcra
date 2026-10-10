@@ -5,11 +5,11 @@ import type { AlertCard } from '../../email/types';
 import { cardFrom, cardRoot, isRole, linkTitle, lines_, unwrapLink } from './common';
 
 /** Links that point at a posting or an application. */
-const JOB_URL =
+export const JOB_URL =
   /\/(jobs?|careers?|positions?|openings?|vacanc(y|ies)|postings?|requisitions?|apply|viewjob|rc\/clk)\b|[?&](jk|gh_jid|job_?id|jobid|req(uisition)?_?id)=|greenhouse\.io|lever\.co|myworkdayjobs\.com|ashbyhq\.com|smartrecruiters\.com|icims\.com|jobvite\.com|workable\.com|bamboohr\.com|indeed\.com|ziprecruiter\.com|glassdoor\.com|monster\.com|dice\.com|simplyhired\.com|wellfound\.com/i;
 
 /** Links every email has: footers, accounts, and settings. */
-const CHROME =
+export const CHROME =
   /^(privacy|privacy policy|terms|terms of (use|service)|help|help center|contact( us)?|support|about( us)?|careers? (home|site)|view (in|on) (browser|web)|unsubscribe|preferences|settings|edit (alert|search)|manage alerts?|download|app store|google play|facebook|twitter|x|linkedin|instagram|youtube|tiktok|home|here|click here|this link|see (all|more)( jobs)?|view (all|more)( jobs)?|more jobs|show more|.*@.*|https?:\/\/.*|www\..*)$/i;
 
 const MAX_CARDS = 30;
