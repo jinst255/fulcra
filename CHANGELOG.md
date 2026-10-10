@@ -17,3 +17,8 @@ First build of Fulcra.
 - Edit a score in place; pages of 10 to 100 jobs; closed postings and non-job emails fold away; the radar compares any number of jobs, with missing scores in red.
 - Email checks report what happened, read past imports in full, pick the Gmail account, and switch between Gmail and Outlook directly.
 - Dark mode.
+- Several inboxes at once (say, a Gmail and an Outlook), checked in a collapsed "Fulcra" tab group instead of a minimized window.
+- Pay: a "No set time frame" choice, and a pay goal and minimum per hour, per year, or in total. Impossible pay units ("$110,000 an hour") are fixed.
+- A job type filter on the ranked list and radar, instead of a "job types to skip" dealbreaker.
+- The radar opens a job when you click its name and highlights it when you hover.
+- Setup: Skip this step skips one step; the priority sliders explain each dimension and what 0 and 10 mean.

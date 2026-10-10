@@ -38,7 +38,7 @@ Fulcra uses OpenAI to read and score jobs, with your own API key. OpenAI bills y
 
 - **Score a posting:** open a job posting, select the Fulcra icon, then **Score this job**. You can also press `Alt+Shift+F`, or right-click the page or a link and choose **Score this job with Fulcra**.
 - **Paste a link or text:** in the popup, paste a job link, or the text of an offer with no posting, like a message from a friend.
-- **Job alert emails:** in Settings > Job alert emails, connect Gmail or Outlook (and pick which Gmail account, if you're signed in to more than one). Once a day (or as often as you choose), Fulcra opens your inbox in a minimized window, reads LinkedIn and Handshake job alerts that arrived since the last check, and closes it. **Import past alerts** reads the last 7, 30, or 90 days, or everything, with an estimate of the jobs and cost for each. Your emails stay marked unread, and nothing else in your inbox is read. Jobs from alerts get a **Preliminary** score from the email; open the posting and Fulcra upgrades it to a full score. Promotions and other non-job emails are left out, and anything the AI decides isn't a job listing is folded into **Not job listings**.
+- **Job alert emails:** in Settings > Job alert emails, add each inbox that gets job alerts: one or more Gmail accounts, Outlook, or both. Once a day (or as often as you choose), Fulcra opens each inbox in turn in a background tab, tucked into a collapsed tab group named Fulcra, reads LinkedIn and Handshake job alerts that arrived since the last check, and closes it. **Import past alerts** reads the last 7, 30, or 90 days, or everything, with an estimate of the jobs and cost for each. Your emails stay marked unread, and nothing else in your inbox is read. Jobs from alerts get a **Preliminary** score from the email; open the posting and Fulcra upgrades it to a full score. Promotions and other non-job emails are left out, and anything the AI decides isn't a job listing is folded into **Not job listings**.
 - **Compare:** the **Ranked list** is home. The **Radar** compares up to three jobs across everything you care about.
 - **Disagree with a score?** Open the job and select the pencil next to the score to type your own. If you keep correcting the same thing, Fulcra offers to change that weight.
 - **Closed postings:** when a posting you open says it's no longer accepting applications, Fulcra moves it to **Closed or expired** at the bottom of the list.
@@ -56,7 +56,7 @@ and the pay score is
 
 > pay score = 1 + 9 × min(1, max(0, T ÷ G))
 
-where G is your pay goal, or the best take-home among your open jobs if you didn't set one. Taxes aren't modeled; everything is "before tax." When a posting has no pay, the model estimates it and Fulcra labels it **Estimate**. When a number is far off for its unit (like $16 a year), Fulcra asks the model which unit was meant and shows **Pay unit corrected** with an Undo.
+where G is your pay goal, or the best take-home among your open jobs if you didn't set one. If you pick **No set time frame**, there's no T: jobs are compared by pay rate (per hour or per year, your choice), however long they last. Your pay goal and the lowest pay you'd take can be per hour, per year, or a total over your time frame; changing the unit converts them at 40 hours a week. Taxes aren't modeled; everything is "before tax." When a posting has no pay, the model estimates it and Fulcra labels it **Estimate**. When a number can't be right for its unit (like $16 a year or $110,000 an hour), Fulcra fixes it: it reads "$110K" as $110,000, trusts a unit written next to the amount, or picks the only unit the amount fits. When more than one unit could fit, it asks the model. Either way the job shows **Pay unit corrected** with an Undo.
 
 **Spread across your jobs.** By default (Settings > Scoring), each dimension's AI scores are stretched across your open jobs so the best one on it shows 10 and the weakest shows 1, which makes small differences easy to see. It needs at least three scored jobs and at least a point of difference; your own scores are never stretched. Turn it off to see the raw scores.
 
@@ -66,7 +66,7 @@ where G is your pay goal, or the best take-home among your open jobs if you didn
 
 over the dimensions that have a score. If every weight is 0, they count equally.
 
-**Dealbreakers** are checked against facts from the posting, never the model's opinion. If Fulcra can't tell, the job doesn't fail.
+**Dealbreakers** are checked against facts from the posting, never the model's opinion. If Fulcra can't tell, the job doesn't fail. To see only one kind of job (internships, say), use the **Job type** buttons above the ranked list and radar; the filter is shared by both.
 
 ## Privacy
 
@@ -93,7 +93,7 @@ See [PRIVACY.md](PRIVACY.md) for details.
 - Email reading depends on Gmail's and Outlook's page layouts, which can change without notice and break checks until Fulcra is updated.
 - Jobs from alert emails get only a preliminary score until you open the posting. Fulcra can't always tell from an email that a job has closed.
 - LinkedIn, Handshake, and Indeed layouts can change and break page reading. Pasting text always works.
-- A minimized window briefly appears in the taskbar during email checks.
+- During email checks, a collapsed "Fulcra" tab group briefly appears in your tab strip. If you close it, that check stops and says so; the next one tries again.
 - The API key is stored unencrypted in the browser's extension storage.
 - Only Chrome is tested. English only.
 - No after-the-job ratings, no import, no sync between computers, no mobile app.

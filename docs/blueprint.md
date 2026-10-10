@@ -12,6 +12,13 @@
 
 ## Changelog
 
+- **v1.4 (October 10, 2026, beta feedback round):** changes after a friend tested the build. Where this list and an older section disagree, this list wins. Strings added in this round live only in `messages.json`, which is the source of truth over section 19.
+  - **Email (9.4, 12.2, 12.3):** `email.accounts` replaces `provider` and `accountIndex`: any mix of Gmail accounts (`gmail:N` for `mail/u/N`) and one Outlook. Each inbox is checked in turn and keeps its own `lastCheck` and `lastOkAt`; Gmail's sign-in check reads the address from the tab title. Old settings migrate. A check opens an inactive tab in a collapsed tab group named Fulcra in the last focused normal window (new `tabGroups` permission), or a minimized window when no window is open. If the person closes the tab, the check reports `MAIL_CLOSED` ("the tab was closed") instead of an error.
+  - **Pay (5.5, 10):** `about.windowWeeks` may be null ("No set time frame"): pay is then compared as a rate, ignoring job length. `about.payUnit` (`hour`, `year`, or `total` over the time frame) sets the unit of the pay goal and of the minimum pay; changing it converts both, assuming 40 hours a week. With a time frame, pay is still take-home over it. Saved goals become `total`.
+  - **Pay sanity (5.6):** the prompt says where to read the pay unit, that K means thousands, and what range each unit falls in. After scoring, an outlier is fixed in code when the answer is obvious ("$110K" read as 110, a unit written next to the amount, or the only unit the amount fits); the model is asked only when several units fit.
+  - **Job types (5.3, 9.2):** "Job types to skip" is no longer a dealbreaker. A Job type row above the ranked list and radar (`ui.jobTypes`, empty for all) filters both; ranking, spreading, and the best-paying job are worked out within the filter. Old skip lists become the filter.
+  - **Setup (10):** "Skip this step" skips only the current step. The priority sliders have an (i) tooltip per dimension and end labels ("Doesn't matter" to "Matters most").
+  - **Radar (9.2):** a job's name opens it in the drawer over the radar (`#radar/<id>`); the checkbox alone puts it on the chart. Hovering or focusing a row highlights that job on the chart, or previews it in gray if it isn't on the chart.
 - **v1.3 (October 10, 2026, first feedback round):** changes after Justin used the build. Where this list and an older section disagree, this list wins.
   - **Email (12.3):** Gmail selectors checked against live Gmail (the Back button is a `title` attribute; counts can read "of many"). Imports split date ranges until each fits one page, so they read past the newest 50 emails; scheduled checks look back to the last good check (2 to 30 days). Checks report their result to the page and never fail silently; switching Gmail/Outlook doesn't need a disconnect; the Gmail account is picked in the email settings. Outlook tries outlook.live.com then outlook.office.com and must pass two guards (the search changes the list; each opened message shows an alert sender). The Handshake sender is `handshake@g.joinhandshake.com`. LinkedIn alerts hold about 6 jobs each. Promotional link text is never read as a job, and the model's `not_a_job` flag folds non-jobs away.
   - **Scoring (5.7, 5.9):** scores are spread across the person's open jobs per dimension by default (`scoring.spread`), from 3 jobs and a 1-point range up; overrides aren't stretched. The prompt has one 1-10 scale, treats every detail as evidence, asks for the reason before the score, allows half points, and works out remote, relocation (against home base), languages, and job type. Zero pay counts as missing. `tests/live/calibration.live.test.ts` measures spread and blank facts.
@@ -347,7 +354,7 @@ Layout: top bar with Fulcra wordmark, tabs **Ranked list** | **Radar**, and a ge
 
 ### 9.4 Background email window
 
-A minimized, unfocused Chrome window (`chrome.windows.create({state: "minimized", focused: false})`) loads the mail search page, so no tab appears in the user's current window. If minimized windows aren't allowed, use an inactive tab in the current window and close it when done. The badge shows "…" during a check.
+(v1.4) An inactive tab in a collapsed tab group named Fulcra, in the last focused normal window, loads the mail page; with no normal window open, a minimized, unfocused window does. Each inbox gets its own tab in turn, closed when done. The badge shows "…" during a check.
 
 ---
 
@@ -472,13 +479,17 @@ interface Settings {
            communityImportance: "very" | "somewhat" | "not";
            remote: "yes" | "maybe" | "no"; relocate: "yes" | "maybe" | "no";
            languages: { name: string; level: "native" | "fluent" | "conversational" }[];
-           windowWeeks: number; payGoal: number | null };
-  dealbreakers: { minTakeHome: number | null; maxHours: number | null;
-                  mustRemote: boolean; noRelocation: boolean;
-                  excludeTypes: string[]; languageGap: boolean };
-  email: { provider: "gmail" | "outlook" | null; intervalMinutes: number;
-           senders: string[]; lastCheck: { at: number; result: string } | null;
-           accountIndex: number };       // Gmail u/N, developer setting, default 0
+           windowWeeks: number | null;   // null: no set time frame (v1.4)
+           payUnit: "hour" | "year" | "total"; payGoal: number | null };
+  dealbreakers: { minTakeHome: number | null;  // in payUnit (v1.4)
+                  maxHours: number | null;
+                  mustRemote: boolean; noRelocation: boolean; languageGap: boolean };
+  email: { accounts: { id: string; provider: "gmail" | "outlook"; index: number;
+                       address: string | null; lastCheck: CheckSummary | null;
+                       lastOkAt: number | null }[];   // v1.4
+           intervalMinutes: number; senders: string[];
+           lastCheck: { at: number; result: string; count: number | null } | null;
+           importDays: number | null };
   scoring: { autoScore: boolean; upgradeOnVisit: boolean;
              notify: boolean; notifyThreshold: number };
   ui: { showOutsideDealbreakers: boolean | null;  // null = automatic (fewer than 5 pass)
@@ -665,7 +676,7 @@ Pin every version exactly (no `^` or `~`). Pick versions at least two weeks old.
 
 **Not allowed:** chart libraries (charts are hand-drawn SVG), analytics SDKs, remote fonts or scripts, and anything that phones home.
 
-**Manifest permissions:** `storage`, `unlimitedStorage`, `alarms`, `tabs`, `scripting`, `activeTab`, `contextMenus`, `notifications`.
+**Manifest permissions:** `storage`, `unlimitedStorage`, `alarms`, `tabs`, `tabGroups` (v1.4), `scripting`, `activeTab`, `contextMenus`, `notifications`.
 
 **Host permissions:** `https://www.linkedin.com/*`, `https://app.joinhandshake.com/*`, `https://*.joinhandshake.com/*`, `https://www.indeed.com/*`, `https://mail.google.com/*`, `https://outlook.live.com/*`, `https://outlook.office.com/*`, `https://api.openai.com/*`.
 
@@ -1224,11 +1235,11 @@ The README must cover:
 - Requires a paid OpenAI API account. There is no free scoring option in v1.
 - Scores are a model's judgment from the posting text and can be wrong. Reasons are shown so users can judge, and overrides are always available.
 - Pay ignores taxes, benefits, and equity unless the posting states a total. Estimated pay is labeled.
-- Email checks need Chrome to be open and the user signed in to Gmail or Outlook in the same browser profile. Only the first Gmail account (`u/0`) is checked by default.
+- Email checks need Chrome to be open and the user signed in to Gmail or Outlook in the same browser profile. Each Gmail account to read is added separately (v1.4).
 - Email reading depends on Gmail's and Outlook's page layouts, which can change without notice and break checks until Fulcra is updated.
 - Jobs from alert emails get only a preliminary score until the posting is opened. Fulcra can't always tell from an email that a job has closed.
 - LinkedIn, Handshake, and Indeed layouts can change and break page reading. Pasting text always works.
-- A brief minimized window appears in the taskbar during email checks.
+- During email checks, a collapsed "Fulcra" tab group briefly appears in the tab strip.
 - The API key is stored unencrypted in the browser's extension storage.
 - Only Chrome is tested. Edge and Firefox builds may work but aren't supported.
 - English only.

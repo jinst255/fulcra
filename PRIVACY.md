@@ -22,7 +22,7 @@ Fulcra sends nothing else, to anyone, ever. It has no analytics, crash reporting
 
 ## Job alert emails
 
-If you connect Gmail or Outlook, Fulcra opens your inbox in a minimized window on the schedule you choose, searches only for emails from the alert senders listed in Settings (LinkedIn and Handshake by default), reads the job cards in those emails, marks them unread again, and closes the window. It reads no other email: in Outlook, Fulcra checks that each message it opens shows an alert sender's address and stops if one doesn't. It uses your existing signed-in session in Chrome and never sees your password. Email content is not sent anywhere; only the job title, company, location, and pay from each alert are sent to OpenAI for a preliminary score.
+If you connect Gmail or Outlook (one inbox or several), Fulcra opens each inbox in turn in a background tab, tucked into a collapsed tab group named Fulcra, on the schedule you choose, searches only for emails from the alert senders listed in Settings (LinkedIn and Handshake by default), reads the job cards in those emails, marks them unread again, and closes the tab. It reads no other email: in Outlook, Fulcra checks that each message it opens shows an alert sender's address and stops if one doesn't. It uses your existing signed-in session in Chrome and never sees your password. Email content is not sent anywhere; only the job title, company, location, and pay from each alert are sent to OpenAI for a preliminary score.
 
 ## Job pages
 
@@ -43,10 +43,11 @@ Fulcra keeps jobs for 90 days after you last saw them by default (Settings > You
 | `storage`, `unlimitedStorage`    | Save your jobs and settings on this computer                                      |
 | `alarms`                         | Run scheduled email checks and retry scoring                                      |
 | `tabs`, `scripting`, `activeTab` | Read the job page you ask Fulcra to score, and run email checks                   |
+| `tabGroups`                      | Keep the email-check tab in a collapsed "Fulcra" group instead of among your tabs |
 | `contextMenus`                   | "Score this job with Fulcra" on right-click                                       |
 | `notifications`                  | Tell you about strong matches from email checks                                   |
 | LinkedIn, Handshake, Indeed      | Read job postings on these sites                                                  |
-| Gmail, Outlook                   | Read job alert emails, if you connect one                                         |
+| Gmail, Outlook                   | Read job alert emails, if you connect an inbox                                    |
 | `api.openai.com`                 | Score jobs with your key                                                          |
 | Other sites (optional)           | Asked one site at a time, only when you paste a link from a site not listed above |
 
