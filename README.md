@@ -1,144 +1,285 @@
+<div align="center">
+
+<img src="public/icons/128.png" width="72" alt="">
+
 # Fulcra
 
-It's a free browser extension that scores job offers on what matters to you, not just pay. It reads the postings you open and your job alert emails, then ranks and charts every job by your priorities.
+**Score job offers on what matters to you, not just pay.**
 
-![The ranked list](docs/store/ranked-list.png)
+A free Chrome extension that reads the postings you open and the job alerts in your inbox,<br>
+then ranks every job by your own priorities.
 
-Fulcra scores each job on seven things: pay, enjoyment, impact, career leverage, life cost, risk, and location and social cost. You set how much each one matters, and the list reorders as you move the sliders. Everything is stored on your computer. There are no accounts, no servers, and no analytics.
+[Install](#install) · [How it works](#how-it-works) · [Cost](#cost) · [Privacy](#privacy) · [Troubleshooting](#troubleshooting) · [Contributing](#contributing)
+
+![MIT license](https://img.shields.io/badge/license-MIT-0f6b5c) ![Chrome MV3](https://img.shields.io/badge/Chrome-MV3-0f6b5c) ![Status: beta](https://img.shields.io/badge/status-beta-c9a227)
+
+<img src="docs/store/ranked-list.png" width="860" alt="The ranked list: five jobs ordered by overall score, with sliders for what matters most">
+
+</div>
+
+## Why Fulcra
+
+Two offers paying the same can be very different jobs. Fulcra scores each one on **seven things**, and you decide how much each one counts:
+
+| | | |
+|---|---|---|
+| 💵 **Pay** | 🙂 **Enjoyment** | 🌍 **Impact** |
+| 📈 **Career leverage** | ⏳ **Life cost** | ⚠️ **Risk** |
+| 📍 **Location and social** | | |
+
+Move a slider and the list reorders instantly. Rename, remove, or add up to 12 of your own.
+
+<table>
+<tr>
+<td width="50%"><img src="docs/store/radar.png" alt="The radar chart comparing three jobs"></td>
+<td width="50%"><img src="docs/store/job-detail.png" alt="A job's details, with pay, facts, and a reason for every score"></td>
+</tr>
+<tr>
+<td><b>Radar.</b> See the shape of any number of jobs side by side.</td>
+<td><b>Every score has a reason.</b> Disagree? Type your own.</td>
+</tr>
+</table>
+
+- **No accounts, no servers, no analytics.** Everything lives in your browser.
+- **Your own OpenAI key.** Most people spend under $1 a month. [See cost](#cost).
+- **Works where the jobs are:** LinkedIn, Handshake, Indeed, any other job page, pasted text, and alert emails in Gmail and Outlook.
 
 ## Install
 
-**From the Chrome Web Store:** coming soon. Install with one click, and setup opens in a new tab.
+> [!NOTE]
+> Fulcra is in beta and not on the Chrome Web Store yet. Until it is, install it from source.
 
-**From source:**
+<details open>
+<summary><b>From source</b> (macOS, Linux, Windows)</summary>
+<br>
+
+You need [Node.js](https://nodejs.org) 22 or newer and Git.
 
 ```sh
+git clone https://github.com/jinst255/fulcra.git
+cd fulcra
 npm ci
 npm run build
 ```
 
-Then open `chrome://extensions`, turn on **Developer mode**, select **Load unpacked**, and choose `.output/chrome-mv3/`.
+1. Open `chrome://extensions` and turn on **Developer mode** (top right).
+2. Select **Load unpacked** and choose the build folder:
 
-Each GitHub release also has a zip you can unpack and load the same way.
+   | System | Folder |
+   |---|---|
+   | macOS, Linux | `fulcra/.output/chrome-mv3` |
+   | Windows | `fulcra\.output\chrome-mv3` |
 
-## Your OpenAI key
+3. Setup opens in a new tab.
 
-Fulcra uses OpenAI to read and score jobs, with your own API key. OpenAI bills you directly, and Fulcra never sees your payment details.
+To update later: `git pull`, `npm run build`, then select ↻ on Fulcra's card in `chrome://extensions`.
 
-1. Go to [platform.openai.com](https://platform.openai.com) and sign in or create an account.
-2. Add a payment method under Billing. A ChatGPT subscription doesn't include this.
-3. Open **API keys** and select **Create new secret key**.
-4. Paste it into Fulcra's setup and select **Continue**. Fulcra tests the key first and tells you if it doesn't work.
+</details>
 
-**Cost:** scoring costs about $1.20 per 1,000 jobs on the Standard model (about $4.50 on Sharper). Most people spend under $1 a month.
+<details>
+<summary><b>From a release zip</b></summary>
+<br>
 
-**Scoring now or at half price:** Fulcra picks for you, so there's nothing to approve.
+Each [GitHub release](https://github.com/jinst255/fulcra/releases) has a zip of the built extension. Unzip it and load the unzipped folder with **Load unpacked** as above.
 
-- **While you're using Fulcra** (the app or popup is showing and you're at your computer), jobs are scored right away.
-- **While you're away** (say, a scheduled email check finds jobs overnight), they go to OpenAI's Batch API at half the cost. Results arrive within 24 hours, usually within an hour.
-- **When you come back** before they're done, a banner shows the progress and a **Score now** button with its price, which cancels the half-price batch and scores the rest right away.
+</details>
 
-Re-score all shows the count and cost before it starts. Jobs never wait on you: anything left unscored is picked up when you open Fulcra and once a day.
+## Getting started
 
-**Set a spend limit** in your OpenAI account under Limits, so costs can never surprise you.
+Setup opens in a tab after you install, and has four steps.
 
-## Using Fulcra
+**1. Add your OpenAI key.** Fulcra scores jobs with OpenAI, billed to you directly.
 
-- **Score a posting:** open a job posting, select the Fulcra icon, then **Score this job**. You can also press `Alt+Shift+F`, or right-click the page or a link and choose **Score this job with Fulcra**.
-- **Paste a link or text:** in the popup, paste a job link, or the text of an offer with no posting, like a message from a friend.
-- **Setup** has four steps: your OpenAI key, a little about you, your job alert inboxes (at least one is required), and a summary where **Change** opens a step and brings you back.
-- **Job alert emails:** in setup or Settings > Job alert emails, add each inbox that gets job alerts: one or more Gmail accounts, Outlook, or both. Once a day (or as often as you choose), Fulcra opens each inbox in turn in a background tab, tucked into a collapsed tab group named Fulcra, reads job alerts that arrived since the last check, and closes it. LinkedIn and Handshake alerts are read by their layout; alerts from any other address you add under **Alert senders** (Indeed, a company's careers site, or someone who forwards alerts to you) are read from links that look like job titles. Forward alerts normally, not as an attachment. **Import past alerts** reads the last 7, 30, or 90 days, or everything, with an estimate of the jobs and cost for each. Your emails stay marked unread, and nothing else in your inbox is read. Jobs from alerts get a **Preliminary** score from the email; open the posting and Fulcra upgrades it to a full score. Promotions and other non-job emails are left out, and anything the AI decides isn't a job listing is folded into **Not job listings**.
-- **Compare:** the **Ranked list** is home. Drag the sliders in **What matters most** to reorder it; **Edit** opens Settings > Priorities to add, remove, or rename what Fulcra scores. Filters above the list (job type, remote or hybrid, no relocating, languages, lowest pay, most hours) apply to the ranked list and the radar alike. The **Radar** compares any number of jobs; click a name to open the job, or hover a name or a shape to highlight it. Tap a dimension (Pay, Enjoyment, and so on) to sort the jobs by it, then check the ones you want.
-- **Disagree with a score?** Open the job and select the pencil next to the score to type your own. If you keep correcting the same thing, Fulcra offers to change that weight.
-- **Closed postings:** when a posting you open says it's no longer accepting applications, Fulcra moves it to **Closed or expired** at the bottom of the list.
-- **Light or dark:** the sun/moon button in the header, or Settings > Appearance (it follows your system by default).
+1. Sign in at [platform.openai.com](https://platform.openai.com) and add a payment method under **Billing**. A ChatGPT subscription doesn't cover this.
+2. Open **API keys** → **Create new secret key**, then paste it into Fulcra.
+3. Fulcra tests the key before going on, and tells you if it doesn't work.
 
-## How scores work
+> [!TIP]
+> Set a monthly spend limit under **Limits** in your OpenAI account, so costs can never surprise you.
 
-The model scores every dimension except pay from 1 to 10 (10 is always best for you), with a one-line reason. Fulcra works out pay and the overall score itself.
+**2. Tell it about you:** the work you're aiming for, what you enjoy, where you live, and whether you'd move or work remotely.
 
-**Pay.** From the posting's pay range, Fulcra takes the midpoint and converts it to weekly pay (hourly pay × hours per week, defaulting to 40; monthly × 12 ÷ 52; yearly ÷ 52; a whole-job amount ÷ the job's weeks). Take-home over your time window of W weeks is
+**3. Connect your job alert inboxes:** Gmail, Outlook, or several of each. [How email reading works](#job-alert-emails).
 
-> T = weekly pay × min(job weeks, W) − known costs
+**4. Check the summary.** **Change** opens any step and brings you back.
 
-and the pay score is
+## How it works
 
-> pay score = 1 + 9 × min(1, max(0, T ÷ G))
+```mermaid
+flowchart LR
+    A[Job posting] --> R[Fulcra reads it]
+    B[Pasted text or link] --> R
+    C[Job alert email] --> R
+    R -->|job text + about you| O[(OpenAI)]
+    O -->|facts + scores + reasons| F[Fulcra works out<br>pay and overall]
+    F --> L[Ranked list<br>and radar]
+```
 
-where G is your pay goal, or the best take-home among your open jobs if you didn't set one. If you pick **No set time frame**, there's no T: jobs are compared by pay rate (per hour or per year, your choice), however long they last. Your pay goal and the lowest pay you'd take can be per hour, per year, or a total over your time frame; changing the unit converts them at 40 hours a week. Taxes aren't modeled; everything is "before tax." When a posting has no pay, the model estimates it and Fulcra labels it **Estimate**. When a number can't be right for its unit (like $16 a year or $110,000 an hour), Fulcra fixes it: it reads "$110K" as $110,000, trusts a unit written next to the amount, or picks the only unit the amount fits. When more than one unit could fit, it asks the model. Either way the job shows **Pay unit corrected** with an Undo.
+### Scoring a job
 
-**Spread across your jobs.** By default (Settings > Scoring), each dimension's AI scores are stretched across your open jobs so the best one on it shows 10 and the weakest shows 1, which makes small differences easy to see. It needs at least three scored jobs and at least a point of difference; your own scores are never stretched. Turn it off to see the raw scores.
+| To score… | Do this |
+|---|---|
+| The posting you're looking at | Select the Fulcra icon → **Score this job**, or press <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd> |
+| A link on any page | Right-click it → **Score this job with Fulcra** |
+| An offer with no posting | Paste the text (a message from a friend, say) or a link into the popup |
+| Jobs in your alert emails | Nothing. Fulcra checks your inbox on a schedule |
 
-**Overall score.** With your weights w (0 to 10) and the scores s:
+### Comparing jobs
 
-> overall = Σ (w × s) ÷ Σ w
+- **Ranked list** is home. Drag the sliders in **What matters most** to reorder it, or start from a profile.
+- **Filters** narrow both views: job type, remote or hybrid, no relocating, languages, lowest pay, most hours. Jobs that miss a must-have move to **Filtered out**; they aren't deleted.
+- **Radar** compares any number of jobs. Click a dimension to sort by it; click a name to open the job.
+- **Your own score:** open a job and select the pencil next to any score. If you keep correcting the same thing, Fulcra offers to change that weight.
+- Closed postings move to **Closed or expired**, and anything that isn't a job folds into **Not job listings**.
 
-over the dimensions that have a score. If every weight is 0, they count equally.
+### Job alert emails
 
-**Filters** (once called dealbreakers) are checked against facts from the posting, never the model's opinion. A job that misses a must-have goes to **Filtered out** at the bottom, not deleted; if Fulcra can't tell, the job stays in. **Job type** hides other types instead.
+Once a day, or as often as you like, Fulcra opens each inbox in a background tab inside a collapsed **Fulcra** tab group. It reads alerts that arrived since the last check, then closes the tab.
+
+- **Who it reads:** only the addresses under **Settings → Job alert emails → Alert senders**. LinkedIn and Handshake are there to start. Add any other sender, like Indeed, a company's careers site, or a friend who forwards you jobs.
+- **What it leaves alone:** everything else. Alerts stay marked unread.
+- **Older alerts:** **Import past alerts** reads the last 7, 30, or 90 days, or everything. It shows the expected number of jobs and the cost first.
+- **Scores from email are Preliminary.** An alert has only a title, company, place, and pay. Open the posting and Fulcra upgrades it to a full score.
+
+> [!IMPORTANT]
+> Forward alerts **normally**, not as an attachment. Fulcra can't read jobs inside an attached email.
+
+<details>
+<summary><b>The math behind the scores</b></summary>
+
+<br>
+
+The model scores every dimension except pay from 1 to 10, where 10 is always best for you, and gives a one-line reason. Fulcra works out pay and the overall score itself.
+
+**Pay.** Fulcra converts the posting's pay range midpoint to weekly pay. Hourly pay is multiplied by hours per week (40 if the posting doesn't say). Monthly is × 12 ÷ 52, yearly is ÷ 52, and a whole-job amount is divided by the job's length in weeks. Over your time frame of *W* weeks, take-home is
+
+```math
+T = \text{weekly pay} \times \min(\text{job weeks},\ W) - \text{known costs}
+```
+
+```math
+\text{pay score} = 1 + 9 \times \min\!\left(1,\ \max\!\left(0,\ \tfrac{T}{G}\right)\right)
+```
+
+where *G* is your pay goal, or the best take-home among your open jobs if you haven't set one. With **No set time frame**, jobs are compared by pay rate instead.
+
+- Everything is before tax. Benefits and equity are left out unless the posting states a total.
+- Missing pay is estimated by the model and labeled **Estimate**.
+- Impossible units, like "$110,000 an hour", are fixed and labeled **Pay unit corrected**, with an Undo.
+
+**Spread across your jobs.** By default, each dimension's AI scores are stretched so your best job on it shows 10 and your weakest shows 1. This needs three scored jobs and at least a point of difference. Your own scores are never stretched. Turn it off under **Settings → Scoring**.
+
+**Overall.** With your weights *w* (0 to 10) and scores *s*, over the dimensions that have a score:
+
+```math
+\text{overall} = \frac{\sum w \cdot s}{\sum w}
+```
+
+If every weight is 0, they all count equally.
+
+**Filters** check facts from the posting, never the model's opinion. If Fulcra can't tell, the job stays in.
+
+</details>
+
+## Cost
+
+You pay OpenAI directly for what you score. Fulcra itself is free.
+
+| Model | Per 1,000 jobs | Good for |
+|---|---|---|
+| **Standard** (default) | about $1.20 | Almost everyone |
+| **Sharper** | about $4.50 | When Standard's scores feel off |
+
+Fulcra picks the cheapest way to score, so there's nothing to approve:
+
+- **While you're using Fulcra**, jobs are scored right away.
+- **While you're away**, say, after an overnight email check, jobs go to OpenAI's Batch API at **half price**. Results come back within 24 hours, usually within an hour.
+- **When you come back early**, a banner shows the progress and a **Score now** button with its price.
+
+**Re-score all** shows the count and cost before it starts.
 
 ## Privacy
 
-- **What's sent to OpenAI:** the job text you score, plus your answers from About you and your dimension definitions. Nothing else, ever. Half-price batches upload the same text as a file to your OpenAI account; Fulcra deletes it when the results come back.
-- **What stays on your computer:** everything else, in the extension's own storage.
-- **Your key** is stored in Chrome's extension storage on this computer only. It never syncs to your Google account and is only ever sent to `api.openai.com`. **It is not encrypted at rest**: anyone with access to your computer's browser profile could read it. That's why a spend limit matters.
-- **No analytics** and no servers. Fulcra doesn't phone home.
-- **Reset Fulcra:** Settings > Your data > **Reset Fulcra** puts Fulcra back to a fresh install: it cancels any half-price batch still running, deletes all jobs, settings, inboxes, and your key, and starts setup again. Your key still exists in your OpenAI account; delete it there under API keys.
+| Sent to OpenAI, only when a job is scored | Stays in your browser |
+|---|---|
+| The job's text | Your jobs, scores, and settings |
+| Your answers from **About you** | Your OpenAI key |
+| What each of your dimensions means | Your emails, apart from the job details in alerts |
 
-See [PRIVACY.md](PRIVACY.md) for details.
+- Your key is only ever sent to `api.openai.com` and never syncs to your Google account. **It isn't encrypted on disk**, so anyone with access to your browser profile could read it. That's why the spend limit matters.
+- No analytics, telemetry, or remote code. Fulcra has no servers to send anything to.
+- **Settings → Your data → Reset Fulcra** deletes everything and starts setup again. Your key still exists in your OpenAI account; delete it there under **API keys**.
 
-## Supported browsers and sites
+Full details are in [PRIVACY.md](PRIVACY.md).
 
-- **Browsers:** Chrome is tested and supported. Edge and Firefox builds (`npm run build:firefox`) may work but aren't supported.
-- **Job sites with built-in readers:** LinkedIn, Handshake, and Indeed. Any other job page works through the generic reader when you select the icon.
-- **Email:** Gmail and Outlook on the web.
+## Troubleshooting
 
-## Known limitations
+| What you see | What to do |
+|---|---|
+| **"That key didn't work"** | Create a new key at [platform.openai.com/api-keys](https://platform.openai.com/api-keys) and paste the whole thing. Check **Billing** has a payment method. |
+| **"Job saved, not scored yet"** | Fulcra keeps the job and scores it once the problem it names (key, credit, or connection) is fixed. |
+| **An email check finds no new jobs** | Make sure the sender is under **Alert senders**, and that alerts are forwarded normally, not as attachments. The result says whether it found no listings or only jobs you already have. |
+| **An email check says the layout changed** | Gmail or Outlook may have changed their page. [Report it](#reporting-a-problem) with diagnostics. |
+| **A posting won't score** | Select the text of the posting, copy it, and paste it into the popup. Pasting always works. |
 
-- Requires a paid OpenAI API account. There is no free scoring option.
-- Scores are a model's judgment from the posting text and can be wrong. Reasons are shown so you can judge, and you can always use your own score.
-- Pay ignores taxes, benefits, and equity unless the posting states a total. Estimated pay is labeled.
-- Email checks need Chrome to be open and you signed in to Gmail or Outlook in the same browser profile. Outlook reading is untested so far.
-- Email reading depends on Gmail's and Outlook's page layouts, which can change without notice and break checks until Fulcra is updated.
-- Jobs from alert emails get only a preliminary score until you open the posting. Fulcra can't always tell from an email that a job has closed.
-- LinkedIn, Handshake, and Indeed layouts can change and break page reading. Pasting text always works.
-- During email checks, a collapsed "Fulcra" tab group briefly appears in your tab strip. If you close it, that check stops and says so; the next one tries again.
-- The API key is stored unencrypted in the browser's extension storage.
-- Only Chrome is tested. English only.
-- No after-the-job ratings, no import, no sync between computers, no mobile app.
-- The name "Fulcra" is also used by Fulcra Dynamics' AI context product.
+### Reporting a problem
 
-## Reporting problems
+Open **Settings → Help and diagnostics → Copy diagnostics** and paste the result into a [new issue](https://github.com/jinst255/fulcra/issues/new). Diagnostics hold versions, counts, and error codes. They never include your key, job text, or emails.
 
-Open Settings > Help and diagnostics, select **Copy diagnostics**, and paste it into a [new issue](https://github.com/jinst255/fulcra/issues). Diagnostics include versions, counts, and recent error codes, never your key, job text, or emails.
+<details>
+<summary><b>Known limitations</b></summary>
+<br>
+
+- Needs a paid OpenAI API account. There's no free scoring option.
+- Scores are a model's judgment of the posting and can be wrong. Every score shows its reason, and you can always use your own.
+- Email checks need Chrome open and you signed in to Gmail or Outlook in the same profile.
+- Fulcra reads Gmail, Outlook, LinkedIn, Handshake, and Indeed by their page layouts. When a site changes its layout, reading can break until Fulcra is updated.
+- Outlook reading is new and has seen less real-world use than Gmail.
+- A job from an alert email has only a preliminary score until you open its posting, and Fulcra can't always tell from an email that a job has closed.
+- Only Chrome is tested. Edge and Firefox builds (`npm run build:firefox`) may work but aren't supported. English only.
+- No sync between computers, no import, no mobile app.
+
+</details>
 
 ## Contributing
 
 ```sh
-npm ci            # install (runs wxt prepare)
-npm run dev       # dev build with hot reload in .output/chrome-mv3-dev; load it unpacked once
-npm test          # unit tests (vitest)
-npm run typecheck
-npm run lint
-npm run build     # production build in .output/chrome-mv3
-npm run zip       # store-ready zip
+npm ci              # install
+npm run dev         # dev build with hot reload; load .output/chrome-mv3-dev once
+npm test            # unit tests
+npm run typecheck && npm run lint
+npm run build       # production build in .output/chrome-mv3
+npm run zip         # store-ready zip
 ```
 
-`npm run test:live` runs a small smoke test against the real OpenAI API (well under a cent). It's skipped unless `FULCRA_KEY_FILE` points to a file holding a key; keep that file outside the repo.
+`npm run test:live` runs a small check against the real OpenAI API, costing well under a cent. It's skipped unless `FULCRA_KEY_FILE` points to a file holding a key. Keep that file outside the repo.
 
-**Where things live:**
+<details>
+<summary><b>Where things live</b></summary>
 
-- `src/core/`: pay math, overall score, dealbreakers, dedupe, ranking, re-scoring, learning. Pure and tested.
-- `src/llm/`: the OpenAI client, prompts, schemas, model IDs and prices (`models.ts`).
-- `src/readers/`: page readers and email readers. **Site selectors live in one file per site** (`linkedin.ts`, `handshake.ts`, `indeed.ts`, `gmail.ts`, `outlook.ts`), each with a version constant. When a site changes its layout, update that file's selector lists, bump its version, and add a fixture under `tests/fixtures/`.
-- `src/ui/`: React screens shared by the popup and the full-page app.
-- `public/_locales/en/messages.json`: every UI string. The product name appears only in `appName`.
-- `docs/blueprint.md`: the full design.
+```text
+entrypoints/        background worker, popup, full-page app, content scripts
+src/
+├── core/           pay math, overall score, filters, ranking, dedupe (pure and tested)
+├── llm/            OpenAI client, prompts, schemas; model IDs and prices in models.ts
+├── email/          inbox checks and their schedule
+├── readers/        one file per site: linkedin, handshake, indeed, gmail, outlook
+│   └── alerts/     job alert parsers: LinkedIn, Handshake, and any other sender
+├── store/          IndexedDB storage, export, diagnostics
+└── ui/             React screens shared by the popup and the full-page app
+public/_locales/    every UI string, in messages.json
+tests/fixtures/     saved pages and emails the readers are tested against
+docs/blueprint.md   the full design
+```
 
-All dependencies are MIT, Apache-2.0, ISC, or BSD licensed. Please don't add a GPL dependency, a chart library, analytics, or anything that loads remote code.
+</details>
+
+**When a site changes its layout,** update the selectors in that site's file in `src/readers/`, bump the version constant at the top, and add a fixture to `tests/fixtures/`.
+
+**Ground rules:** dependencies must be MIT, Apache-2.0, ISC, or BSD licensed. Please don't add GPL code, a chart library, analytics, or anything that loads remote code.
 
 ## License
 
 MIT. See [LICENSE](LICENSE).
 
-Fulcra is not affiliated with LinkedIn, Handshake, Indeed, Google, Microsoft, or OpenAI.
+<sub>Fulcra isn't affiliated with LinkedIn, Handshake, Indeed, Google, Microsoft, or OpenAI. The name is also used by Fulcra Dynamics for an unrelated AI product.</sub>
