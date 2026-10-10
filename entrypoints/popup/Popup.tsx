@@ -6,6 +6,7 @@ import { t } from '@/src/i18n/t';
 import { send, type ReadTabResult, type ScoreTabResult } from '@/src/messages';
 import type { PageExtraction } from '@/src/readers/extract';
 import { isUrl, siteFor } from '@/src/readers/generic';
+import { allJobs } from '@/src/store/jobs';
 import { isSetupComplete } from '@/src/store/settings';
 import { Spinner, Swatch, Tag } from '@/src/ui/components';
 import { failText, jobSub, jobTitle, payReason, relativeTime } from '@/src/ui/format';
@@ -54,7 +55,11 @@ export function Popup() {
       );
       if (!r.ok) return setV({ kind: 'home' });
       if (r.jobId) {
-        setV({ kind: 'result', jobId: r.jobId, already: true });
+        const job = (await allJobs()).find((j) => j.id === r.jobId);
+        // Scored from the right-click menu or shortcut a moment ago: show it finishing.
+        if (job && job.scoring !== 'scored' && job.scoring !== 'failed')
+          setV({ kind: 'busy', phase: 'scoring', jobId: r.jobId });
+        else setV({ kind: 'result', jobId: r.jobId, already: true });
       } else setV({ kind: 'job', page: r.page });
     })();
   }, []);

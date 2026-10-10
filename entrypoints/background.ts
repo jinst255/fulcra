@@ -5,7 +5,10 @@ import { runEmailCheck, signInCheck } from '@/src/email/run';
 import { CATCHUP_ALARM, EMAIL_ALARM, scheduleCatchUp, scheduleEmail } from '@/src/email/scheduler';
 import type { Request } from '@/src/messages';
 import { applyBadge } from '@/src/pipeline/badge';
+import { t } from '@/src/i18n/t';
 import { addPaste, describeTab, pageSeen, rescoreJob, scoreTab } from '@/src/pipeline/intake';
+import { jobIdFromNotification, maybeNotify } from '@/src/pipeline/notify';
+import { siteFor } from '@/src/readers/generic';
 import { onScored, planAndMaybeStart, pump, queueUnscored, startPlannedBatch } from '@/src/pipeline/queue';
 import { retentionCleanup } from '@/src/store/jobs';
 import {
@@ -17,12 +20,16 @@ import {
 } from '@/src/store/settings';
 
 const PUMP_ALARM = 'pump';
+const MENU_ID = 'score';
 const DAILY_ALARM = 'daily';
 
 export default defineBackground(() => {
   chrome.runtime.onInstalled.addListener((details) => {
     if (details.reason === 'install') void chrome.runtime.openOptionsPage();
     void scheduleEmail();
+    chrome.contextMenus.removeAll(() => {
+      chrome.contextMenus.create({ id: MENU_ID, title: t('contextMenu.score'), contexts: ['page', 'link'] });
+    });
   });
   chrome.runtime.onStartup.addListener(() => {
     void scheduleEmail();
@@ -54,8 +61,30 @@ export default defineBackground(() => {
   });
 
   // Badge count: new scored jobs since the app was last opened.
-  onScored((_job, item) => {
+  onScored((job, item) => {
     if (item.kind === 'full') void updateStatus((s) => ({ newScoredCount: s.newScoredCount + 1 }));
+    void maybeNotify(job);
+  });
+
+  chrome.notifications.onClicked.addListener((id) => {
+    const jobId = jobIdFromNotification(id);
+    if (jobId) void openApp(`job/${jobId}`);
+    void chrome.notifications.clear(id);
+  });
+
+  // Right-click and the keyboard shortcut grant activeTab, like the popup does.
+  chrome.contextMenus.onClicked.addListener((info, tab) => {
+    if (info.menuItemId !== MENU_ID) return;
+    if (info.linkUrl) {
+      if (siteFor(info.linkUrl)) void addPaste(info.linkUrl).then(showPopup);
+      // Other sites need their own permission; open the link so the icon can score it.
+      else void chrome.tabs.create({ url: info.linkUrl, active: true, index: (tab?.index ?? 0) + 1 });
+    } else if (tab?.id != null) {
+      void scoreTab(tab.id).then(showPopup);
+    }
+  });
+  chrome.commands.onCommand.addListener((command, tab) => {
+    if (command === 'score-page' && tab?.id != null) void scoreTab(tab.id).then(showPopup);
   });
 
   self.addEventListener('online', () => void pump());
@@ -67,6 +96,15 @@ export default defineBackground(() => {
 
   void pump();
 });
+
+/** Shows the popup so the user sees the result or the error. */
+function showPopup(): void {
+  void chrome.action.openPopup?.().catch(() => undefined);
+}
+
+async function openApp(route: string): Promise<void> {
+  await chrome.tabs.create({ url: chrome.runtime.getURL(`/options.html#${route}`) });
+}
 
 function sig(dims: { id: string; version: number; active: boolean }[]): string {
   return dims.map((d) => `${d.id}:${d.version}:${d.active ? 1 : 0}`).join('|');
