@@ -1,0 +1,1825 @@
+{
+  "appName": {
+    "message": "Fulcra"
+  },
+  "appDescription": {
+    "message": "It's a free browser extension that scores job offers on what matters to you, not just pay. It reads the postings you open and your job alert emails, then ranks and charts every job by your priorities."
+  },
+  "common_saved": {
+    "message": "Saved"
+  },
+  "common_cancel": {
+    "message": "Cancel"
+  },
+  "common_continue": {
+    "message": "Continue"
+  },
+  "common_back": {
+    "message": "Back"
+  },
+  "common_skip": {
+    "message": "Skip for now"
+  },
+  "common_undo": {
+    "message": "Undo"
+  },
+  "common_tryAgain": {
+    "message": "Try again"
+  },
+  "common_close": {
+    "message": "Close"
+  },
+  "common_delete": {
+    "message": "Delete"
+  },
+  "common_beforeTax": {
+    "message": "before tax"
+  },
+  "common_estimate": {
+    "message": "Estimate"
+  },
+  "common_preliminary": {
+    "message": "Preliminary"
+  },
+  "common_preliminaryHelp": {
+    "message": "Scored from the alert email only. Open the posting for a full score."
+  },
+  "common_cantTell": {
+    "message": "Can't tell"
+  },
+  "common_outOf10": {
+    "message": "$SCORE$ of 10",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "contextMenu_score": {
+    "message": "Score this job with $APP$",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      }
+    }
+  },
+  "command_score": {
+    "message": "Score the job on this page"
+  },
+  "setup_progress": {
+    "message": "Step $N$ of 6",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "setup_welcome_title": {
+    "message": "Compare jobs on what matters to you"
+  },
+  "setup_welcome_body": {
+    "message": "$APP$ scores every job on pay, enjoyment, impact, career growth, time for life, risk, and location. Then it ranks them by what you care about most.",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      }
+    }
+  },
+  "setup_welcome_footer": {
+    "message": "Free and open source. Your jobs stay on this computer."
+  },
+  "setup_welcome_button": {
+    "message": "Get started"
+  },
+  "setup_key_title": {
+    "message": "Connect OpenAI"
+  },
+  "setup_key_body": {
+    "message": "$APP$ uses OpenAI to read and score jobs. You'll need your own OpenAI API key.",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      }
+    }
+  },
+  "setup_key_whatIs": {
+    "message": "What's an API key?"
+  },
+  "setup_key_whatIsBody": {
+    "message": "It's like a password that lets $APP$ use OpenAI on your account. OpenAI bills you directly for what you use. $APP$ never sees your payment details.",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      }
+    }
+  },
+  "setup_key_howTo": {
+    "message": "How to get one"
+  },
+  "setup_key_howToSteps": {
+    "message": "1. Go to platform.openai.com and sign in or create an account. 2. Add a payment method under Billing. A ChatGPT subscription doesn't include this. 3. Open API keys and select Create new secret key. 4. Copy the key and paste it below."
+  },
+  "setup_key_label": {
+    "message": "OpenAI API key"
+  },
+  "setup_key_placeholder": {
+    "message": "Starts with sk-"
+  },
+  "setup_key_show": {
+    "message": "Show"
+  },
+  "setup_key_hide": {
+    "message": "Hide"
+  },
+  "setup_key_test": {
+    "message": "Test key"
+  },
+  "setup_key_testing": {
+    "message": "Checking…"
+  },
+  "setup_key_ok": {
+    "message": "Key works."
+  },
+  "setup_key_bad": {
+    "message": "That key didn't work. Check that you copied all of it and try again."
+  },
+  "setup_key_noCredit": {
+    "message": "That key works, but your OpenAI account has no credit. Add some under Billing, then test again."
+  },
+  "setup_key_cost": {
+    "message": "Scoring costs about $$1.20 per 1,000 jobs. Most people spend under $$1 a month."
+  },
+  "setup_key_limitTip": {
+    "message": "Tip: set a monthly spend limit in your OpenAI account so costs can never surprise you."
+  },
+  "setup_key_privacy": {
+    "message": "Your key stays on this computer and is only sent to OpenAI. Job text you score is sent to OpenAI to be read."
+  },
+  "setup_key_later": {
+    "message": "I'll add it later"
+  },
+  "setup_key_laterNote": {
+    "message": "Without a key, $APP$ saves jobs but can't score them yet.",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      }
+    }
+  },
+  "setup_about_title": {
+    "message": "About you"
+  },
+  "setup_about_body": {
+    "message": "This helps $APP$ judge each job for you, not for an average person.",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      }
+    }
+  },
+  "setup_about_target": {
+    "message": "What work are you aiming for?"
+  },
+  "setup_about_targetHint": {
+    "message": "Example: applied AI, helping businesses automate work"
+  },
+  "setup_about_enjoys": {
+    "message": "What do you enjoy doing?"
+  },
+  "setup_about_enjoysHint": {
+    "message": "Example: building software, explaining things to people"
+  },
+  "setup_about_home": {
+    "message": "Where's home base?"
+  },
+  "setup_about_community": {
+    "message": "How important is staying near your community?"
+  },
+  "setup_about_community_very": {
+    "message": "Very"
+  },
+  "setup_about_community_somewhat": {
+    "message": "Somewhat"
+  },
+  "setup_about_community_not": {
+    "message": "Not really"
+  },
+  "setup_about_remote": {
+    "message": "Open to remote work?"
+  },
+  "setup_about_relocate": {
+    "message": "Open to relocating?"
+  },
+  "setup_about_yes": {
+    "message": "Yes"
+  },
+  "setup_about_maybe": {
+    "message": "Maybe"
+  },
+  "setup_about_no": {
+    "message": "No"
+  },
+  "setup_about_languages": {
+    "message": "Languages you speak"
+  },
+  "setup_about_addLanguage": {
+    "message": "Add a language"
+  },
+  "setup_about_level_native": {
+    "message": "Native"
+  },
+  "setup_about_level_fluent": {
+    "message": "Fluent"
+  },
+  "setup_about_level_conversational": {
+    "message": "Conversational"
+  },
+  "setup_about_window": {
+    "message": "Compare pay over"
+  },
+  "setup_about_window_summer": {
+    "message": "This summer (22 weeks)"
+  },
+  "setup_about_window_year": {
+    "message": "A year (52 weeks)"
+  },
+  "setup_about_window_custom": {
+    "message": "Custom"
+  },
+  "setup_about_weeks": {
+    "message": "weeks"
+  },
+  "setup_about_goal": {
+    "message": "Pay goal over that time (optional)"
+  },
+  "setup_about_goalHint": {
+    "message": "A job that reaches your goal gets a 10 for pay."
+  },
+  "setup_priorities_title": {
+    "message": "What matters most?"
+  },
+  "setup_priorities_body": {
+    "message": "Pick a starting point. You can fine-tune it anytime, and the rankings update as you go."
+  },
+  "profile_balanced": {
+    "message": "Balanced"
+  },
+  "profile_balanced_desc": {
+    "message": "Everything counts the same."
+  },
+  "profile_money": {
+    "message": "Max money"
+  },
+  "profile_money_desc": {
+    "message": "Pay first, the rest barely counts."
+  },
+  "profile_future": {
+    "message": "Build my future"
+  },
+  "profile_future_desc": {
+    "message": "Jobs that move you toward the work you want."
+  },
+  "profile_good": {
+    "message": "Do good"
+  },
+  "profile_good_desc": {
+    "message": "Jobs that genuinely help people."
+  },
+  "profile_life": {
+    "message": "Life first"
+  },
+  "profile_life_desc": {
+    "message": "Time, energy, and staying close to home."
+  },
+  "profile_custom": {
+    "message": "Custom"
+  },
+  "setup_priorities_describe": {
+    "message": "Describe it in your own words (optional)"
+  },
+  "setup_priorities_describeHint": {
+    "message": "Example: I want to stay in Rexburg and I hate cold calling."
+  },
+  "setup_priorities_describeButton": {
+    "message": "Suggest changes"
+  },
+  "setup_priorities_suggesting": {
+    "message": "Thinking…"
+  },
+  "setup_priorities_suggestWeight": {
+    "message": "Raise $DIMENSION$ from $FROM$ to $TO$",
+    "placeholders": {
+      "dimension": {
+        "content": "$1"
+      },
+      "from": {
+        "content": "$2"
+      },
+      "to": {
+        "content": "$3"
+      }
+    }
+  },
+  "setup_priorities_suggestDimension": {
+    "message": "New thing to score: $NAME$. $DEFINITION$",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      },
+      "definition": {
+        "content": "$2"
+      }
+    }
+  },
+  "setup_priorities_approve": {
+    "message": "Approve"
+  },
+  "setup_priorities_decline": {
+    "message": "Decline"
+  },
+  "setup_deal_title": {
+    "message": "Any dealbreakers?"
+  },
+  "setup_deal_body": {
+    "message": "Jobs that fail these are set aside, not deleted. If $APP$ can't tell, the job is not counted as failing.",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      }
+    }
+  },
+  "setup_deal_minPay": {
+    "message": "Minimum take-home over your time window"
+  },
+  "setup_deal_maxHours": {
+    "message": "Maximum hours per week"
+  },
+  "setup_deal_mustRemote": {
+    "message": "Must allow remote work"
+  },
+  "setup_deal_noRelocation": {
+    "message": "No relocating"
+  },
+  "setup_deal_excludeTypes": {
+    "message": "Job types to skip"
+  },
+  "setup_deal_languageGap": {
+    "message": "Skip jobs that need a language I don't speak"
+  },
+  "setup_deal_none": {
+    "message": "No dealbreakers"
+  },
+  "setup_email_title": {
+    "message": "Watch your job alert emails?"
+  },
+  "setup_email_body": {
+    "message": "$APP$ can read new LinkedIn and Handshake job alerts from your inbox and score them for you.",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      }
+    }
+  },
+  "setup_email_how": {
+    "message": "Once a day, $APP$ opens your inbox in a minimized window, reads new job alerts, and closes it. Your emails stay marked unread. Nothing else in your inbox is read.",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      }
+    }
+  },
+  "setup_email_gmail": {
+    "message": "Gmail"
+  },
+  "setup_email_outlook": {
+    "message": "Outlook"
+  },
+  "setup_email_notNow": {
+    "message": "Not now"
+  },
+  "setup_email_checking": {
+    "message": "Checking that you're signed in…"
+  },
+  "setup_email_signedIn": {
+    "message": "Signed in. You're all set."
+  },
+  "setup_email_signedOut": {
+    "message": "You're not signed in to $PROVIDER$ in this browser. Sign in, then try again.",
+    "placeholders": {
+      "provider": {
+        "content": "$1"
+      }
+    }
+  },
+  "setup_email_frequency": {
+    "message": "How often"
+  },
+  "setup_email_daily": {
+    "message": "Once a day"
+  },
+  "setup_email_sixHours": {
+    "message": "Every 6 hours"
+  },
+  "setup_email_hourly": {
+    "message": "Every hour"
+  },
+  "setup_email_import": {
+    "message": "Import past alerts"
+  },
+  "setup_email_import7": {
+    "message": "Last 7 days"
+  },
+  "setup_email_import30": {
+    "message": "Last 30 days"
+  },
+  "setup_email_import90": {
+    "message": "Last 90 days"
+  },
+  "setup_email_importAll": {
+    "message": "Everything"
+  },
+  "setup_email_estimate": {
+    "message": "About $COUNT$ jobs, about $COST$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "cost": {
+        "content": "$2"
+      }
+    }
+  },
+  "setup_email_chromeOpen": {
+    "message": "Chrome needs to be open for checks. A missed check runs the next time Chrome starts."
+  },
+  "setup_done_title": {
+    "message": "You're set"
+  },
+  "setup_done_pin": {
+    "message": "Pin $APP$ to your toolbar: select the puzzle piece icon, then the pin next to $APP$.",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      }
+    }
+  },
+  "setup_done_how": {
+    "message": "Open any job posting, select the $APP$ icon, then Score this job.",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      }
+    }
+  },
+  "setup_done_button": {
+    "message": "See my ranked list"
+  },
+  "setup_finishCard_title": {
+    "message": "Finish setting up $APP$",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      }
+    }
+  },
+  "setup_finishCard_body": {
+    "message": "A few answers make every score more accurate."
+  },
+  "setup_finishCard_button": {
+    "message": "Finish setup"
+  },
+  "popup_noKey_title": {
+    "message": "Add your OpenAI key to start scoring"
+  },
+  "popup_noKey_button": {
+    "message": "Add your OpenAI key"
+  },
+  "popup_detected": {
+    "message": "Job found on this page"
+  },
+  "popup_score_button": {
+    "message": "Score this job"
+  },
+  "popup_score_cost": {
+    "message": "About $$0.001"
+  },
+  "popup_reading": {
+    "message": "Reading the posting…"
+  },
+  "popup_scoring": {
+    "message": "Scoring…"
+  },
+  "popup_overall": {
+    "message": "Overall"
+  },
+  "popup_rank": {
+    "message": "Rank #$RANK$ of $TOTAL$",
+    "placeholders": {
+      "rank": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "popup_bestFit": {
+    "message": "Best fit"
+  },
+  "popup_passes": {
+    "message": "Passes your dealbreakers"
+  },
+  "popup_fails": {
+    "message": "Fails: $REASONS$",
+    "placeholders": {
+      "reasons": {
+        "content": "$1"
+      }
+    }
+  },
+  "popup_topReasons": {
+    "message": "Biggest factors"
+  },
+  "popup_seeAll": {
+    "message": "See full comparison"
+  },
+  "popup_rescore": {
+    "message": "Rescore"
+  },
+  "popup_already": {
+    "message": "Already scored $WHEN$",
+    "placeholders": {
+      "when": {
+        "content": "$1"
+      }
+    }
+  },
+  "popup_topJobs": {
+    "message": "Your top jobs"
+  },
+  "popup_noJobs": {
+    "message": "No jobs scored yet. Open a job posting to start."
+  },
+  "popup_paste_label": {
+    "message": "Paste a link or job text"
+  },
+  "popup_paste_hint": {
+    "message": "Works for offers with no posting too, like a text from a friend."
+  },
+  "popup_paste_button": {
+    "message": "Add job"
+  },
+  "popup_open": {
+    "message": "Open $APP$",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      }
+    }
+  },
+  "popup_emailStatus": {
+    "message": "Emails checked $WHEN$",
+    "placeholders": {
+      "when": {
+        "content": "$1"
+      }
+    }
+  },
+  "popup_emailOff": {
+    "message": "Email checks off"
+  },
+  "popup_settings": {
+    "message": "Settings"
+  },
+  "app_tab_ranked": {
+    "message": "Ranked list"
+  },
+  "app_tab_radar": {
+    "message": "Radar"
+  },
+  "app_settings": {
+    "message": "Settings"
+  },
+  "ranked_bestFit_single": {
+    "message": "Best fit if $DIMENSION$ is your priority",
+    "placeholders": {
+      "dimension": {
+        "content": "$1"
+      }
+    }
+  },
+  "ranked_bestFit_multi": {
+    "message": "Best fit if $DIMENSIONS$ are your priorities",
+    "placeholders": {
+      "dimensions": {
+        "content": "$1"
+      }
+    }
+  },
+  "ranked_bestFit_equal": {
+    "message": "Best fit with everything weighted the same"
+  },
+  "ranked_bestFit_many": {
+    "message": "Best fit for your current priorities"
+  },
+  "ranked_bestFit_detail": {
+    "message": "Scores $SCORE$ of 10. Weakest on $WEAKEST$.",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      },
+      "weakest": {
+        "content": "$2"
+      }
+    }
+  },
+  "ranked_breakdown_label": {
+    "message": "Show what makes up each score"
+  },
+  "ranked_breakdown_on": {
+    "message": "Each colored piece is one thing you care about"
+  },
+  "ranked_breakdown_off": {
+    "message": "One bar per job"
+  },
+  "ranked_breakdown_top": {
+    "message": "Most from $ITEMS$",
+    "placeholders": {
+      "items": {
+        "content": "$1"
+      }
+    }
+  },
+  "ranked_move_up": {
+    "message": "Up $N$",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "ranked_move_down": {
+    "message": "Down $N$",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "ranked_move_same": {
+    "message": "Same"
+  },
+  "ranked_outside_title": {
+    "message": "Outside your dealbreakers"
+  },
+  "ranked_outside_shownFew": {
+    "message": "Shown, since few jobs pass"
+  },
+  "ranked_outside_shown": {
+    "message": "Shown"
+  },
+  "ranked_outside_hidden": {
+    "message": "Hidden"
+  },
+  "ranked_outside_toggle": {
+    "message": "Show jobs outside my dealbreakers"
+  },
+  "ranked_fails": {
+    "message": "Fails: $REASONS$",
+    "placeholders": {
+      "reasons": {
+        "content": "$1"
+      }
+    }
+  },
+  "ranked_search": {
+    "message": "Search jobs"
+  },
+  "ranked_showClosed": {
+    "message": "Show closed jobs"
+  },
+  "ranked_empty_title": {
+    "message": "No jobs yet"
+  },
+  "ranked_empty_body": {
+    "message": "Add jobs any of these ways: open a job posting and select the $APP$ icon, turn on job alert emails in Settings, or paste a link or text in the popup.",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      }
+    }
+  },
+  "ranked_notScored": {
+    "message": "Not scored yet"
+  },
+  "ranked_couldntScore": {
+    "message": "Couldn't score"
+  },
+  "weights_title": {
+    "message": "What matters most"
+  },
+  "weights_hint": {
+    "message": "Drag a slider and the list reorders."
+  },
+  "weights_profile": {
+    "message": "Starting profile"
+  },
+  "weights_movement": {
+    "message": "Arrows show movement since you picked a starting profile."
+  },
+  "weights_local": {
+    "message": "Saved on this computer only."
+  },
+  "dim_pay": {
+    "message": "Pay"
+  },
+  "dim_enjoyment": {
+    "message": "Enjoyment"
+  },
+  "dim_impact": {
+    "message": "Impact"
+  },
+  "dim_career": {
+    "message": "Career leverage"
+  },
+  "dim_life": {
+    "message": "Life cost"
+  },
+  "dim_risk": {
+    "message": "Risk"
+  },
+  "dim_location": {
+    "message": "Location and social"
+  },
+  "radar_title": {
+    "message": "Radar"
+  },
+  "radar_subtitle": {
+    "message": "The shape of each job across everything you care about, up to three at once"
+  },
+  "radar_pick_title": {
+    "message": "Jobs to compare"
+  },
+  "radar_pick_hint": {
+    "message": "Pick up to three. Lines differ by dash and marker, not just color."
+  },
+  "radar_pick_full": {
+    "message": "Three picked. Uncheck one to swap in another."
+  },
+  "radar_weight": {
+    "message": "weight $N$",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "radar_axisMeta": {
+    "message": "Your weight $N$ of 10",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "radar_rings": {
+    "message": "Rings are every 2 points. The outer ring is 10, the best. Tap a name to read each job's reason."
+  },
+  "radar_overallNote": {
+    "message": "Numbers on the right are overall scores with your current priorities, same as the ranked list."
+  },
+  "radar_standout_title": {
+    "message": "What stands out"
+  },
+  "radar_standout_leads": {
+    "message": "$JOB$ leads on $DIMENSION$ ($SCORE$)",
+    "placeholders": {
+      "job": {
+        "content": "$1"
+      },
+      "dimension": {
+        "content": "$2"
+      },
+      "score": {
+        "content": "$3"
+      }
+    }
+  },
+  "radar_standout_trails": {
+    "message": "but trails on $DIMENSION$ ($SCORE$)",
+    "placeholders": {
+      "dimension": {
+        "content": "$1"
+      },
+      "score": {
+        "content": "$2"
+      }
+    }
+  },
+  "radar_standout_none": {
+    "message": "$JOB$ doesn't lead on anything here.",
+    "placeholders": {
+      "job": {
+        "content": "$1"
+      }
+    }
+  },
+  "radar_standout_differ": {
+    "message": "They differ most on $DIMENSION$, from $LOW$ to $HIGH$.",
+    "placeholders": {
+      "dimension": {
+        "content": "$1"
+      },
+      "low": {
+        "content": "$2"
+      },
+      "high": {
+        "content": "$3"
+      }
+    }
+  },
+  "radar_standout_pickMore": {
+    "message": "Pick one more job to see where they differ."
+  },
+  "radar_standout_pickAny": {
+    "message": "Pick up to three jobs to compare their shapes."
+  },
+  "radar_standout_note": {
+    "message": "Worked out from the scores, with no extra AI cost."
+  },
+  "detail_openPosting": {
+    "message": "Open posting"
+  },
+  "detail_facts": {
+    "message": "Details"
+  },
+  "detail_pay": {
+    "message": "Pay"
+  },
+  "detail_payLine": {
+    "message": "About $AMOUNT$ before tax over $WEEKS$ weeks",
+    "placeholders": {
+      "amount": {
+        "content": "$1"
+      },
+      "weeks": {
+        "content": "$2"
+      }
+    }
+  },
+  "detail_editPay": {
+    "message": "Edit pay"
+  },
+  "detail_payUnit": {
+    "message": "Pay unit corrected from per $FROM$ to per $TO$. $REASON$",
+    "placeholders": {
+      "from": {
+        "content": "$1"
+      },
+      "to": {
+        "content": "$2"
+      },
+      "reason": {
+        "content": "$3"
+      }
+    }
+  },
+  "detail_scores": {
+    "message": "Scores"
+  },
+  "detail_override": {
+    "message": "Use my own score"
+  },
+  "detail_overrideNote": {
+    "message": "Your score"
+  },
+  "detail_resetOverride": {
+    "message": "Use $APP$'s score",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      }
+    }
+  },
+  "detail_source_page": {
+    "message": "Added from a job page"
+  },
+  "detail_source_email": {
+    "message": "Added from a job alert email"
+  },
+  "detail_source_paste": {
+    "message": "Added from pasted text"
+  },
+  "detail_added": {
+    "message": "Added $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "detail_rescore": {
+    "message": "Rescore"
+  },
+  "detail_markClosed": {
+    "message": "Mark as closed"
+  },
+  "detail_closed": {
+    "message": "No longer accepting applications"
+  },
+  "detail_delete": {
+    "message": "Delete job"
+  },
+  "detail_deleteConfirm": {
+    "message": "Delete this job? This can't be undone."
+  },
+  "learn_card": {
+    "message": "You keep rating $DIMENSION$ higher than $APP$ does. Want $APP$ to weigh $DIMENSION$ more?",
+    "placeholders": {
+      "dimension": {
+        "content": "$1"
+      },
+      "app": {
+        "content": "$2"
+      }
+    }
+  },
+  "learn_cardLower": {
+    "message": "You keep rating $DIMENSION$ lower than $APP$ does. Want $APP$ to weigh $DIMENSION$ less?",
+    "placeholders": {
+      "dimension": {
+        "content": "$1"
+      },
+      "app": {
+        "content": "$2"
+      }
+    }
+  },
+  "learn_yes": {
+    "message": "Change the $DIMENSION$ weight by $N$",
+    "placeholders": {
+      "dimension": {
+        "content": "$1"
+      },
+      "n": {
+        "content": "$2"
+      }
+    }
+  },
+  "learn_no": {
+    "message": "No thanks"
+  },
+  "banner_rescoreSmall": {
+    "message": "Re-scoring $DIMENSION$ after you changed it: $DONE$ of $TOTAL$ done, under $COST$.",
+    "placeholders": {
+      "dimension": {
+        "content": "$1"
+      },
+      "done": {
+        "content": "$2"
+      },
+      "total": {
+        "content": "$3"
+      },
+      "cost": {
+        "content": "$4"
+      }
+    }
+  },
+  "banner_rescoreNew": {
+    "message": "Scoring $DIMENSION$ for your saved jobs: $DONE$ of $TOTAL$ done.",
+    "placeholders": {
+      "dimension": {
+        "content": "$1"
+      },
+      "done": {
+        "content": "$2"
+      },
+      "total": {
+        "content": "$3"
+      }
+    }
+  },
+  "banner_pause": {
+    "message": "Pause"
+  },
+  "banner_resume": {
+    "message": "Resume"
+  },
+  "banner_ask_title": {
+    "message": "Re-score $COUNT$ jobs?",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "banner_ask_body": {
+    "message": "This takes about $TIME$ and costs about $COST$.",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      },
+      "cost": {
+        "content": "$2"
+      }
+    }
+  },
+  "banner_ask_start": {
+    "message": "Start now"
+  },
+  "banner_ask_later": {
+    "message": "Later"
+  },
+  "banner_waiting": {
+    "message": "$COUNT$ jobs are waiting for your OpenAI key.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "banner_emailRunning": {
+    "message": "Checking your job alerts…"
+  },
+  "notify_strongMatch_title": {
+    "message": "Strong match: $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "notify_strongMatch_body": {
+    "message": "$TITLE$ at $COMPANY$",
+    "placeholders": {
+      "title": {
+        "content": "$1"
+      },
+      "company": {
+        "content": "$2"
+      }
+    }
+  },
+  "notify_many_title": {
+    "message": "$COUNT$ strong matches found",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "notify_many_body": {
+    "message": "Top: $TITLE$ at $COMPANY$, $SCORE$",
+    "placeholders": {
+      "title": {
+        "content": "$1"
+      },
+      "company": {
+        "content": "$2"
+      },
+      "score": {
+        "content": "$3"
+      }
+    }
+  },
+  "badge_attention": {
+    "message": "$APP$ needs your attention. Open $APP$ to see why.",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      }
+    }
+  },
+  "err_keyMissing": {
+    "message": "Add your OpenAI key to score jobs."
+  },
+  "err_keyInvalid": {
+    "message": "Your OpenAI key stopped working. It may have been deleted or changed. Add a new one to keep scoring."
+  },
+  "err_noCredit": {
+    "message": "Your OpenAI account is out of credit. Add credit on OpenAI's site, then scoring picks up where it left off."
+  },
+  "err_noCreditLink": {
+    "message": "Open OpenAI billing"
+  },
+  "err_rateLimit": {
+    "message": "OpenAI is busy. $APP$ will try again in a moment.",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      }
+    }
+  },
+  "err_offline": {
+    "message": "You're offline. $APP$ will score this when you're back online.",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      }
+    }
+  },
+  "err_badJson": {
+    "message": "$APP$ couldn't read OpenAI's answer for this job.",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      }
+    }
+  },
+  "err_pageUnsupported": {
+    "message": "$APP$ couldn't find a job on this page.",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      }
+    }
+  },
+  "err_pastePrompt": {
+    "message": "Paste the job text instead"
+  },
+  "err_pageChanged": {
+    "message": "This site changed its layout, so $APP$ couldn't read it. Paste the job text instead, or update $APP$.",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      }
+    }
+  },
+  "msg_jobClosed": {
+    "message": "This job is no longer accepting applications."
+  },
+  "err_mailSignedOut": {
+    "message": "Couldn't check your job alerts because you're signed out of $PROVIDER$. Sign in and $APP$ will try again at the next check.",
+    "placeholders": {
+      "provider": {
+        "content": "$1"
+      },
+      "app": {
+        "content": "$2"
+      }
+    }
+  },
+  "err_mailChanged": {
+    "message": "$PROVIDER$ changed its layout, so $APP$ couldn't read your job alerts. An update to $APP$ should fix this.",
+    "placeholders": {
+      "provider": {
+        "content": "$1"
+      },
+      "app": {
+        "content": "$2"
+      }
+    }
+  },
+  "err_storageFull": {
+    "message": "Your computer is low on space for $APP$. Delete closed or old jobs to make room.",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      }
+    }
+  },
+  "msg_payUnitCorrected": {
+    "message": "Pay unit corrected"
+  },
+  "err_unknown": {
+    "message": "Something went wrong."
+  },
+  "err_copyDiagnostics": {
+    "message": "Copy diagnostics"
+  },
+  "settings_title": {
+    "message": "Settings"
+  },
+  "settings_key": {
+    "message": "OpenAI key"
+  },
+  "settings_key_current": {
+    "message": "Key ending in $LAST4$",
+    "placeholders": {
+      "last4": {
+        "content": "$1"
+      }
+    }
+  },
+  "settings_key_change": {
+    "message": "Change"
+  },
+  "settings_key_remove": {
+    "message": "Remove key"
+  },
+  "settings_key_removeConfirm": {
+    "message": "Remove your key? $APP$ will stop scoring until you add one.",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      }
+    }
+  },
+  "settings_key_model": {
+    "message": "Scoring quality"
+  },
+  "settings_key_standard": {
+    "message": "Standard (recommended): about $$1.20 per 1,000 jobs"
+  },
+  "settings_key_sharper": {
+    "message": "Sharper: about $$4.50 per 1,000 jobs"
+  },
+  "settings_key_limit": {
+    "message": "Set a spend limit on OpenAI"
+  },
+  "settings_about": {
+    "message": "About you"
+  },
+  "settings_priorities": {
+    "message": "Priorities"
+  },
+  "settings_dims_title": {
+    "message": "What $APP$ scores",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      }
+    }
+  },
+  "settings_dims_add": {
+    "message": "Add something to score"
+  },
+  "settings_dims_name": {
+    "message": "Name"
+  },
+  "settings_dims_definition": {
+    "message": "What it means"
+  },
+  "settings_dims_low": {
+    "message": "A 1 means"
+  },
+  "settings_dims_high": {
+    "message": "A 10 means"
+  },
+  "settings_dims_edit": {
+    "message": "Edit"
+  },
+  "settings_dims_remove": {
+    "message": "Remove"
+  },
+  "settings_dims_removeNote": {
+    "message": "Scores are hidden, not deleted. Add it back to restore them."
+  },
+  "settings_dims_max": {
+    "message": "You can score up to 12 things. Remove one to add another."
+  },
+  "settings_dims_payNote": {
+    "message": "$APP$ works out pay itself from the numbers in the posting.",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      }
+    }
+  },
+  "settings_priorities_reset": {
+    "message": "Reset to Balanced"
+  },
+  "settings_deal": {
+    "message": "Dealbreakers"
+  },
+  "settings_email": {
+    "message": "Job alert emails"
+  },
+  "settings_email_status_on": {
+    "message": "Connected to $PROVIDER$",
+    "placeholders": {
+      "provider": {
+        "content": "$1"
+      }
+    }
+  },
+  "settings_email_status_off": {
+    "message": "Not connected"
+  },
+  "settings_email_last": {
+    "message": "Last checked $WHEN$: $RESULT$",
+    "placeholders": {
+      "when": {
+        "content": "$1"
+      },
+      "result": {
+        "content": "$2"
+      }
+    }
+  },
+  "settings_email_resultNew": {
+    "message": "$COUNT$ new jobs",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "settings_email_resultNone": {
+    "message": "no new jobs"
+  },
+  "settings_email_checkNow": {
+    "message": "Check now"
+  },
+  "settings_email_senders": {
+    "message": "Alert senders"
+  },
+  "settings_email_sendersHint": {
+    "message": "$APP$ only reads emails from these addresses.",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      }
+    }
+  },
+  "settings_email_disconnect": {
+    "message": "Turn off email checks"
+  },
+  "settings_scoring": {
+    "message": "Scoring"
+  },
+  "settings_scoring_auto": {
+    "message": "Score job pages automatically when I open them"
+  },
+  "settings_scoring_autoHint": {
+    "message": "Uses a little OpenAI credit for every job page you visit."
+  },
+  "settings_scoring_upgrade": {
+    "message": "Update preliminary scores when I open the posting"
+  },
+  "settings_scoring_notify": {
+    "message": "Notify me about strong matches"
+  },
+  "settings_scoring_threshold": {
+    "message": "Strong match means a score of at least"
+  },
+  "settings_scoring_shortcut": {
+    "message": "Keyboard shortcut"
+  },
+  "settings_scoring_shortcutNone": {
+    "message": "Not set"
+  },
+  "settings_scoring_shortcutChange": {
+    "message": "Change shortcut"
+  },
+  "settings_data": {
+    "message": "Your data"
+  },
+  "settings_data_where": {
+    "message": "Everything is stored on this computer. Job text is sent to OpenAI only when it's scored."
+  },
+  "settings_data_keep": {
+    "message": "Keep jobs for"
+  },
+  "settings_data_30": {
+    "message": "30 days"
+  },
+  "settings_data_90": {
+    "message": "90 days"
+  },
+  "settings_data_365": {
+    "message": "1 year"
+  },
+  "settings_data_forever": {
+    "message": "Forever"
+  },
+  "settings_data_export": {
+    "message": "Export everything"
+  },
+  "settings_data_exportNote": {
+    "message": "A file with all your jobs and settings. Your OpenAI key is never included."
+  },
+  "settings_data_deleteClosed": {
+    "message": "Delete closed jobs"
+  },
+  "settings_data_deleteAll": {
+    "message": "Delete everything"
+  },
+  "settings_data_deleteAllConfirm": {
+    "message": "Delete all jobs, settings, and your saved key from $APP$? This can't be undone.",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      }
+    }
+  },
+  "settings_data_deleteAllDone": {
+    "message": "Everything is deleted. Your key still exists in your OpenAI account; you can delete it there."
+  },
+  "settings_help": {
+    "message": "Help and diagnostics"
+  },
+  "settings_help_version": {
+    "message": "Version $VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "settings_help_copy": {
+    "message": "Copy diagnostics"
+  },
+  "settings_help_copied": {
+    "message": "Copied. Paste it into your problem report."
+  },
+  "settings_help_report": {
+    "message": "Report a problem"
+  },
+  "settings_help_log": {
+    "message": "View the log"
+  },
+  "settings_help_developer": {
+    "message": "Developer mode"
+  },
+  "settings_dev_title": {
+    "message": "Developer"
+  },
+  "settings_dev_interval": {
+    "message": "Email check interval"
+  },
+  "settings_dev_interval30s": {
+    "message": "Every 30 seconds"
+  },
+  "settings_dev_interval5m": {
+    "message": "Every 5 minutes"
+  },
+  "settings_dev_verbose": {
+    "message": "Detailed logging"
+  },
+  "settings_dev_raw": {
+    "message": "Show raw model output on jobs"
+  },
+  "settings_dev_sample": {
+    "message": "Load sample data"
+  },
+  "settings_dev_clearSample": {
+    "message": "Clear sample data"
+  },
+  "settings_dev_account": {
+    "message": "Gmail account number"
+  },
+  "common_overall": {
+    "message": "Overall"
+  },
+  "common_saveChanges": {
+    "message": "Save changes"
+  },
+  "common_on": {
+    "message": "On"
+  },
+  "common_off": {
+    "message": "Off"
+  },
+  "tag_closed": {
+    "message": "Closed"
+  },
+  "tag_updating": {
+    "message": "Updating"
+  },
+  "tag_yourScore": {
+    "message": "Your score"
+  },
+  "fail_minPay": {
+    "message": "minimum take-home"
+  },
+  "fail_maxHours": {
+    "message": "maximum hours"
+  },
+  "fail_remote": {
+    "message": "remote work"
+  },
+  "fail_relocation": {
+    "message": "relocating"
+  },
+  "fail_jobType": {
+    "message": "job type"
+  },
+  "fail_language": {
+    "message": "language"
+  },
+  "jobType_fullTime": {
+    "message": "Full time"
+  },
+  "jobType_partTime": {
+    "message": "Part time"
+  },
+  "jobType_internship": {
+    "message": "Internship"
+  },
+  "jobType_seasonal": {
+    "message": "Seasonal"
+  },
+  "jobType_contract": {
+    "message": "Contract"
+  },
+  "remote_yes": {
+    "message": "Yes"
+  },
+  "remote_no": {
+    "message": "No"
+  },
+  "remote_hybrid": {
+    "message": "Hybrid"
+  },
+  "period_hour": {
+    "message": "Hour"
+  },
+  "period_week": {
+    "message": "Week"
+  },
+  "period_month": {
+    "message": "Month"
+  },
+  "period_year": {
+    "message": "Year"
+  },
+  "period_total": {
+    "message": "Whole job"
+  },
+  "rate_hour": {
+    "message": "$AMOUNT$ an hour",
+    "placeholders": {
+      "amount": {
+        "content": "$1"
+      }
+    }
+  },
+  "rate_week": {
+    "message": "$AMOUNT$ a week",
+    "placeholders": {
+      "amount": {
+        "content": "$1"
+      }
+    }
+  },
+  "rate_month": {
+    "message": "$AMOUNT$ a month",
+    "placeholders": {
+      "amount": {
+        "content": "$1"
+      }
+    }
+  },
+  "rate_year": {
+    "message": "$AMOUNT$ a year",
+    "placeholders": {
+      "amount": {
+        "content": "$1"
+      }
+    }
+  },
+  "rate_total": {
+    "message": "$AMOUNT$ total",
+    "placeholders": {
+      "amount": {
+        "content": "$1"
+      }
+    }
+  },
+  "detail_hours": {
+    "message": "Hours per week"
+  },
+  "detail_length": {
+    "message": "Length"
+  },
+  "detail_weeks": {
+    "message": "$N$ weeks",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "detail_jobType": {
+    "message": "Job type"
+  },
+  "detail_remote": {
+    "message": "Remote"
+  },
+  "detail_relocation": {
+    "message": "Relocation needed"
+  },
+  "detail_languages": {
+    "message": "Languages"
+  },
+  "detail_status": {
+    "message": "Status"
+  },
+  "detail_statusOpen": {
+    "message": "Open"
+  },
+  "detail_payMin": {
+    "message": "Lowest"
+  },
+  "detail_payMax": {
+    "message": "Highest"
+  },
+  "detail_payPer": {
+    "message": "Per"
+  },
+  "detail_payWeeks": {
+    "message": "Weeks"
+  },
+  "detail_closePay": {
+    "message": "Close"
+  },
+  "detail_raise": {
+    "message": "Raise your $DIMENSION$ score",
+    "placeholders": {
+      "dimension": {
+        "content": "$1"
+      }
+    }
+  },
+  "detail_lower": {
+    "message": "Lower your $DIMENSION$ score",
+    "placeholders": {
+      "dimension": {
+        "content": "$1"
+      }
+    }
+  },
+  "detail_rescoring": {
+    "message": "Scoring…"
+  },
+  "ranked_outside_one": {
+    "message": "1 job"
+  },
+  "ranked_outside_count": {
+    "message": "$COUNT$ jobs",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "ranked_noMatch": {
+    "message": "No jobs match your search."
+  },
+  "ranked_nonePass": {
+    "message": "No open jobs pass your dealbreakers yet."
+  },
+  "ranked_reasonNotScored": {
+    "message": "Not scored yet"
+  },
+  "profile_custom_desc": {
+    "message": "Your own mix of weights."
+  },
+  "setup_priorities_approved": {
+    "message": "Approved"
+  },
+  "setup_priorities_declined": {
+    "message": "Declined"
+  },
+  "setup_about_languageName": {
+    "message": "Language"
+  },
+  "setup_about_level": {
+    "message": "Level"
+  },
+  "setup_about_customWeeks": {
+    "message": "Custom weeks"
+  },
+  "setup_about_removeLanguage": {
+    "message": "Remove $NAME$",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "setup_about_levelOf": {
+    "message": "$NAME$ level",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "setup_done_illustration": {
+    "message": "Chrome toolbar with the puzzle piece icon and $APP$ pinned beside it",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      }
+    }
+  },
+  "settings_key_test": {
+    "message": "Test"
+  },
+  "settings_dims_removed": {
+    "message": "Removed"
+  },
+  "settings_dims_restore": {
+    "message": "Add back"
+  },
+  "settings_dims_moveUp": {
+    "message": "Move $NAME$ up",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "settings_dims_moveDown": {
+    "message": "Move $NAME$ down",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "settings_email_addSender": {
+    "message": "Add sender"
+  },
+  "settings_email_senderLabel": {
+    "message": "Sender address"
+  },
+  "settings_email_removeSender": {
+    "message": "Remove $ADDRESS$",
+    "placeholders": {
+      "address": {
+        "content": "$1"
+      }
+    }
+  },
+  "settings_data_closedDeleted": {
+    "message": "Closed jobs deleted."
+  },
+  "settings_dev_sampleLoaded": {
+    "message": "Sample data loaded."
+  },
+  "settings_dev_sampleCleared": {
+    "message": "Sample data cleared."
+  },
+  "banner_exportDeleteOld": {
+    "message": "Export and delete old jobs"
+  },
+  "radar_axisAria": {
+    "message": "$DIMENSION$, your weight $N$. Show each job's reason.",
+    "placeholders": {
+      "dimension": {
+        "content": "$1"
+      },
+      "n": {
+        "content": "$2"
+      }
+    }
+  },
+  "radar_chartAria": {
+    "message": "Radar chart of $JOBS$ across $COUNT$ things you care about.",
+    "placeholders": {
+      "jobs": {
+        "content": "$1"
+      },
+      "count": {
+        "content": "$2"
+      }
+    }
+  },
+  "radar_emptyAria": {
+    "message": "Empty radar chart. No jobs picked."
+  },
+  "ranked_breakdownLegend": {
+    "message": "Breakdown colors, largest weight first"
+  },
+  "ranked_barAria": {
+    "message": "$JOB$ scores $SCORE$. $TOP$.",
+    "placeholders": {
+      "job": {
+        "content": "$1"
+      },
+      "score": {
+        "content": "$2"
+      },
+      "top": {
+        "content": "$3"
+      }
+    }
+  },
+  "ranked_segment": {
+    "message": "$DIMENSION$: $SCORE$, adds $PART$",
+    "placeholders": {
+      "dimension": {
+        "content": "$1"
+      },
+      "score": {
+        "content": "$2"
+      },
+      "part": {
+        "content": "$3"
+      }
+    }
+  },
+  "popup_pasted": {
+    "message": "Pasted job"
+  },
+  "email_checkedNow": {
+    "message": "just now"
+  },
+  "appShortDescription": {
+    "message": "It's a free browser extension that scores job offers on what matters to you, not just pay."
+  }
+}

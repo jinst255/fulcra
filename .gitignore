@@ -1,0 +1,8 @@
+node_modules/
+.output/
+.wxt/
+.wxt-runner/
+coverage/
+*.log
+.DS_Store
+stats.html

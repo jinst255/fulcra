@@ -1,0 +1,8 @@
+.output/
+.wxt/
+node_modules/
+public/_locales/
+docs/
+package-lock.json
+demo/
+README.md

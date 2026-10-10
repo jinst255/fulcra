@@ -1086,8 +1086,8 @@ No `<all_urls>`. Other sites work through `activeTab` when the user clicks.
 | `fail.relocation` | relocating |
 | `fail.jobType` | job type |
 | `fail.language` | language |
-| `jobType.full_time` | Full time |
-| `jobType.part_time` | Part time |
+| `jobType.fullTime` | Full time |
+| `jobType.partTime` | Part time |
 | `jobType.internship` | Internship |
 | `jobType.seasonal` | Seasonal |
 | `jobType.contract` | Contract |
