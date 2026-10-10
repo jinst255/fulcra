@@ -4,7 +4,7 @@ import { defineBackground } from 'wxt/utils/define-background';
 import type { Request } from '@/src/messages';
 import { applyBadge } from '@/src/pipeline/badge';
 import { addPaste, describeTab, pageSeen, rescoreJob, scoreTab } from '@/src/pipeline/intake';
-import { planAndMaybeStart, pump, queueUnscored, startPlannedBatch } from '@/src/pipeline/queue';
+import { onScored, planAndMaybeStart, pump, queueUnscored, startPlannedBatch } from '@/src/pipeline/queue';
 import { retentionCleanup } from '@/src/store/jobs';
 import {
   getSettings,
@@ -42,6 +42,11 @@ export default defineBackground(() => {
       dimSig = next;
       void planAndMaybeStart();
     }
+  });
+
+  // Badge count: new scored jobs since the app was last opened.
+  onScored((_job, item) => {
+    if (item.kind === 'full') void updateStatus((s) => ({ newScoredCount: s.newScoredCount + 1 }));
   });
 
   self.addEventListener('online', () => void pump());
