@@ -2,7 +2,7 @@
 // Large batches can instead go through OpenAI's Batch API at half price (halfprice.ts).
 // Blueprint sections 4, 7, and 12.4.
 import { modelDimensions } from '../core/dimensions';
-import { isPayOutlier } from '../core/pay';
+import { isPayOutlier, obviousPeriod, thousandsFix } from '../core/pay';
 import { planRescore, isSmallBatch, markOutdated } from '../core/rescore';
 import type { JobRecord, Settings } from '../core/types';
 import { batchSeconds, costPerJob } from '../llm/cost';
@@ -187,7 +187,22 @@ export async function applyResult(
   }
 }
 
+/**
+ * Pay that can't be right for its unit ($110,000 an hour). Obvious cases are fixed here: "$110K" read
+ * as 110, a unit the listing states, or the only unit the amount fits. Otherwise the model is asked.
+ */
 async function checkUnit(job: JobRecord, key: string, model: 'standard' | 'sharper'): Promise<JobRecord> {
+  const scaled = thousandsFix(job.facts.pay, job.listingText);
+  if (scaled) {
+    await addLog('PAY_THOUSANDS', 'background', job.facts.pay.period);
+    job = { ...job, facts: { ...job.facts, pay: scaled } };
+    if (!isPayOutlier(scaled)) return job;
+  }
+  const obvious = obviousPeriod(job.facts.pay, job.listingText);
+  if (obvious) {
+    await addLog('PAY_UNIT', 'background', `${job.facts.pay.period} to ${obvious.to} (obvious)`);
+    return applyPayUnit(job, obvious.to, obvious.reason);
+  }
   const amount = job.facts.pay.min ?? job.facts.pay.max;
   if (amount == null) return job;
   try {

@@ -42,7 +42,12 @@ const scores = Object.fromEntries(
 );
 
 function fakeProvider(
-  opts: { period?: 'hour' | 'year'; fail?: ProviderError } = {},
+  opts: {
+    period?: 'hour' | 'year';
+    amount?: number;
+    unit?: 'hour' | 'week' | 'unchanged';
+    fail?: ProviderError;
+  } = {},
 ): Provider & { calls: string[] } {
   const calls: string[] = [];
   return {
@@ -63,14 +68,14 @@ function fakeProvider(
           usage: { inputTokens: 1, outputTokens: 1, cachedTokens: 0 },
         };
       return {
-        output: { facts: facts(opts.period ?? 'hour', 16), scores, flags: [] },
+        output: { facts: facts(opts.period ?? 'hour', opts.amount ?? 16), scores, flags: [] },
         raw: '{"ok":1}',
         usage: { inputTokens: 1, outputTokens: 1, cachedTokens: 0 },
       };
     },
     async checkPayUnit() {
       calls.push('unit');
-      return { unit: 'hour', reason: 'Only makes sense hourly.' };
+      return { unit: opts.unit ?? 'hour', reason: 'Only makes sense hourly.' };
     },
     async suggestPriorities() {
       return { weightChanges: [], newDimensions: [] };
@@ -125,26 +130,48 @@ describe('job records', () => {
 });
 
 describe('queue', () => {
-  it('scores a queued job, checks an outlier pay unit, and undoes it', async () => {
-    const p = fakeProvider({ period: 'year' });
+  async function scoreOne(p: Provider, text: string) {
     setProviderForTests(p);
     await setApiKey('sk-test-0000000000000000');
-    const j = newJobRecord({
-      source: 'email',
-      sourceUrl: null,
-      site: null,
-      siteJobId: null,
-      text: 'Warehouse $16',
-    });
+    const j = newJobRecord({ source: 'email', sourceUrl: null, site: null, siteJobId: null, text });
     await putJob(j);
     await enqueue(j.id);
     await pump();
     await settle();
-    const saved = (await getJob(j.id))!;
-    expect(p.calls).toEqual(['full', 'unit']);
+    return (await getJob(j.id))!;
+  }
+
+  it('fixes an impossible pay unit without asking, and undoes it', async () => {
+    const p = fakeProvider({ period: 'year' });
+    const saved = await scoreOne(p, 'Warehouse $16');
+    // $16 a year can only be hourly: no extra call.
+    expect(p.calls).toEqual(['full']);
     expect(saved.facts.pay.period).toBe('hour');
-    expect(saved.payUnitCorrection).toEqual({ from: 'year', to: 'hour', reason: 'Only makes sense hourly.' });
+    expect(saved.payUnitCorrection).toEqual({
+      from: 'year',
+      to: 'hour',
+      reason: '$16 only makes sense per hour.',
+    });
     expect(undoPayUnit(saved).facts.pay.period).toBe('year');
+  });
+
+  it('reads "$110K" as thousands, and the unit the listing states', async () => {
+    const k = await scoreOne(fakeProvider({ period: 'year', amount: 110 }), 'ML engineer $110K / year');
+    expect(k.facts.pay).toMatchObject({ min: 110000, period: 'year' });
+    expect(k.payUnitCorrection).toBeNull();
+    const hourly = await scoreOne(
+      fakeProvider({ period: 'hour', amount: 110000 }),
+      'ML engineer, $110,000 a year',
+    );
+    expect(hourly.facts.pay.period).toBe('year');
+    expect(hourly.payUnitCorrection?.reason).toBe('The listing says per year.');
+  });
+
+  it('asks the model when the amount fits more than one unit', async () => {
+    const p = fakeProvider({ period: 'hour', amount: 1500, unit: 'week' });
+    const saved = await scoreOne(p, 'Camp counselor, 1500');
+    expect(p.calls).toEqual(['full', 'unit']);
+    expect(saved.facts.pay.period).toBe('week');
   });
 
   it('does nothing without a key, and pauses on a bad key', async () => {

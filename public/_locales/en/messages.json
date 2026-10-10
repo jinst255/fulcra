@@ -2438,5 +2438,24 @@
         "content": "$1"
       }
     }
+  },
+  "pay_fix_stated": {
+    "message": "The listing says per $UNIT$.",
+    "placeholders": {
+      "unit": {
+        "content": "$1"
+      }
+    }
+  },
+  "pay_fix_onlyFits": {
+    "message": "$AMOUNT$ only makes sense per $UNIT$.",
+    "placeholders": {
+      "amount": {
+        "content": "$1"
+      },
+      "unit": {
+        "content": "$2"
+      }
+    }
   }
 }

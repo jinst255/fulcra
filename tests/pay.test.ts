@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { isPayOutlier, payGoal, payScore, takeHome, weeklyPay, correctedPeriod } from '../src/core/pay';
+import {
+  correctedPeriod,
+  isPayOutlier,
+  obviousPeriod,
+  payGoal,
+  payScore,
+  statedPeriod,
+  takeHome,
+  thousandsFix,
+  weeklyPay,
+} from '../src/core/pay';
 import { SAMPLE_JOBS } from '../src/dev/sample';
 import { sampleJobs } from './helpers';
 
@@ -62,5 +72,29 @@ describe('pay math (5.5)', () => {
     expect(isPayOutlier(p(60000, 'year'))).toBe(false);
     expect(correctedPeriod('year', 'hour')).toEqual({ from: 'year', to: 'hour' });
     expect(correctedPeriod('year', 'unchanged')).toBeNull();
+  });
+
+  it('finds the unit written next to an amount', () => {
+    expect(statedPeriod('$110K-$130K / year', 120000)).toBe('year');
+    expect(statedPeriod('Pay: $18.50 an hour', 18.5)).toBe('hour');
+    expect(statedPeriod('$52,000 per yr, plus $500/wk stipend', 52000)).toBe('year');
+    expect(statedPeriod('$52,000 per yr, plus $500/wk stipend', 500)).toBe('week');
+    expect(statedPeriod('Competitive pay', 20)).toBeNull();
+  });
+
+  it('fixes only the obvious pay mistakes', () => {
+    const p = (n: number, period: 'hour' | 'year' | 'week' | 'month') => ({
+      min: n,
+      max: n,
+      period,
+      currency: 'USD',
+      is_estimate: false,
+    });
+    expect(obviousPeriod(p(110000, 'hour'), 'no unit here')?.to).toBe('year');
+    expect(obviousPeriod(p(1500, 'hour'), 'no unit here')).toBeNull();
+    expect(obviousPeriod(p(1500, 'hour'), '$1,500 a month')?.to).toBe('month');
+    expect(obviousPeriod(p(20, 'hour'), '')).toBeNull();
+    expect(thousandsFix(p(95, 'year'), 'Salary $95k')?.min).toBe(95000);
+    expect(thousandsFix(p(95, 'year'), 'Salary 95')).toBeNull();
   });
 });

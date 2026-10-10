@@ -1,4 +1,5 @@
 // Take-home pay, the pay score, and the pay-unit outlier check. Blueprint sections 5.5 and 5.6.
+import { t } from '../i18n/t';
 import type { Facts, JobRecord, Pay, PayPeriod } from './types';
 
 export const DEFAULT_HOURS = 40;
@@ -112,6 +113,87 @@ export function isPayOutlier(pay: Pay): boolean {
   const b = OUTLIER_BOUNDS[pay.period];
   if (r == null || !b || r <= 0) return false;
   return r < b[0] || r > b[1];
+}
+
+const UNIT_WORDS: [RegExp, PayPeriod][] = [
+  [/^(hour|hr|h)\b/, 'hour'],
+  [/^(year|yr|annum|annual|annually)\b/, 'year'],
+  [/^(month|mo)\b/, 'month'],
+  [/^(week|wk)\b/, 'week'],
+];
+
+const unitWord = (p: PayPeriod) => t(`period.${p === 'unknown' ? 'total' : p}`).toLowerCase();
+
+/** "110K" or "110,000" or "18.50" as a number. */
+function moneyValue(num: string, k: string | undefined): number {
+  const n = Number(num.replace(/,/g, ''));
+  return k ? n * 1000 : n;
+}
+
+/**
+ * The unit the listing writes next to an amount close to `amount`: "$110K / year", "$18 an hour",
+ * "$52,000 per yr", "$20/hr". Null when the listing doesn't say.
+ */
+export function statedPeriod(listing: string, amount: number): PayPeriod | null {
+  const re =
+    /\$\s?([\d.,]+)\s?([kK])?(?:\s?[-–]\s?\$?\s?([\d.,]+)\s?([kK])?)?\s*(?:\/|per\b|an?\b|each\b)\s*([a-zA-Z]+)/g;
+  for (const m of listing.matchAll(re)) {
+    const lo = moneyValue(m[1]!, m[2]);
+    const hi = m[3] ? moneyValue(m[3], m[4] ?? m[2]) : lo;
+    if (!(amount >= lo * 0.67 && amount <= hi * 1.5)) continue;
+    const word = m[5]!.toLowerCase();
+    const hit = UNIT_WORDS.find(([w]) => w.test(word));
+    if (hit) return hit[1];
+  }
+  return null;
+}
+
+/** Units in which this amount is a believable rate. */
+export function plausiblePeriods(amount: number): PayPeriod[] {
+  return (Object.keys(OUTLIER_BOUNDS) as PayPeriod[]).filter((p) => {
+    const [lo, hi] = OUTLIER_BOUNDS[p]!;
+    return amount >= lo && amount <= hi;
+  });
+}
+
+/**
+ * Fixes a pay unit that can't be right without asking the model: the unit the listing states, or
+ * the only unit the amount makes sense in ($110,000 can only be yearly). Null when it can't tell.
+ */
+export function obviousPeriod(pay: Pay, listing: string): { to: PayPeriod; reason: string } | null {
+  if (!isPayOutlier(pay)) return null;
+  const r = midpoint(pay)!;
+  const stated = statedPeriod(listing, r);
+  if (stated && stated !== pay.period && !isPayOutlier({ ...pay, period: stated }))
+    return { to: stated, reason: t('pay.fix.stated', { unit: unitWord(stated) }) };
+  const fits = plausiblePeriods(r);
+  if (fits.length === 1 && fits[0] !== pay.period)
+    return {
+      to: fits[0]!,
+      reason: t('pay.fix.onlyFits', {
+        amount: formatMoney(r),
+        unit: unitWord(fits[0]!),
+      }),
+    };
+  return null;
+}
+
+/**
+ * "$110K" read as 110: when the listing writes the amount with a K and the thousands make sense in
+ * the stated unit, returns the pay in full. Null otherwise.
+ */
+export function thousandsFix(pay: Pay, listing: string): Pay | null {
+  if (!isPayOutlier(pay)) return null;
+  const r = midpoint(pay)!;
+  if (r >= 1000) return null;
+  const amount = String(pay.min ?? pay.max).replace('.', '\\.');
+  if (!new RegExp(`\\$\\s?${amount}\\s?[kK]\\b`).test(listing)) return null;
+  const scaled: Pay = {
+    ...pay,
+    min: pay.min == null ? null : pay.min * 1000,
+    max: pay.max == null ? null : pay.max * 1000,
+  };
+  return isPayOutlier(scaled) ? null : scaled;
 }
 
 /** Applies a model's unit answer. Returns null when nothing changes. */
