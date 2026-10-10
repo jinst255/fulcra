@@ -7,7 +7,7 @@ import type { JobRecord } from '../core/types';
 import { batchSeconds, costPerJob } from '../llm/cost';
 import { openai } from '../llm/openai';
 import { ProviderError, type Provider } from '../llm/provider';
-import { db, type QueueItem } from '../store/db';
+import { db, StorageFullError, type QueueItem } from '../store/db';
 import { getJob, putJob, allJobs } from '../store/jobs';
 import { addLog } from '../store/log';
 import { getApiKey, getSettings, getStatus, updateStatus } from '../store/settings';
@@ -109,6 +109,8 @@ async function runItem(item: QueueItem, key: string): Promise<void> {
   const job = await getJob(item.jobId);
   if (!job) return finishItem(item);
   const settings = await getSettings();
+  if (settings.verboseLog)
+    await addLog('QUEUE_START', 'background', `${item.kind} attempt ${item.attempts + 1}`);
   try {
     if (item.kind === 'full') {
       await putJob({ ...job, scoring: 'queued' });
@@ -170,6 +172,12 @@ async function checkUnit(job: JobRecord, key: string, model: 'standard' | 'sharp
 }
 
 async function handleError(e: unknown, item: QueueItem, job: JobRecord): Promise<void> {
+  if (e instanceof StorageFullError) {
+    // Keep the queue item; scoring resumes once there's room.
+    await addLog('STORAGE_FULL', 'background', 'job save failed');
+    await updateStatus({ storageFull: true });
+    return;
+  }
   const code = e instanceof ProviderError ? e.code : 'UNKNOWN';
   const d = await db();
   await addLog(code, 'background', e instanceof ProviderError ? e.detail : 'unexpected');

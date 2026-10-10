@@ -6,7 +6,8 @@ import type { PageExtraction } from '../readers/extract';
 import { isUrl, siteFor } from '../readers/generic';
 import { findDuplicate, getJob, putJob, updateJob, upsertJob } from '../store/jobs';
 import { addLog } from '../store/log';
-import { getApiKey, getSettings } from '../store/settings';
+import { StorageFullError } from '../store/db';
+import { getApiKey, getSettings, updateStatus } from '../store/settings';
 import { newJobRecord, type ListingInput } from './jobs';
 import { enqueue, pump } from './queue';
 
@@ -56,6 +57,22 @@ export async function intakePage(
   page: PageExtraction,
   source: 'page' | 'paste' = 'page',
 ): Promise<ScoreTabResult> {
+  try {
+    return await intakePageInner(page, source);
+  } catch (e) {
+    return storageFailure(e);
+  }
+}
+
+async function storageFailure(e: unknown): Promise<ScoreTabResult> {
+  if (e instanceof StorageFullError) {
+    await addLog('STORAGE_FULL', 'background', 'intake');
+    await updateStatus({ storageFull: true });
+  } else await addLog('UNKNOWN', 'background', 'intake');
+  return { ok: false, code: 'UNKNOWN' };
+}
+
+async function intakePageInner(page: PageExtraction, source: 'page' | 'paste'): Promise<ScoreTabResult> {
   if (!page.isJobPage || page.text.length < 80)
     return { ok: false, code: page.selectorsFailed ? 'PAGE_CHANGED' : 'PAGE_UNSUPPORTED' };
   if (page.selectorsFailed) await addLog('PAGE_CHANGED', 'background', page.site ?? '');
@@ -122,7 +139,11 @@ export async function addPaste(text: string): Promise<ScoreTabResult> {
     return intakePage({ ...page, isJobPage: page.isJobPage || !!siteFor(t) }, 'paste');
   }
   const job = newJobRecord({ source: 'paste', sourceUrl: null, site: null, siteJobId: null, text: t });
-  await putJob(job);
+  try {
+    await putJob(job);
+  } catch (e) {
+    return storageFailure(e);
+  }
   await enqueue(job.id);
   if (!(await getApiKey())) return { ok: false, code: 'KEY_MISSING', jobId: job.id };
   void pump();

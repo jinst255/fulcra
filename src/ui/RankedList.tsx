@@ -87,6 +87,7 @@ export function RankedList({
     return (
       <div className="wrap page">
         <section className="main-col" aria-label={t('app.tab.ranked')}>
+          <h1 className="sr-only">{t('app.tab.ranked')}</h1>
           {settings.ui.setupSkipped && <FinishCard onFinish={() => go('setup/2')} />}
           <EmptyState />
         </section>
@@ -193,6 +194,7 @@ export function RankedList({
   return (
     <div className="wrap page">
       <section aria-label={t('app.tab.ranked')} className="main-col">
+        <h1 className="sr-only">{t('app.tab.ranked')}</h1>
         {settings.ui.setupSkipped && <FinishCard onFinish={() => go('setup/2')} />}
         {learn && <LearnCard learn={learn} onDone={() => setLearn(null)} />}
         <div className="card panel">
@@ -362,7 +364,7 @@ export function EmptyState() {
         <rect x="4" y="22" width="40" height="8" rx="4" fill="#ECEAE3" />
         <rect x="4" y="36" width="24" height="8" rx="4" fill="#ECEAE3" />
       </svg>
-      <h1 style={{ fontSize: 20 }}>{t('ranked.empty.title')}</h1>
+      <h2 style={{ fontSize: 20 }}>{t('ranked.empty.title')}</h2>
       <p style={{ maxWidth: 460, fontSize: 14, lineHeight: 1.5, color: 'var(--text-3)' }}>
         {t('ranked.empty.body')}
       </p>

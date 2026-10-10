@@ -13,6 +13,9 @@ import {
 import { rankJobs, type RankView } from '../core/rank';
 import type { JobRecord, Settings } from '../core/types';
 import { getSettings, onSettingsChanged, saveSettings, type AppStatus } from '../store/settings';
+import { t } from '../i18n/t';
+import { diagnostics } from '../store/export';
+import { addLog } from '../store/log';
 import { ConfirmDialog, Toast } from './components';
 import { useJobs, useKeyInfo, useStatus } from './hooks';
 
@@ -25,7 +28,7 @@ interface Confirm {
 export interface AppCtx {
   settings: Settings;
   /** Applies a change now and saves it; shows "Saved". */
-  update: (fn: (s: Settings) => Settings | void) => void;
+  update: (fn: (s: Settings) => Settings | void, opts?: { silent?: boolean }) => void;
   jobs: JobRecord[];
   view: RankView;
   status: AppStatus;
@@ -80,13 +83,33 @@ export function AppProvider({ children, fallback }: { children: ReactNode; fallb
     });
   }, []);
 
+  // Anything unexpected: a plain message with Copy diagnostics (section 7, UNKNOWN).
+  useEffect(() => {
+    const onError = () => {
+      void addLog('UNKNOWN', 'app', 'uncaught');
+      setToastState({
+        text: t('err.unknown'),
+        action: {
+          label: t('err.copyDiagnostics'),
+          run: () => void diagnostics().then((d) => navigator.clipboard.writeText(d)),
+        },
+      });
+    };
+    window.addEventListener('error', onError);
+    window.addEventListener('unhandledrejection', onError);
+    return () => {
+      window.removeEventListener('error', onError);
+      window.removeEventListener('unhandledrejection', onError);
+    };
+  }, []);
+
   useEffect(() => {
     const on = () => setRoute(readRoute());
     window.addEventListener('hashchange', on);
     return () => window.removeEventListener('hashchange', on);
   }, []);
 
-  const update = useCallback((fn: (s: Settings) => Settings | void) => {
+  const update = useCallback((fn: (s: Settings) => Settings | void, opts?: { silent?: boolean }) => {
     const cur = latest.current;
     if (!cur) return;
     const draft = structuredClone(cur);
@@ -100,6 +123,7 @@ export function AppProvider({ children, fallback }: { children: ReactNode; fallb
         pendingSave.current = false;
       });
     }, 150);
+    if (opts?.silent) return;
     setSaved(true);
     clearTimeout(savedTimer.current);
     savedTimer.current = setTimeout(() => setSaved(false), 1600);

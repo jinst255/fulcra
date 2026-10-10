@@ -160,7 +160,7 @@ export function Popup() {
       <Shell footer={footer}>
         <div className="center-col" style={{ padding: '40px 8px' }}>
           <KeyIcon />
-          <h1 style={{ fontSize: 18 }}>{t('popup.noKey.title')}</h1>
+          <h2 style={{ fontSize: 18 }}>{t('popup.noKey.title')}</h2>
           <button type="button" className="btn primary" onClick={() => void openSetup()}>
             {t('popup.noKey.button')}
           </button>
@@ -483,7 +483,7 @@ function Shell({ children, footer }: { children: React.ReactNode; footer: React.
     <div className="popup">
       <header className="popup-head">
         <Logo size={24} />
-        <span style={{ fontSize: 17, fontWeight: 500 }}>{t('appName')}</span>
+        <h1 style={{ fontSize: 17 }}>{t('appName')}</h1>
       </header>
       <main className="popup-main">{children}</main>
       <footer className="popup-foot">{footer}</footer>

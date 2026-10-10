@@ -65,7 +65,7 @@ export function JobDetail({
   return (
     <div className="drawer-wrap">
       <div aria-hidden="true" className="drawer-backdrop" onClick={onClose} />
-      <aside role="dialog" aria-modal="true" aria-labelledby="dt-title" className="drawer">
+      <div role="dialog" aria-modal="true" aria-labelledby="dt-title" className="drawer">
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <h2 id="dt-title" style={{ fontSize: 22, lineHeight: 1.25 }}>
@@ -445,7 +445,7 @@ export function JobDetail({
             {prettyJson(job.rawOutput)}
           </pre>
         )}
-      </aside>
+      </div>
     </div>
   );
 }

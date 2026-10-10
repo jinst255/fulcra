@@ -36,7 +36,7 @@ function Shell() {
 
   useEffect(() => {
     void send({ type: 'appOpened' }).catch(() => undefined);
-    update((s) => void (s.ui.lastOpenedAt = Date.now()));
+    update((s) => void (s.ui.lastOpenedAt = Date.now()), { silent: true });
     void isSetupComplete().then((done) => {
       if (!done && !route.startsWith('setup')) go('setup/0');
       setChecked(true);
@@ -101,13 +101,15 @@ function Shell() {
           )}
         </div>
       </header>
-      {screen !== 'setup' && <Banner />}
-      {screen === 'ranked' && (
-        <RankedList onOpen={(id) => go(`job/${id}`)} learn={learn} setLearn={setLearn} />
-      )}
-      {screen === 'radar' && <Radar />}
-      {screen === 'settings' && <Settings section={arg || 'key'} />}
-      {screen === 'setup' && <Setup step={step} />}
+      <main>
+        {screen !== 'setup' && <Banner />}
+        {screen === 'ranked' && (
+          <RankedList onOpen={(id) => go(`job/${id}`)} learn={learn} setLearn={setLearn} />
+        )}
+        {screen === 'radar' && <Radar />}
+        {screen === 'settings' && <Settings section={arg || 'key'} />}
+        {screen === 'setup' && <Setup step={step} />}
+      </main>
       {detailId && <JobDetail jobId={detailId} onClose={() => go('')} onLearn={setLearn} />}
     </div>
   );
