@@ -65,9 +65,10 @@ export const factsZod = z.object({
   status: z.enum(STATUS),
 }) satisfies z.ZodType<Facts>;
 
+// The reason comes first so the model commits to its evidence before picking a number.
 const scoreJson: JsonSchema = obj({
-  score: { type: 'integer', minimum: 1, maximum: 10 },
   reason: { type: 'string' },
+  score: { type: 'number', minimum: 1, maximum: 10 },
 });
 const scoreZod = z.object({
   score: z.number().min(1).max(10),

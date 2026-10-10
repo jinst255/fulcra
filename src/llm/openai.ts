@@ -126,7 +126,9 @@ export function scoringCall(req: ScoreRequest) {
     maxOutputTokens: req.onlyDims ? 400 : 1500,
   };
   const finish = (value: ScoringOutput): ScoringOutput => {
-    for (const sc of Object.values(value.scores)) sc.score = Math.max(1, Math.min(10, Math.round(sc.score)));
+    // Half points give similar jobs room to differ.
+    for (const sc of Object.values(value.scores))
+      sc.score = Math.max(1, Math.min(10, Math.round(sc.score * 2) / 2));
     return value;
   };
   return { opts, validator: schema.zod as z.ZodType<ScoringOutput>, finish };
