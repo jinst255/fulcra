@@ -8,6 +8,7 @@ import { findDuplicate, putJob, updateJob } from '../store/jobs';
 import { newJobRecord } from '../pipeline/jobs';
 import { queueUnscored } from '../pipeline/queue';
 import type { GmailArgs, GmailRun } from '../readers/gmail';
+import { isOutlookHost } from '../readers/outlook';
 import type {
   AccountResult,
   AlertCard,
@@ -92,7 +93,7 @@ function isMailHost(url: string | undefined, provider: Provider): boolean {
   if (!url) return false;
   try {
     const h = new URL(url).hostname;
-    return provider === 'gmail' ? h === 'mail.google.com' : /^outlook\.(live|office)\.com$/.test(h);
+    return provider === 'gmail' ? h === 'mail.google.com' : isOutlookHost(h);
   } catch {
     return false;
   }
@@ -242,7 +243,7 @@ export async function signInCheck(provider: Provider, index = 0): Promise<SignIn
     await addLog(
       r.status === 'ok' ? 'MAIL_SIGNIN_OK' : r.status === 'signedOut' ? 'MAIL_SIGNED_OUT' : 'MAIL_CHANGED',
       'background',
-      `${provider}:${index}`,
+      `${provider}:${index}${r.detail ? ` ${r.detail}` : ''}`,
     );
     if (r.status === 'ok' && r.emailCounts) {
       const id = accountId(provider, index);

@@ -6,23 +6,42 @@ import type { AlertCard, MailRunResult, SignInResult } from '../email/types';
 import { parseAlert } from './alerts';
 import type { GmailRun } from './gmail';
 
-export const OUTLOOK_SELECTORS_VERSION = 'outlook-2026-10-10b';
+export const OUTLOOK_SELECTORS_VERSION = 'outlook-2026-10-10c';
 
 const SEL = {
-  ready: ['div[aria-label="Message list"]', '#MainModule', 'div[role="main"]'],
+  ready: [
+    'div[aria-label="Message list"]',
+    '[data-app-section="MessageList"]',
+    '#MainModule',
+    'div[role="main"]',
+  ],
   search: [
     'input#topSearchInput',
-    'input[aria-label="Search"]',
-    'input[aria-label^="Search"]',
-    'input[placeholder="Search"]',
+    'div[role="search"] input',
+    'input[type="search"]',
+    'input[aria-label^="Search" i]',
+    'input[placeholder^="Search" i]',
   ],
-  row: 'div[role="option"][data-convid], div[role="listbox"] div[role="option"]',
-  body: ['div[aria-label="Message body"]', 'div[role="document"]', '#UniqueMessageBody'],
-  readingPane: ['div[aria-label="Reading Pane"]', '#ReadingPaneContainerId', 'div[role="main"]'],
+  // Narrow windows fold the search box into a button.
+  searchOpen: ['button[aria-label="Search" i]', 'button[aria-label^="Open search" i]', 'div[role="search"]'],
+  list: ['div[aria-label="Message list"]', '[data-app-section="MessageList"]'],
+  body: [
+    'div[aria-label="Message body" i]',
+    '[id^="UniqueMessageBody"]',
+    '[data-app-section="ConversationContainer"] div[role="document"]',
+    'div[role="document"]',
+  ],
+  readingPane: [
+    'div[aria-label="Reading Pane" i]',
+    '[data-app-section="ConversationContainer"]',
+    '#ReadingPaneContainerId',
+    'div[role="main"]',
+  ],
   markUnread: [
-    'button[aria-label="Mark as unread"]',
-    'button[title="Mark as unread"]',
-    'div[role="menuitem"][aria-label="Mark as unread"]',
+    'button[aria-label^="Mark as unread" i]',
+    'button[title^="Mark as unread" i]',
+    '[role="menuitem"][aria-label^="Mark as unread" i]',
+    '[role="menuitem"][title^="Mark as unread" i]',
   ],
 };
 
@@ -46,18 +65,55 @@ function q(selectors: string[]): HTMLElement | null {
   return null;
 }
 
-const rows = () => Array.from(document.querySelectorAll<HTMLElement>(SEL.row));
+/** Message rows: options in the message list, never the search suggestions or a menu. */
+function rows(): HTMLElement[] {
+  const list = q(SEL.list);
+  const found = list
+    ? Array.from(list.querySelectorAll<HTMLElement>('[role="option"], [data-convid]'))
+    : Array.from(
+        document.querySelectorAll<HTMLElement>('[data-convid], div[role="listbox"] [role="option"]'),
+      ).filter((r) => !r.closest('[role="search"], [role="dialog"], [role="menu"]'));
+  // A row can hold another match; keep the outer one.
+  return found.filter((r) => !found.some((o) => o !== r && o.contains(r)));
+}
 const isUnread = (r: Element) =>
   /^unread\b/i.test(r.getAttribute('aria-label') ?? '') || r.querySelector('[aria-label^="Unread"]') != null;
-const idOf = (r: Element) => r.getAttribute('data-convid') ?? r.getAttribute('id');
+const idOf = (r: Element) =>
+  r.getAttribute('data-convid') ?? r.getAttribute('data-itemid') ?? r.getAttribute('id');
 const rowKey = () =>
   rows()
     .slice(0, 10)
     .map((r) => idOf(r) ?? '')
     .join('|');
 
+/**
+ * What the page looks like, as counts only (never text), for the log when a step fails, so the
+ * next layout change can be fixed from Copy diagnostics.
+ */
+export function layoutHint(doc: ParentNode = document): string {
+  const has = (sel: string[]) => (sel.some((s) => doc.querySelector(s)) ? 1 : 0);
+  const n = (s: string) => doc.querySelectorAll(s).length;
+  return [
+    `host=${typeof location === 'undefined' ? '' : (location.hostname.split('.')[1] ?? '')}`,
+    `ready=${has(SEL.ready)}`,
+    `box=${has(SEL.search)}`,
+    `list=${has(SEL.list)}`,
+    `opt=${n('[role="option"]')}`,
+    `conv=${n('[data-convid]')}`,
+    `item=${n('[data-itemid]')}`,
+    `body=${has(SEL.body)}`,
+    `pane=${has(SEL.readingPane.slice(0, 3))}`,
+    `unread=${has(SEL.markUnread)}`,
+  ].join(' ');
+}
+
 function onOutlook(): boolean {
-  return /^outlook\.(live|office)\.com$/.test(location.hostname);
+  return isOutlookHost(location.hostname);
+}
+
+/** Personal mail is on outlook.live.com; work and school mail on outlook.office.com or outlook.cloud.microsoft. */
+export function isOutlookHost(host: string): boolean {
+  return /^outlook\.(live\.com|office\.com|cloud\.microsoft)$/.test(host);
 }
 
 /** Sets an input's value so React-controlled inputs notice, then submits with Enter. */
@@ -72,13 +128,27 @@ function typeInto(box: HTMLInputElement, text: string): void {
     box.dispatchEvent(new KeyboardEvent(type, { key: 'Enter', code: 'Enter', keyCode: 13, bubbles: true }));
 }
 
+/** The search box, opening it first when a narrow window has folded it into a button. */
+async function searchBox(): Promise<HTMLInputElement | null> {
+  const box = await waitFor(() => q(SEL.search), 10000);
+  if (box) return box as HTMLInputElement;
+  q(SEL.searchOpen)?.click();
+  return (await waitFor(() => q(SEL.search), 5000)) as HTMLInputElement | null;
+}
+
 /** Runs the search. False when there's no search box or the list didn't change. */
 async function runSearch(query: string): Promise<'ok' | 'noBox' | 'noChange'> {
-  const box = (await waitFor(() => q(SEL.search), 15000)) as HTMLInputElement | null;
+  const box = await searchBox();
   if (!box) return 'noBox';
   const before = rowKey();
+  const moved = () => rowKey() !== before || (before !== '' && rows().length === 0);
   typeInto(box, query);
-  const changed = await waitFor(() => rowKey() !== before || (before !== '' && rows().length === 0), 10000);
+  let changed = await waitFor(moved, 8000);
+  if (!changed) {
+    // Enter didn't take: submit the search form instead.
+    box.form?.requestSubmit();
+    changed = await waitFor(moved, 6000);
+  }
   await sleep(1500);
   // An inbox whose first rows are already exactly the alerts is possible but rare; treat as no change.
   return changed ? 'ok' : 'noChange';
@@ -106,8 +176,10 @@ export function fromAlertSender(root: ParentNode, senders: string[]): boolean {
 export async function outlookSignInCheck(): Promise<SignInResult> {
   if (!onOutlook()) return { status: 'signedOut', provider: 'outlook', emailCounts: null };
   const ready = await waitFor(() => q(SEL.ready), 20000);
-  const box = ready ? await waitFor(() => q(SEL.search), 10000) : null;
-  return { status: ready && box ? 'ok' : 'changed', provider: 'outlook', emailCounts: null };
+  const box = ready ? await searchBox() : null;
+  return ready && box
+    ? { status: 'ok', provider: 'outlook', emailCounts: null }
+    : { status: 'changed', provider: 'outlook', emailCounts: null, detail: layoutHint() };
 }
 
 export async function outlookReadAlerts(args: {
@@ -125,10 +197,11 @@ export async function outlookReadAlerts(args: {
     more: false,
   });
   if (!onOutlook()) return fail('signedOut', 'host');
-  if (!(await waitFor(() => q(SEL.ready), 20000))) return fail('changed', 'not ready');
+  const changed = (step: string) => fail('changed', `${step}; ${layoutHint()}`);
+  if (!(await waitFor(() => q(SEL.ready), 20000))) return changed('not ready');
   const searched = await runSearch(args.query);
-  if (searched === 'noBox') return fail('changed', 'no search box');
-  if (searched === 'noChange') return fail('changed', 'search did not change the list');
+  if (searched === 'noBox') return changed('no search box');
+  if (searched === 'noChange') return changed('search did not change the list');
   await waitFor(() => rows().length > 0, 8000);
   const seen = new Set(args.seen);
   const targets = rows()
@@ -138,6 +211,7 @@ export async function outlookReadAlerts(args: {
   const cards: AlertCard[] = [];
   const ids: string[] = [];
   let restored = 0;
+  let noBody = 0;
   const markUnread = async () => {
     const btn = q(SEL.markUnread);
     if (!btn) return;
@@ -150,18 +224,23 @@ export async function outlookReadAlerts(args: {
     if (!row) continue;
     row.click();
     const body = await waitFor(() => q(SEL.body), 10000);
-    if (!body) continue;
+    if (!body) {
+      noBody++;
+      continue;
+    }
     await sleep(500);
     const pane = q(SEL.readingPane) ?? document;
     if (!fromAlertSender(pane, args.senders)) {
       // Not provably an alert: don't read it, put it back, and stop.
       if (t.unread) await markUnread();
-      return { ...fail('changed', `sender check failed after ${ids.length}`), cards, threadIds: ids };
+      return { ...changed(`sender check failed after ${ids.length}`), cards, threadIds: ids };
     }
     cards.push(...parseAlert(body.cloneNode(true) as Element));
     ids.push(t.id!);
     if (t.unread) await markUnread();
   }
+  // Opened messages but never found a body: the reading pane moved, not an empty search.
+  if (noBody && !ids.length) return changed(`no message body in ${noBody}`);
   return {
     status: 'ok',
     cards,

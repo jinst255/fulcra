@@ -19,6 +19,8 @@ export interface SignInResult {
   emailCounts: Record<Range, RangeCount> | null;
   /** The signed-in address, when the mail page shows it. */
   address?: string | null;
+  /** Counts only, never mail text: what the page looked like when the check failed. */
+  detail?: string;
 }
 
 /** Saved after a sign-in check so Settings can show the import estimate later. */

@@ -6,7 +6,7 @@ import { buildQuery, checkWindowDays, mailUrl, mailUrls, splitWindow } from '../
 import { parseAlert } from '../src/readers/alerts';
 import { looksLikeJobTitle, unwrapLink } from '../src/readers/alerts/common';
 import { countFrom, threadIdOf } from '../src/readers/gmail';
-import { fromAlertSender } from '../src/readers/outlook';
+import { fromAlertSender, isOutlookHost, layoutHint } from '../src/readers/outlook';
 import { withDefaults } from '../src/store/settings';
 
 const body = (name: string) =>
@@ -131,6 +131,25 @@ describe('mail queries and ids', () => {
     expect(fromAlertSender(pane, ['jobalerts-noreply@linkedin.com'])).toBe(true);
     pane.innerHTML = '<span title="friend@example.com">A friend</span><p>jobalerts-noreply@linkedin.com</p>';
     expect(fromAlertSender(pane, ['handshake@g.joinhandshake.com'])).toBe(false);
+  });
+
+  it('knows every Outlook mail address, including the cloud.microsoft move', () => {
+    expect(['outlook.live.com', 'outlook.office.com', 'outlook.cloud.microsoft'].every(isOutlookHost)).toBe(
+      true,
+    );
+    expect(isOutlookHost('www.microsoft.com')).toBe(false);
+    expect(isOutlookHost('outlook.cloud.microsoft.evil.com')).toBe(false);
+  });
+
+  it('describes the Outlook page with counts, never its text', () => {
+    const doc = new DOMParser().parseFromString(
+      `<div aria-label="Message list"><div role="option" data-convid="a">Secret subject</div>
+       <div role="option" data-convid="b">Another</div></div><input id="topSearchInput">`,
+      'text/html',
+    );
+    const hint = layoutHint(doc);
+    expect(hint).toContain('box=1 list=1 opt=2 conv=2 item=0 body=0');
+    expect(hint).not.toMatch(/Secret|Another/);
   });
 
   it('replaces the old guessed Handshake sender', () => {

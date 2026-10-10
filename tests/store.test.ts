@@ -94,6 +94,10 @@ describe('storage', () => {
     expect(JSON.stringify(file)).not.toContain('sk-secret');
     expect(file.jobs.length).toBe(1);
     expect(await diagnostics()).not.toContain('sk-secret');
+    await addLog('MAIL_CHANGED', 'background', 'outlook now days=2 [0-2] no search box; box=0 list=1');
+    expect(JSON.parse(await diagnostics()).lastEmailProblem).toMatch(
+      /MAIL_CHANGED outlook now .*no search box/,
+    );
     await deleteEverything();
     expect(await allJobs()).toEqual([]);
     expect(await overrideHistory()).toEqual([]);

@@ -3,7 +3,11 @@ import { defineContentScript } from 'wxt/utils/define-content-script';
 import { outlookReadAlerts, outlookSignInCheck } from '@/src/readers/outlook';
 
 export default defineContentScript({
-  matches: ['https://outlook.live.com/*', 'https://outlook.office.com/*'],
+  matches: [
+    'https://outlook.live.com/*',
+    'https://outlook.office.com/*',
+    'https://outlook.cloud.microsoft/*',
+  ],
   registration: 'runtime',
   main() {
     const args = window.__fulcraMail;

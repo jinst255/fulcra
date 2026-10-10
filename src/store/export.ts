@@ -52,7 +52,10 @@ export async function deleteEverything(): Promise<void> {
 export async function diagnostics(): Promise<string> {
   const s = await getSettings();
   const counts = await jobCounts();
-  const codes = (await recentLog(50)).map((e) => e.code);
+  const log = await recentLog(50);
+  const codes = log.map((e) => e.code);
+  // Which step of an email check broke. Details hold counts and steps, never mail text.
+  const mail = log.find((e) => e.code === 'MAIL_CHANGED' || e.code === 'MAIL_ERROR');
   const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
   const chromeVersion = /Chrome\/([\d.]+)/.exec(ua)?.[1] ?? 'unknown';
   const os = typeof navigator !== 'undefined' ? (navigator.platform ?? 'unknown') : 'unknown';
@@ -66,6 +69,7 @@ export async function diagnostics(): Promise<string> {
       emailInboxes: s.email.accounts.map((a) => a.id).join(', ') || 'none',
       jobs: counts,
       lastLogCodes: codes,
+      lastEmailProblem: mail ? `${new Date(mail.at).toISOString()} ${mail.code} ${mail.detail}` : null,
     },
     null,
     2,

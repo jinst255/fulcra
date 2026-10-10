@@ -10,7 +10,7 @@ export function scrub(detail: string): string {
   return detail
     .replace(/sk-[A-Za-z0-9_-]{8,}/g, 'sk-…')
     .replace(/Bearer\s+\S+/gi, 'Bearer …')
-    .slice(0, 160);
+    .slice(0, 240);
 }
 
 export async function addLog(code: string, surface: LogEntry['surface'], detail = ''): Promise<void> {

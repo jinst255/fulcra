@@ -18,6 +18,7 @@ First build of Fulcra.
 - Email checks report what happened, read past imports in full, pick the Gmail account, and switch between Gmail and Outlook directly.
 - Dark mode.
 - Several inboxes at once (say, a Gmail and an Outlook), checked in a collapsed "Fulcra" tab group instead of a minimized window.
+- Outlook reading copes with more layouts (folded search box, newer message list and body markup, the outlook.cloud.microsoft address), and Copy diagnostics says which step of an email check failed.
 - Pay: a "No set time frame" choice, and a pay goal and minimum per hour, per year, or in total. Impossible pay units ("$110,000 an hour") are fixed.
 - A job type filter on the ranked list and radar, instead of a "job types to skip" dealbreaker.
 - The radar opens a job when you click its name and highlights it when you hover.

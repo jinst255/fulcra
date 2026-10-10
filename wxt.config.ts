@@ -40,6 +40,7 @@ export default defineConfig({
       'https://mail.google.com/*',
       'https://outlook.live.com/*',
       'https://outlook.office.com/*',
+      'https://outlook.cloud.microsoft/*',
       'https://api.openai.com/*',
     ],
     commands: {
