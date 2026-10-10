@@ -30,7 +30,7 @@ Fulcra uses OpenAI to read and score jobs, with your own API key. OpenAI bills y
 3. Open **API keys** and select **Create new secret key**.
 4. Paste it into Fulcra's setup and select **Test key**.
 
-**Cost:** scoring costs about $1.20 per 1,000 jobs on the Standard model (about $4.50 on Sharper). Most people spend under $1 a month.
+**Cost:** scoring costs about $1.20 per 1,000 jobs on the Standard model (about $4.50 on Sharper). Most people spend under $1 a month. Before any large batch (an email import, re-scoring after you change what you score, or Re-score all), Fulcra shows the count and cost and lets you pick **Score now**, **Half price** (OpenAI's Batch API: half the cost, finished within 24 hours and usually much sooner), or **Later**.
 
 **Set a spend limit** in your OpenAI account under Limits, so costs can never surprise you.
 
@@ -38,9 +38,11 @@ Fulcra uses OpenAI to read and score jobs, with your own API key. OpenAI bills y
 
 - **Score a posting:** open a job posting, select the Fulcra icon, then **Score this job**. You can also press `Alt+Shift+F`, or right-click the page or a link and choose **Score this job with Fulcra**.
 - **Paste a link or text:** in the popup, paste a job link, or the text of an offer with no posting, like a message from a friend.
-- **Job alert emails:** in Settings > Job alert emails, connect Gmail or Outlook. Once a day (or as often as you choose), Fulcra opens your inbox in a minimized window, reads new LinkedIn and Handshake job alerts, and closes it. Your emails stay marked unread, and nothing else in your inbox is read. Jobs from alerts get a **Preliminary** score from the email; open the posting and Fulcra upgrades it to a full score.
+- **Job alert emails:** in Settings > Job alert emails, connect Gmail or Outlook (and pick which Gmail account, if you're signed in to more than one). Once a day (or as often as you choose), Fulcra opens your inbox in a minimized window, reads LinkedIn and Handshake job alerts that arrived since the last check, and closes it. **Import past alerts** reads the last 7, 30, or 90 days, or everything, with an estimate of the jobs and cost for each. Your emails stay marked unread, and nothing else in your inbox is read. Jobs from alerts get a **Preliminary** score from the email; open the posting and Fulcra upgrades it to a full score. Promotions and other non-job emails are left out, and anything the AI decides isn't a job listing is folded into **Not job listings**.
 - **Compare:** the **Ranked list** is home. The **Radar** compares up to three jobs across everything you care about.
-- **Disagree with a score?** Open the job and use **Use my own score**. If you keep correcting the same thing, Fulcra offers to change that weight.
+- **Disagree with a score?** Open the job and select the pencil next to the score to type your own. If you keep correcting the same thing, Fulcra offers to change that weight.
+- **Closed postings:** when a posting you open says it's no longer accepting applications, Fulcra moves it to **Closed or expired** at the bottom of the list.
+- **Light or dark:** the sun/moon button in the header, or Settings > Appearance (it follows your system by default).
 
 ## How scores work
 
@@ -56,6 +58,8 @@ and the pay score is
 
 where G is your pay goal, or the best take-home among your open jobs if you didn't set one. Taxes aren't modeled; everything is "before tax." When a posting has no pay, the model estimates it and Fulcra labels it **Estimate**. When a number is far off for its unit (like $16 a year), Fulcra asks the model which unit was meant and shows **Pay unit corrected** with an Undo.
 
+**Spread across your jobs.** By default (Settings > Scoring), each dimension's AI scores are stretched across your open jobs so the best one on it shows 10 and the weakest shows 1, which makes small differences easy to see. It needs at least three scored jobs and at least a point of difference; your own scores are never stretched. Turn it off to see the raw scores.
+
 **Overall score.** With your weights w (0 to 10) and the scores s:
 
 > overall = Σ (w × s) ÷ Σ w
@@ -66,7 +70,7 @@ over the dimensions that have a score. If every weight is 0, they count equally.
 
 ## Privacy
 
-- **What's sent to OpenAI:** the job text you score, plus your answers from About you and your dimension definitions. Nothing else, ever.
+- **What's sent to OpenAI:** the job text you score, plus your answers from About you and your dimension definitions. Nothing else, ever. Half-price batches upload the same text as a file to your OpenAI account; Fulcra deletes it when the results come back.
 - **What stays on your computer:** everything else, in the extension's own storage.
 - **Your key** is stored in Chrome's extension storage on this computer only. It never syncs to your Google account and is only ever sent to `api.openai.com`. **It is not encrypted at rest**: anyone with access to your computer's browser profile could read it. That's why a spend limit matters.
 - **No analytics** and no servers. Fulcra doesn't phone home.
@@ -85,7 +89,7 @@ See [PRIVACY.md](PRIVACY.md) for details.
 - Requires a paid OpenAI API account. There is no free scoring option.
 - Scores are a model's judgment from the posting text and can be wrong. Reasons are shown so you can judge, and you can always use your own score.
 - Pay ignores taxes, benefits, and equity unless the posting states a total. Estimated pay is labeled.
-- Email checks need Chrome to be open and you signed in to Gmail or Outlook in the same browser profile. Only the first Gmail account (`u/0`) is checked by default. If you're signed in to more than one, change it under Settings > Developer > Gmail account number (`u/1` is 1).
+- Email checks need Chrome to be open and you signed in to Gmail or Outlook in the same browser profile. Outlook reading is untested so far.
 - Email reading depends on Gmail's and Outlook's page layouts, which can change without notice and break checks until Fulcra is updated.
 - Jobs from alert emails get only a preliminary score until you open the posting. Fulcra can't always tell from an email that a job has closed.
 - LinkedIn, Handshake, and Indeed layouts can change and break page reading. Pasting text always works.

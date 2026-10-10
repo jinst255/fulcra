@@ -1,12 +1,14 @@
 # Fulcra privacy policy
 
-_Last updated: October 10, 2026_
+_Last updated: October 10, 2026 (half-price scoring added)_
 
 Fulcra is a browser extension that scores job postings. It has no servers, no accounts, and no analytics. This page explains exactly what it does with your data.
 
 ## What leaves your computer
 
 Only one thing, and only when a job is scored: Fulcra sends the job listing text, your answers from "About you" (the work you're aiming for, what you enjoy, your home base, your languages, and whether you're open to remote work or relocating), and the definitions of what you've chosen to score to **OpenAI's API at `api.openai.com`**, using your own OpenAI API key. OpenAI's handling of that data is covered by [OpenAI's policies](https://openai.com/policies). Fulcra asks OpenAI not to store responses (`store: false`).
+
+**Half-price scoring.** If you choose Half price for a large batch, Fulcra sends the same information through OpenAI's Batch API: it uploads the requests as a file to your OpenAI account, and OpenAI returns the results as another file. Fulcra deletes both files once the results are in (or, if you cancel, once the cancel completes).
 
 Fulcra sends nothing else, to anyone, ever. It has no analytics, crash reporting, or telemetry, and it loads no remote code or fonts.
 
@@ -20,7 +22,7 @@ Fulcra sends nothing else, to anyone, ever. It has no analytics, crash reporting
 
 ## Job alert emails
 
-If you connect Gmail or Outlook, Fulcra opens your inbox in a minimized window on the schedule you choose, searches only for emails from the alert senders listed in Settings (LinkedIn and Handshake by default), reads the job cards in those emails, marks them unread again, and closes the window. It reads no other email. It uses your existing signed-in session in Chrome and never sees your password. Email content is not sent anywhere; only the job title, company, location, and pay from each alert are sent to OpenAI for a preliminary score.
+If you connect Gmail or Outlook, Fulcra opens your inbox in a minimized window on the schedule you choose, searches only for emails from the alert senders listed in Settings (LinkedIn and Handshake by default), reads the job cards in those emails, marks them unread again, and closes the window. It reads no other email: in Outlook, Fulcra checks that each message it opens shows an alert sender's address and stops if one doesn't. It uses your existing signed-in session in Chrome and never sees your password. Email content is not sent anywhere; only the job title, company, location, and pay from each alert are sent to OpenAI for a preliminary score.
 
 ## Job pages
 

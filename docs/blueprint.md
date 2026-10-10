@@ -1,6 +1,6 @@
 # Fulcra: project blueprint
 
-**Version 1.2, October 10, 2026.** Owner: Justin. Audience: the AI coding agent working in the Fulcra repository.
+**Version 1.3, October 10, 2026.** Owner: Justin. Audience: the AI coding agent working in the Fulcra repository.
 
 > **Read this first, agent.** The work happens in two phases, and you must not skip ahead.
 >
@@ -12,6 +12,12 @@
 
 ## Changelog
 
+- **v1.3 (October 10, 2026, first feedback round):** changes after Justin used the build. Where this list and an older section disagree, this list wins.
+  - **Email (12.3):** Gmail selectors checked against live Gmail (the Back button is a `title` attribute; counts can read "of many"). Imports split date ranges until each fits one page, so they read past the newest 50 emails; scheduled checks look back to the last good check (2 to 30 days). Checks report their result to the page and never fail silently; switching Gmail/Outlook doesn't need a disconnect; the Gmail account is picked in the email settings. Outlook tries outlook.live.com then outlook.office.com and must pass two guards (the search changes the list; each opened message shows an alert sender). The Handshake sender is `handshake@g.joinhandshake.com`. LinkedIn alerts hold about 6 jobs each. Promotional link text is never read as a job, and the model's `not_a_job` flag folds non-jobs away.
+  - **Scoring (5.7, 5.9):** scores are spread across the person's open jobs per dimension by default (`scoring.spread`), from 3 jobs and a 1-point range up; overrides aren't stretched. The prompt has one 1-10 scale, treats every detail as evidence, asks for the reason before the score, allows half points, and works out remote, relocation (against home base), languages, and job type. Zero pay counts as missing. `tests/live/calibration.live.test.ts` measures spread and blank facts.
+  - **Cost (5.2):** six requests in flight. Large batches offer Score now, Half price (OpenAI Batch API, files deleted afterwards), or Later; Re-score all uses the same banner.
+  - **UI (9, 10):** ranked list pages (10 to 100 or all) with closed postings and non-jobs in folded groups; the radar takes any number of jobs and draws missing scores in red; scores are edited in place with a pencil; "Compare pay over" became "How far ahead are you planning?" in months; setup's last step summarizes the setup; full dark mode with a header toggle and Settings > Appearance.
+  - **Sample data (23):** the sample person is now neutral (Columbus, healthcare operations) with the same scores, so the worked examples still hold; demo/sample-data.json is the source of truth over the copy in section 23.
 - **v1.2 (October 10, 2026, Phase B build):** the extension is built (sections 1 to 22). Things the build settled or changed:
   - **Models (5.2):** both model IDs are confirmed in the live API model list. These models reject reasoning effort `minimal`, so Fulcra uses `none`. Prices are still unverified. The list also shows a `gpt-6-luna` model, not evaluated.
   - **Ranking (9.2):** jobs with no scores yet are not ranked; the list shows them in their own "Not scored yet" group. Ties keep the older job first.
@@ -801,7 +807,7 @@ No `<all_urls>`. Other sites work through `activeTab` when the user clicks.
 | `profile.life.desc` | Time, energy, and staying close to home. |
 | `profile.custom` | Custom |
 | `setup.priorities.describe` | Describe it in your own words (optional) |
-| `setup.priorities.describeHint` | Example: I want to stay in Rexburg and I hate cold calling. |
+| `setup.priorities.describeHint` | Example: Pay matters most, but I don't want a long commute or weekend shifts. |
 | `setup.priorities.describeButton` | Suggest changes |
 | `setup.priorities.suggesting` | Thinking… |
 | `setup.priorities.suggestWeight` | Raise {dimension} from {from} to {to} |
