@@ -10,7 +10,7 @@ import { setOverride } from './actions';
 import { useApp } from './AppContext';
 import { Spinner, Swatch, Tag } from './components';
 import { failText, jobSub, jobTitle, jobTypeName, payLine, payRate, payReason, shortDate } from './format';
-import { Check, Close, DealbreakerMark, External } from './Icons';
+import { Check, Close, DealbreakerMark, External, Pencil } from './Icons';
 import type { Learn } from './LearnCard';
 
 const PERIODS: Exclude<PayPeriod, 'unknown'>[] = ['hour', 'week', 'month', 'year', 'total'];
@@ -37,12 +37,23 @@ export function JobDetail({
   const r = view.byId.get(jobId);
   const job = r?.job;
 
+  // The parent passes a new onClose on every render; keep the latest without re-running effects.
+  const closeFn = useRef(onClose);
   useEffect(() => {
-    closeRef.current?.focus();
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    closeFn.current = onClose;
+  });
+  // Focus the close button when a job opens, not on every save (that scrolled back to the top).
+  useEffect(() => {
+    closeRef.current?.focus({ preventScroll: true });
+  }, [jobId]);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      // An open score editor handles its own Escape.
+      if (e.key === 'Escape' && !(e.target instanceof HTMLInputElement)) closeFn.current();
+    };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  }, []);
 
   useEffect(() => {
     if (rescoreAt != null && job && job.updatedAt > rescoreAt && job.scoring !== 'queued') setRescoreAt(null);
@@ -322,42 +333,12 @@ export function JobDetail({
                         : t('ranked.notScored')
                       : (x?.reason ?? t('ranked.reasonNotScored'))}
                   </div>
-                  {!d.computedByApp && x && !hasOv && (
+                  {hasOv && (
                     <div>
                       <button
                         type="button"
                         className="link-btn"
-                        style={{ minHeight: 36, fontSize: 13 }}
-                        onClick={() => void doOverride(Math.round(s ?? x.score))}
-                      >
-                        {t('detail.override')}
-                      </button>
-                    </div>
-                  )}
-                  {hasOv && (
-                    <div className="row-wrap" style={{ marginTop: 2 }}>
-                      <button
-                        type="button"
-                        className="btn icon"
-                        style={{ fontSize: 18 }}
-                        aria-label={t('detail.lower', { dimension: d.name })}
-                        onClick={() => void doOverride(ov - 1)}
-                      >
-                        −
-                      </button>
-                      <button
-                        type="button"
-                        className="btn icon"
-                        style={{ fontSize: 18 }}
-                        aria-label={t('detail.raise', { dimension: d.name })}
-                        onClick={() => void doOverride(ov + 1)}
-                      >
-                        +
-                      </button>
-                      <button
-                        type="button"
-                        className="link-btn"
-                        style={{ fontSize: 13 }}
+                        style={{ minHeight: 32, fontSize: 13 }}
                         onClick={() => void doOverride(null)}
                       >
                         {t('detail.resetOverride')}
@@ -365,12 +346,13 @@ export function JobDetail({
                     </div>
                   )}
                 </div>
-                <span
-                  className="mono"
-                  style={{ width: 40, flex: 'none', textAlign: 'right', fontSize: 18, fontWeight: 500 }}
-                >
-                  {formatScore(s, d.computedByApp)}
-                </span>
+                <ScoreValue
+                  value={s}
+                  oneDecimal={d.computedByApp}
+                  editable={!d.computedByApp && !!x}
+                  name={d.name}
+                  onSave={(v) => void doOverride(v)}
+                />
               </div>
             );
           })}
@@ -512,5 +494,76 @@ function PayField(props: {
         onBlur={() => props.onChange(num(text))}
       />
     </div>
+  );
+}
+
+/** A score with a small pencil to type your own, 1 to 10. Enter saves, Escape cancels. */
+function ScoreValue(props: {
+  value: number | null;
+  oneDecimal: boolean;
+  editable: boolean;
+  name: string;
+  onSave: (v: number) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState('');
+  const pencil = useRef<HTMLButtonElement>(null);
+  // Enter closes the editor, and the input's blur fires as it goes; save only once.
+  const open = useRef(false);
+  const done = (save: boolean) => {
+    if (!open.current) return;
+    open.current = false;
+    const n = Number(draft);
+    if (save && draft.trim() !== '' && Number.isFinite(n))
+      props.onSave(Math.max(1, Math.min(10, Math.round(n))));
+    setEditing(false);
+    // Back to the pencil without jumping the drawer.
+    requestAnimationFrame(() => pencil.current?.focus({ preventScroll: true }));
+  };
+  if (editing)
+    return (
+      <span className="score-edit">
+        <input
+          type="number"
+          min={1}
+          max={10}
+          step={1}
+          className="input mono"
+          aria-label={t('detail.yourScoreFor', { dimension: props.name })}
+          value={draft}
+          autoFocus
+          onFocus={(e) => e.target.select()}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') done(true);
+            if (e.key === 'Escape') {
+              e.stopPropagation();
+              done(false);
+            }
+          }}
+          onBlur={() => done(true)}
+        />
+      </span>
+    );
+  return (
+    <span className="score-value">
+      <span className="mono">{formatScore(props.value, props.oneDecimal)}</span>
+      {props.editable && (
+        <button
+          ref={pencil}
+          type="button"
+          className="pencil"
+          aria-label={t('detail.editScore', { dimension: props.name })}
+          title={t('detail.editScore', { dimension: props.name })}
+          onClick={() => {
+            setDraft(props.value == null ? '' : String(Math.round(props.value)));
+            open.current = true;
+            setEditing(true);
+          }}
+        >
+          <Pencil />
+        </button>
+      )}
+    </span>
   );
 }

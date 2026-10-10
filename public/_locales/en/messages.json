@@ -2369,5 +2369,21 @@
   },
   "app_lightMode": {
     "message": "Switch to light mode"
+  },
+  "detail_editScore": {
+    "message": "Use your own $DIMENSION$ score",
+    "placeholders": {
+      "dimension": {
+        "content": "$1"
+      }
+    }
+  },
+  "detail_yourScoreFor": {
+    "message": "Your $DIMENSION$ score, 1 to 10",
+    "placeholders": {
+      "dimension": {
+        "content": "$1"
+      }
+    }
   }
 }

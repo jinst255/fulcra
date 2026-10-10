@@ -185,3 +185,20 @@ export function Sun({ size = 18 }: { size?: number }) {
     </svg>
   );
 }
+
+export function Pencil({ size = 14 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 16 16"
+      aria-hidden="true"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinejoin="round"
+    >
+      <path d="M11 2.5l2.5 2.5L6 12.5H3.5V10z" />
+    </svg>
+  );
+}
