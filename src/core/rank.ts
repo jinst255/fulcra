@@ -22,7 +22,7 @@ export interface RankView {
   windowWeeks: number;
   goal: number;
   all: RankedJob[];
-  /** Open jobs that pass every dealbreaker, best first. */
+  /** Scored open jobs that pass every dealbreaker, best first. */
   openPass: RankedJob[];
   passingIds: string[];
   byId: Map<string, RankedJob>;
@@ -54,7 +54,10 @@ export function rankJobs(jobs: JobRecord[], settings: Settings): RankView {
     );
     return { job, take, pay, value: scored ? o.value : 0, parts: o.parts, fails, scored };
   });
-  const openPass = all.filter((x) => x.job.status !== 'closed' && x.fails.length === 0).sort(byValue);
+  // Unscored jobs don't take a rank; the list shows them in their own group.
+  const openPass = all
+    .filter((x) => x.scored && x.job.status !== 'closed' && x.fails.length === 0)
+    .sort(byValue);
   return {
     dims,
     windowWeeks: W,
