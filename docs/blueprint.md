@@ -352,7 +352,7 @@ Layout: top bar with Fulcra wordmark, tabs **Ranked list** | **Radar**, and a ge
 - When the user skipped setup, a "Finish setting up Fulcra" card sits above the list. The learning card (12.6) also sits above the list.
 - When no key is saved, a red banner says `err.keyMissing` with an "Add your OpenAI key" button that opens Settings > OpenAI key.
 
-**Radar:** as in the canvas. Seven axes (or the user's count), rings every 2 points labeled 2 to 10, up to three jobs with distinct line dash and marker shapes. Tappable dimension names show each picked job's score and reason. Each axis shows the user's weight. Job picker shows overall scores and dealbreaker markers. "What stands out" is computed from scores with no AI call.
+**Radar:** as in the canvas. Seven axes (or the user's count), rings every 2 points labeled 2 to 10, up to three jobs with distinct line dash and marker shapes. Tappable dimension names show each picked job's score and reason and sort the job picker by that dimension, best first, with jobs missing it last ("Sort by overall" undoes it; nothing is checked for the user). Hovering a job's shape on the chart lightly highlights its rows, as hovering a row highlights its shape. Each axis shows the user's weight. Job picker shows overall scores and dealbreaker markers. "What stands out" is computed from scores with no AI call.
 
 **Settings:** section 11.
 
@@ -1180,7 +1180,7 @@ No `<all_urls>`. Other sites work through `activeTab` when the user clicks.
 | `settings.dev.sampleLoaded` | Sample data loaded. |
 | `settings.dev.sampleCleared` | Sample data cleared. |
 | `banner.exportDeleteOld` | Export and delete old jobs |
-| `radar.axisAria` | {dimension}, your weight {n}. Show each job's reason. |
+| `radar.axisAria` | {dimension}, your weight {n}. Sort the jobs by it and show each job's reason. |
 | `radar.chartAria` | Radar chart of {jobs} across {count} things you care about. |
 | `radar.emptyAria` | Empty radar chart. No jobs picked. |
 | `ranked.breakdownLegend` | Breakdown colors, largest weight first |

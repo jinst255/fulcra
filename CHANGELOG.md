@@ -21,7 +21,7 @@ First build of Fulcra.
 - Outlook reading copes with more layouts (folded search box, newer message list and body markup, the outlook.cloud.microsoft address), and Copy diagnostics says which step of an email check failed.
 - Pay: a "No set time frame" choice, and a pay goal and minimum per hour, per year, or in total. Impossible pay units ("$110,000 an hour") are fixed.
 - A job type filter on the ranked list and radar, instead of a "job types to skip" dealbreaker.
-- The radar opens a job when you click its name and highlights it when you hover.
+- The radar opens a job when you click its name and highlights it when you hover, on the list or on the chart. Tapping a dimension sorts the jobs by it.
 - Setup: Skip this step skips one step; the priority sliders explain each dimension and what 0 and 10 mean.
 - Setup is four steps: Continue tests the key (and a saved key can be replaced), priorities and dealbreakers moved to the ranked list, at least one inbox is required, and Change links on the summary come straight back.
 - Filters above the ranked list and radar: job type plus remote, relocating, languages, lowest pay, and most hours. Dealbreakers are now called filters.

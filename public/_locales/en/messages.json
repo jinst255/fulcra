@@ -783,7 +783,7 @@
     }
   },
   "radar_rings": {
-    "message": "Rings are every 2 points. The outer ring is 10, the best. Tap a name to read each job's reason."
+    "message": "Rings are every 2 points. The outer ring is 10, the best. Tap a name to sort the jobs by it and read each job's reason."
   },
   "radar_overallNote": {
     "message": "Numbers on the right are overall scores with your current priorities, same as the ranked list."
@@ -1733,7 +1733,7 @@
     "message": "Export and delete old jobs"
   },
   "radar_axisAria": {
-    "message": "$DIMENSION$, your weight $N$. Show each job's reason.",
+    "message": "$DIMENSION$, your weight $N$. Sort the jobs by it and show each job's reason.",
     "placeholders": {
       "dimension": {
         "content": "$1"
@@ -2792,6 +2792,33 @@
     "message": "Re-scoring $COUNT$ jobs.",
     "placeholders": {
       "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "radar_pick_sortedBy": {
+    "message": "Sorted by $DIMENSION$, best first.",
+    "placeholders": {
+      "dimension": {
+        "content": "$1"
+      }
+    }
+  },
+  "radar_pick_sortOverall": {
+    "message": "Sort by overall"
+  },
+  "radar_pick_top3For": {
+    "message": "Show the top 3 for $DIMENSION$",
+    "placeholders": {
+      "dimension": {
+        "content": "$1"
+      }
+    }
+  },
+  "radar_dimNote": {
+    "message": "Numbers on the right are $DIMENSION$ scores out of 10. Sort by overall to see overall scores.",
+    "placeholders": {
+      "dimension": {
         "content": "$1"
       }
     }

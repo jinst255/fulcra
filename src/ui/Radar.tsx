@@ -2,7 +2,7 @@
 // matched to the approved demo. "What stands out" is worked out from scores, no AI call.
 // A point with no score sits at the center in red, so missing information never looks like a score.
 import { useMemo, useState } from 'react';
-import { byValue, isNotAJob, type RankedJob } from '../core/rank';
+import { byDimension, byValue, isNotAJob, type RankedJob } from '../core/rank';
 import { fmtDimScore, standoutLines } from '../core/standouts';
 import type { Dimension } from '../core/types';
 import { t } from '../i18n/t';
@@ -60,6 +60,8 @@ export function Radar({ onOpen }: { onOpen: (id: string) => void }) {
   const defaults = useMemo(() => view.openPass.slice(0, 3).map((x) => x.job.id), [view.openPass]);
   const [pickedRaw, setPicked] = useState<string[] | null>(null);
   const [axisRaw, setAxis] = useState(0);
+  /** The dimension the job list is sorted by, after a tap on its name; null sorts by overall. */
+  const [sortId, setSortId] = useState<string | null>(null);
   /** The job under the pointer or keyboard focus in a list, drawn on top of the others. */
   const [hover, setHover] = useState<string | null>(null);
   if (!jobs.length) {
@@ -99,9 +101,17 @@ export function Radar({ onOpen }: { onOpen: (id: string) => void }) {
   );
   const end = pt(axis, 10);
   const axisDim = dims[axis];
+  const sortDim = dims.find((d) => d.id === sortId) ?? null;
   const pickList = view.all
     .filter((x) => x.scored && x.job.status !== 'closed' && !isNotAJob(x.job))
-    .sort(byValue);
+    .sort(sortDim ? byDimension((x) => view.scoreOf(x, sortDim)) : byValue);
+  // Sorted by a dimension, the top 3 are its best jobs that pass your dealbreakers.
+  const top3 = sortDim
+    ? pickList
+        .filter((x) => !x.fails.length && view.scoreOf(x, sortDim) != null)
+        .slice(0, 3)
+        .map((x) => x.job.id)
+    : defaults;
 
   const hovered = hover ? (view.byId.get(hover) ?? null) : null;
   const hoverPicked = hovered != null && ids.includes(hovered.job.id);
@@ -180,7 +190,14 @@ export function Radar({ onOpen }: { onOpen: (id: string) => void }) {
                   const faded = hoverPicked && !lit;
                   // Missing scores draw in red below, on their own axis.
                   return (
-                    <g key={x.job.id} opacity={faded ? 0.25 : 1} className="radar-series">
+                    // Pointing at a shape lights its job in the lists, as pointing at a row lights its shape.
+                    <g
+                      key={x.job.id}
+                      opacity={faded ? 0.25 : 1}
+                      className="radar-series"
+                      onMouseEnter={() => setHover(x.job.id)}
+                      onMouseLeave={() => setHover((h) => (h === x.job.id ? null : h))}
+                    >
                       <polygon
                         points={pts.map((p) => p.map(f1).join(',')).join(' ')}
                         style={{ fill: s.color, stroke: s.color }}
@@ -249,7 +266,10 @@ export function Radar({ onOpen }: { onOpen: (id: string) => void }) {
                     className="axis-btn"
                     aria-pressed={on}
                     aria-label={t('radar.axisAria', { dimension: d.name, n: w })}
-                    onClick={() => setAxis(i)}
+                    onClick={() => {
+                      setAxis(i);
+                      setSortId(d.id);
+                    }}
                     style={{
                       left: `${((x / 680) * 100).toFixed(2)}%`,
                       top: `${((y / 460) * 100).toFixed(2)}%`,
@@ -301,6 +321,8 @@ export function Radar({ onOpen }: { onOpen: (id: string) => void }) {
                     minHeight: 24,
                     fontSize: 13,
                     flexWrap: 'wrap',
+                    borderRadius: 6,
+                    background: hover === x.job.id ? 'var(--bg)' : undefined,
                   }}
                 >
                   <LineKey k={k} />
@@ -349,9 +371,19 @@ export function Radar({ onOpen }: { onOpen: (id: string) => void }) {
               <button type="button" className="btn" disabled={!picked.length} onClick={() => setPicked([])}>
                 {t('radar.pick.clear')}
               </button>
-              <button type="button" className="link-btn" onClick={() => setPicked(defaults)}>
-                {t('radar.pick.top3')}
+              <button type="button" className="link-btn" onClick={() => setPicked(top3)}>
+                {sortDim ? t('radar.pick.top3For', { dimension: sortDim.name }) : t('radar.pick.top3')}
               </button>
+            </div>
+            <div aria-live="polite" className="small-note" style={{ marginTop: 6 }}>
+              {sortDim && (
+                <>
+                  {t('radar.pick.sortedBy', { dimension: sortDim.name })}{' '}
+                  <button type="button" className="link-btn" onClick={() => setSortId(null)}>
+                    {t('radar.pick.sortOverall')}
+                  </button>
+                </>
+              )}
             </div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', borderTop: '1px solid var(--rule)' }}>
@@ -401,14 +433,20 @@ export function Radar({ onOpen }: { onOpen: (id: string) => void }) {
                       </span>
                     )}
                   </span>
-                  <span className="mono" style={{ fontSize: 13, color: 'var(--text-3)' }}>
-                    {x.value.toFixed(1)}
-                  </span>
+                  {sortDim && view.scoreOf(x, sortDim) == null ? (
+                    <span style={{ fontSize: 12, color: 'var(--red)' }}>{t('radar.missing')}</span>
+                  ) : (
+                    <span className="mono" style={{ fontSize: 13, color: 'var(--text-3)' }}>
+                      {sortDim ? fmtDimScore(view.scoreOf(x, sortDim), sortDim) : x.value.toFixed(1)}
+                    </span>
+                  )}
                 </div>
               );
             })}
           </div>
-          <div className="small-note">{t('radar.overallNote')}</div>
+          <div className="small-note">
+            {sortDim ? t('radar.dimNote', { dimension: sortDim.name }) : t('radar.overallNote')}
+          </div>
           <div>
             <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 6 }}>{t('radar.standout.title')}</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 13, lineHeight: 1.4 }}>

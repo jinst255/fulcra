@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { overallScore } from '../src/core/overall';
 import { presetWeights, matchPreset } from '../src/core/presets';
-import { rankJobs, movement, spreadScales, spreadScore } from '../src/core/rank';
+import { byDimension, rankJobs, movement, spreadScales, spreadScore, type RankedJob } from '../src/core/rank';
 import { defaultDimensions } from '../src/core/dimensions';
 import { takeHome } from '../src/core/pay';
 import { sampleJobs, sampleSettings } from './helpers';
@@ -83,5 +83,15 @@ describe('overall score (5.7) and ranking', () => {
     const zero = { ...f, pay: { ...f.pay, min: 0, max: 0, period: 'year' as const } };
     expect(takeHome(zero, 52).total).toBeNull();
     expect(takeHome(f, 52, 100, true).total).toBe(-100);
+  });
+});
+
+describe('sorting by one dimension', () => {
+  it('puts the best first, ties by overall, and jobs with no score last', () => {
+    const job = (id: string, value: number, s: number | null) =>
+      ({ value, s, job: { id, addedAt: 0 } }) as unknown as RankedJob & { s: number | null };
+    const list = [job('a', 5, 6), job('b', 9, null), job('c', 4, 8), job('d', 7, 6)];
+    const sorted = [...list].sort(byDimension((x) => (x as (typeof list)[number]).s));
+    expect(sorted.map((x) => x.job.id)).toEqual(['c', 'd', 'a', 'b']);
   });
 });

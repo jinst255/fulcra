@@ -46,6 +46,16 @@ export function byValue(a: RankedJob, b: RankedJob): number {
   return a.job.addedAt - b.job.addedAt;
 }
 
+/** Best first on one dimension; jobs with no score for it go last, ties by overall value. */
+export function byDimension(scoreOf: (r: RankedJob) => number | null) {
+  return (a: RankedJob, b: RankedJob): number => {
+    const x = scoreOf(a);
+    const y = scoreOf(b);
+    if (x == null || y == null) return x == null && y == null ? byValue(a, b) : x == null ? 1 : -1;
+    return Math.abs(y - x) > 1e-9 ? y - x : byValue(a, b);
+  };
+}
+
 /** The model found the text wasn't a job offer (a newsletter or promotion, say). */
 export function isNotAJob(job: JobRecord): boolean {
   return job.flags.includes('not_a_job');
