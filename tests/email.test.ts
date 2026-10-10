@@ -85,6 +85,54 @@ describe('alert email parsers', () => {
     expect(parseAlert(doc.body)).toEqual([]);
   });
 
+  it('reads job alerts from senders it has no layout for', () => {
+    const html = (h: string) => new DOMParser().parseFromString(h, 'text/html').body;
+    // Indeed-style: tracked job links, company and place under each title.
+    const indeed = parseAlert(
+      html(`<p>Jobs for you</p>
+       <table><tr><td><a href="https://www.indeed.com/rc/clk?jk=abc123">Patient Access Representative</a>
+         <div>OhioHealth</div><div>Columbus, OH 43215</div><div>$17 - $20 an hour</div></td></tr></table>
+       <table><tr><td><a href="https://www.indeed.com/rc/clk?jk=def456">Medical Scheduler</a>
+         <div>Mount Carmel</div><div>Remote</div></td></tr></table>
+       <p><a href="https://www.indeed.com/jobs?q=healthcare">See more jobs</a> ·
+         <a href="https://www.indeed.com/unsubscribe">Unsubscribe</a> · <a href="https://www.indeed.com/legal">Privacy</a></p>`),
+    );
+    expect(indeed.map((c) => [c.title, c.company, c.location, c.pay, c.site])).toEqual([
+      ['Patient Access Representative', 'OhioHealth', 'Columbus, OH 43215', '$17 - $20 an hour', null],
+      ['Medical Scheduler', 'Mount Carmel', 'Remote', null, null],
+    ]);
+    // A company's own alert: no job words in the links, but role names beside a place.
+    const careers = parseAlert(
+      html(`<ul><li><a href="https://acme.example/r/8812">Warehouse Associate</a><br>Grove City, OH</li>
+       <li><a href="https://acme.example/r/8813">Forklift Operator</a><br>Grove City, OH</li></ul>`),
+    );
+    expect(careers.map((c) => c.title)).toEqual(['Warehouse Associate', 'Forklift Operator']);
+    // A LinkedIn alert forwarded inline still reads with the LinkedIn layout.
+    const fwd = parseAlert(
+      html(`<p>---------- Forwarded message ---------<br>From: LinkedIn Job Alerts &lt;jobalerts-noreply@linkedin.com&gt;</p>
+       <table><tr><td><a href="https://www.linkedin.com/comm/jobs/view/4400000009/">Clinic Coordinator</a>
+       <div>Riverside Health · Columbus, OH</div></td></tr></table>`),
+    );
+    expect(fwd.map((c) => [c.title, c.site])).toEqual([['Clinic Coordinator', 'linkedin']]);
+  });
+
+  it('finds no jobs in ordinary mail with links', () => {
+    const html = (h: string) => new DOMParser().parseFromString(h, 'text/html').body;
+    expect(
+      parseAlert(
+        html(`<p>Hey! Photos from Saturday are <a href="https://photos.example/a">here</a>.
+         Also this article: <a href="https://news.example/story">Why cities are getting hotter</a></p>`),
+      ),
+    ).toEqual([]);
+    expect(
+      parseAlert(
+        html(`<h1>Weekly digest</h1><p><a href="https://blog.example/p/1">Five tips for better sleep</a></p>
+         <p><a href="https://blog.example/p/2">Our spring sale starts now</a></p>
+         <p><a href="https://blog.example/settings">Manage your preferences</a> <a href="https://x.com/blog">Twitter</a></p>`),
+      ),
+    ).toEqual([]);
+  });
+
   it('unwraps redirect links', () => {
     expect(unwrapLink('https://www.google.com/url?q=https://x.com/a&sa=D')).toBe('https://x.com/a');
     expect(

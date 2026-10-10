@@ -1301,7 +1301,7 @@
     "message": "Alert senders"
   },
   "settings_email_sendersHint": {
-    "message": "$APP$ only reads emails from these addresses.",
+    "message": "$APP$ only reads emails from these addresses. Add any address that sends you job alerts: Indeed, a company's careers site, or someone who forwards alerts to you. Forward them normally, not as an attachment.",
     "placeholders": {
       "app": {
         "content": "$1"
