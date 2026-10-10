@@ -341,7 +341,7 @@
     "message": "Any dealbreakers?"
   },
   "setup_deal_body": {
-    "message": "Jobs that fail these are set aside, not deleted. If $APP$ can't tell, the job is not counted as failing.",
+    "message": "Jobs that miss one of these go to Filtered out at the bottom of the ranked list, not deleted. If $APP$ can't tell, the job stays in. You can also change these right above the ranked list.",
     "placeholders": {
       "app": {
         "content": "$1"
@@ -527,7 +527,7 @@
     "message": "Best fit"
   },
   "popup_passes": {
-    "message": "Passes your dealbreakers"
+    "message": "Passes your filters"
   },
   "popup_fails": {
     "message": "Fails: $REASONS$",
@@ -670,7 +670,7 @@
     "message": "Same"
   },
   "ranked_outside_title": {
-    "message": "Outside your dealbreakers"
+    "message": "Filtered out"
   },
   "ranked_outside_shownFew": {
     "message": "Shown, since few jobs pass"
@@ -682,7 +682,7 @@
     "message": "Hidden"
   },
   "ranked_outside_toggle": {
-    "message": "Show jobs outside my dealbreakers"
+    "message": "Show filtered-out jobs"
   },
   "ranked_fails": {
     "message": "Fails: $REASONS$",
@@ -1281,7 +1281,7 @@
     "message": "Reset to Balanced"
   },
   "settings_deal": {
-    "message": "Dealbreakers"
+    "message": "Filters"
   },
   "settings_email": {
     "message": "Job alert emails"
@@ -1485,19 +1485,19 @@
     "message": "pay below your minimum"
   },
   "fail_maxHours": {
-    "message": "maximum hours"
+    "message": "more hours than you want"
   },
   "fail_remote": {
-    "message": "remote work"
+    "message": "not remote"
   },
   "fail_relocation": {
-    "message": "relocating"
+    "message": "needs relocating"
   },
   "fail_jobType": {
     "message": "job type"
   },
   "fail_language": {
-    "message": "language"
+    "message": "a language you don't speak"
   },
   "jobType_fullTime": {
     "message": "Full time"
@@ -1659,7 +1659,7 @@
     "message": "No jobs match your search."
   },
   "ranked_nonePass": {
-    "message": "No open jobs pass your dealbreakers yet."
+    "message": "No open jobs pass your filters yet."
   },
   "ranked_reasonNotScored": {
     "message": "Not scored yet"
@@ -2772,5 +2772,58 @@
   },
   "setup_backToSummary": {
     "message": "Save and go back"
+  },
+  "filter_mustHave": {
+    "message": "Must have"
+  },
+  "filter_remote": {
+    "message": "Remote or hybrid"
+  },
+  "filter_noRelocation": {
+    "message": "No relocating"
+  },
+  "filter_languages": {
+    "message": "Languages I speak"
+  },
+  "filter_payChip": {
+    "message": "At least $AMOUNT$ $UNIT$",
+    "placeholders": {
+      "amount": {
+        "content": "$1"
+      },
+      "unit": {
+        "content": "$2"
+      }
+    }
+  },
+  "filter_hoursChip": {
+    "message": "At most $N$ hrs a week",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "filter_more": {
+    "message": "More filters"
+  },
+  "filter_moreCount": {
+    "message": "More filters ($COUNT$)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "filter_fewer": {
+    "message": "Fewer filters"
+  },
+  "filter_note": {
+    "message": "Jobs that miss a must-have go to Filtered out at the bottom, not deleted. If $APP$ can't tell (no pay listed, say), the job stays in.",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      }
+    }
   }
 }

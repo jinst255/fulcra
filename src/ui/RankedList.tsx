@@ -8,7 +8,7 @@ import { useApp } from './AppContext';
 import { Switch, Swatch, Tag } from './components';
 import { failText, jobSub, jobTitle } from './format';
 import { DealbreakerMark, Search } from './Icons';
-import { FilteredOut, TypeFilter } from './TypeFilter';
+import { FilterBar, FilteredOut } from './Filters';
 import { WeightPanel } from './WeightPanel';
 import { deleteWhere } from '../store/jobs';
 import { LearnCard, type Learn } from './LearnCard';
@@ -277,7 +277,7 @@ export function RankedList({
               </select>
             </div>
           </div>
-          <TypeFilter />
+          <FilterBar />
           <div
             style={{
               display: 'flex',

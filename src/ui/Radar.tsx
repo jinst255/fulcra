@@ -10,7 +10,7 @@ import { useApp } from './AppContext';
 import { failText, jobTitle, payReason } from './format';
 import { DealbreakerMark } from './Icons';
 import { EmptyState } from './RankedList';
-import { FilteredOut, TypeFilter } from './TypeFilter';
+import { FilterBar, FilteredOut } from './Filters';
 
 const CX = 340;
 const CY = 232;
@@ -126,7 +126,7 @@ export function Radar({ onOpen }: { onOpen: (id: string) => void }) {
       style={{ paddingTop: 16, paddingBottom: 40, display: 'flex', flexDirection: 'column', gap: 16 }}
     >
       <Heading />
-      <TypeFilter />
+      <FilterBar />
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20, alignItems: 'flex-start' }}>
         <section
           aria-label={t('radar.title')}

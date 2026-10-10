@@ -907,3 +907,18 @@ details.disclosure summary {
   gap: 6px;
   flex: none;
 }
+
+/* Filter bar above the ranked list and radar */
+.filter-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.more-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 28px;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--bg);
+}
