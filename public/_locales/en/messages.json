@@ -1318,7 +1318,7 @@
     "message": "Score job pages automatically when I open them"
   },
   "settings_scoring_autoHint": {
-    "message": "Uses a little OpenAI credit for every job page you visit."
+    "message": "On LinkedIn, Indeed, and Handshake. Uses a little OpenAI credit for each new job you open."
   },
   "settings_scoring_upgrade": {
     "message": "Update preliminary scores when I open the posting"

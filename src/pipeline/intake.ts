@@ -150,12 +150,27 @@ export async function addPaste(text: string): Promise<ScoreTabResult> {
   return { ok: true, jobId: job.id, already: false };
 }
 
+// One page at a time, so two tabs on the same job can't both save it and score it twice.
+let seenChain: Promise<void> = Promise.resolve();
+
 /**
  * A site content script saw a job page. Upgrades a preliminary score when the setting
  * is on, records closed postings, and auto-scores when that setting is on.
  */
-export async function pageSeen(page: PageExtraction): Promise<void> {
+export function pageSeen(page: PageExtraction): Promise<void> {
+  const run = seenChain.then(() => pageSeenInner(page));
+  seenChain = run.catch(() => undefined);
+  return run;
+}
+
+async function pageSeenInner(page: PageExtraction): Promise<void> {
   if (!page.siteJobId || !page.isJobPage) return;
+  // The site reader found nothing, so the text is the whole page, which on a search page
+  // is a list of jobs. Scoring it unasked would spend credit on nonsense.
+  if (page.selectorsFailed) {
+    await addLog('PAGE_CHANGED', 'background', page.site ?? '');
+    return;
+  }
   const settings = await getSettings();
   const existing = await existingFor(page);
   if (existing) {

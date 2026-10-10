@@ -1068,7 +1068,7 @@ No `<all_urls>`. Other sites work through `activeTab` when the user clicks.
 | `settings.email.disconnect` | Turn off email checks |
 | `settings.scoring` | Scoring |
 | `settings.scoring.auto` | Score job pages automatically when I open them |
-| `settings.scoring.autoHint` | Uses a little OpenAI credit for every job page you visit. |
+| `settings.scoring.autoHint` | On LinkedIn, Indeed, and Handshake. Uses a little OpenAI credit for each new job you open. |
 | `settings.scoring.upgrade` | Update preliminary scores when I open the posting |
 | `settings.scoring.notify` | Notify me about strong matches |
 | `settings.scoring.threshold` | Strong match means a score of at least |
