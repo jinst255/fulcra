@@ -8,6 +8,7 @@ import { useApp } from './AppContext';
 import { Switch, Swatch, Tag } from './components';
 import { failText, jobSub, jobTitle } from './format';
 import { DealbreakerMark, Search } from './Icons';
+import { FilteredOut, TypeFilter } from './TypeFilter';
 import { WeightPanel } from './WeightPanel';
 import { deleteWhere } from '../store/jobs';
 import { LearnCard, type Learn } from './LearnCard';
@@ -113,6 +114,9 @@ export function RankedList({
         : t('ranked.outside.hidden');
 
   const byWeight = dimsByWeight(view);
+  // Movement counts only the jobs the type filter shows, so filtering doesn't look like movement.
+  const shownIds = new Set(view.passingIds);
+  const baseline = settings.ui.baselineOrder.filter((id) => shownIds.has(id));
   const best = view.openPass[0];
   const dimIds = view.dims.filter((d) => !d.computedByApp).map((d) => d.id);
 
@@ -134,7 +138,7 @@ export function RankedList({
     const top = x.scored ? topLine(view, x) : '';
     const segs = byWeight.filter((d) => (x.parts[d.id] ?? 0) > 0.001);
     const tags = rowTags(j, dimIds);
-    const delta = mode === 'pass' ? movement(settings.ui.baselineOrder, view.passingIds, j.id) : 0;
+    const delta = mode === 'pass' ? movement(baseline, view.passingIds, j.id) : 0;
     return (
       <button
         key={j.id}
@@ -273,6 +277,7 @@ export function RankedList({
               </select>
             </div>
           </div>
+          <TypeFilter />
           <div
             style={{
               display: 'flex',
@@ -349,10 +354,14 @@ export function RankedList({
               </span>
             </nav>
           )}
-          {passing.length === 0 && (
-            <div style={{ padding: '16px 8px', fontSize: 14, color: 'var(--text-2)' }}>
-              {q ? t('ranked.noMatch') : t('ranked.nonePass')}
-            </div>
+          {view.all.length === 0 ? (
+            <FilteredOut />
+          ) : (
+            passing.length === 0 && (
+              <div style={{ padding: '16px 8px', fontSize: 14, color: 'var(--text-2)' }}>
+                {q ? t('ranked.noMatch') : t('ranked.nonePass')}
+              </div>
+            )
           )}
           {unscored.length > 0 && (
             <div style={{ display: 'flex', flexDirection: 'column' }}>

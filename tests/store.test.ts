@@ -14,7 +14,14 @@ import {
   clearSampleJobs,
 } from '../src/store/jobs';
 import { addLog, recentLog, scrub, LOG_MAX } from '../src/store/log';
-import { getApiKey, getSettings, keyInfo, setApiKey, updateSettings } from '../src/store/settings';
+import {
+  getApiKey,
+  getSettings,
+  keyInfo,
+  setApiKey,
+  updateSettings,
+  withDefaults,
+} from '../src/store/settings';
 import { job, sampleJobs } from './helpers';
 
 beforeEach(() => {
@@ -33,6 +40,14 @@ describe('storage', () => {
     expect(await getApiKey()).toBe('sk-test-abcdefghijklmnop7Qx2');
     expect(await keyInfo()).toEqual({ hasKey: true, last4: '7Qx2' });
     expect(await chrome.storage.sync.get(null)).toEqual({});
+  });
+
+  it('turns old "job types to skip" into the job type filter', () => {
+    const old = { dealbreakers: { excludeTypes: ['seasonal', 'contract'] } } as never;
+    const s = withDefaults(old);
+    expect(s.ui.jobTypes).toEqual(['full_time', 'part_time', 'internship', 'unknown']);
+    expect('excludeTypes' in s.dealbreakers).toBe(false);
+    expect(withDefaults({} as never).ui.jobTypes).toEqual([]);
   });
 
   it('merges a duplicate job instead of adding a second one', async () => {

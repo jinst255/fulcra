@@ -34,7 +34,6 @@ export function defaultSettings(): Settings {
       maxHours: null,
       mustRemote: false,
       noRelocation: false,
-      excludeTypes: [],
       languageGap: true,
     },
     email: {
@@ -55,6 +54,7 @@ export function defaultSettings(): Settings {
       learnSuppressed: {},
       pageSize: 20,
       theme: 'system',
+      jobTypes: [],
     },
     retentionDays: 90,
     developerMode: false,

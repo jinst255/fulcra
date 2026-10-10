@@ -1,7 +1,7 @@
 // chrome.storage.local wrapper. Blueprint sections 3 and 12.1.
 // The API key lives only here, never in chrome.storage.sync, never in exports or logs.
 import { defaultSettings } from '../core/defaults';
-import type { Settings } from '../core/types';
+import type { JobType, Settings } from '../core/types';
 
 const K = {
   settings: 'settings',
@@ -52,18 +52,27 @@ export function defaultStatus(): AppStatus {
   };
 }
 
+const ALL_TYPES: JobType[] = ['full_time', 'part_time', 'internship', 'seasonal', 'contract', 'unknown'];
+
 /** Fills in fields added after the settings were first saved. */
 export function withDefaults(saved: Partial<Settings> | undefined): Settings {
   const d = defaultSettings();
   if (!saved) return d;
+  const { excludeTypes, ...dealbreakers } = (saved.dealbreakers ?? {}) as Partial<
+    Settings['dealbreakers']
+  > & { excludeTypes?: JobType[] };
+  const ui = { ...d.ui, ...saved.ui };
+  // "Job types to skip" was a dealbreaker; it's now the job type filter on the main page.
+  if (excludeTypes?.length && !saved.ui?.jobTypes)
+    ui.jobTypes = ALL_TYPES.filter((x) => !excludeTypes.includes(x));
   return {
     ...d,
     ...saved,
     about: { ...d.about, ...saved.about },
-    dealbreakers: { ...d.dealbreakers, ...saved.dealbreakers },
+    dealbreakers: { ...d.dealbreakers, ...dealbreakers },
     email: migrateEmail({ ...d.email, ...saved.email }),
     scoring: { ...d.scoring, ...saved.scoring },
-    ui: { ...d.ui, ...saved.ui },
+    ui,
     dimensions: saved.dimensions?.length ? saved.dimensions : d.dimensions,
     weights: { ...d.weights, ...saved.weights },
   };

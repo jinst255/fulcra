@@ -4,7 +4,7 @@ import { evaluateDealbreakers, type FailReason } from './dealbreakers';
 import { effectiveScore, overallScore } from './overall';
 import { payGoal, payScore, round1, takeHome, type TakeHome } from './pay';
 import { weightOf } from './presets';
-import type { Dimension, JobRecord, Settings } from './types';
+import type { Dimension, JobRecord, JobType, Settings } from './types';
 
 export interface RankedJob {
   job: JobRecord;
@@ -39,6 +39,13 @@ export function byValue(a: RankedJob, b: RankedJob): number {
 /** The model found the text wasn't a job offer (a newsletter or promotion, say). */
 export function isNotAJob(job: JobRecord): boolean {
   return job.flags.includes('not_a_job');
+}
+
+/** The jobs of the given types; every job when no type is picked. */
+export function ofTypes(jobs: JobRecord[], types: JobType[]): JobRecord[] {
+  if (!types.length) return jobs;
+  const want = new Set(types);
+  return jobs.filter((j) => want.has(j.facts.job_type));
 }
 
 /** Fewest scored open jobs before spreading means anything. */

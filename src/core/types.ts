@@ -108,7 +108,6 @@ export interface Dealbreakers {
   maxHours: number | null;
   mustRemote: boolean;
   noRelocation: boolean;
-  excludeTypes: JobType[];
   languageGap: boolean;
 }
 
@@ -150,6 +149,8 @@ export interface Settings {
     pageSize: number;
     /** Light, dark, or follow the system. */
     theme: 'system' | 'light' | 'dark';
+    /** Job types shown in the ranked list and radar; empty shows every type. */
+    jobTypes: JobType[];
   };
   retentionDays: number | null;
   developerMode: boolean;

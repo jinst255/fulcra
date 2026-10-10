@@ -53,7 +53,6 @@ export function Setup({ step }: { step: number }) {
     (db.maxHours != null ? 1 : 0) +
     (db.mustRemote ? 1 : 0) +
     (db.noRelocation ? 1 : 0) +
-    (db.excludeTypes.length ? 1 : 0) +
     (db.languageGap ? 1 : 0);
   const em = settings.email;
   const summary: { step: number; ok: boolean; text: string }[] = [
@@ -247,6 +246,7 @@ export function Setup({ step }: { step: number }) {
               </p>
             </div>
             <DealForm showNone />
+            <p className="small-note">{t('setup.deal.typesMoved')}</p>
           </>
         )}
 

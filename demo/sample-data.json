@@ -24,7 +24,6 @@
     "maxHours": null,
     "mustRemote": false,
     "noRelocation": false,
-    "excludeTypes": [],
     "languageGap": true
   },
   "jobs": [

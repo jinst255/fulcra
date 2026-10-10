@@ -1,7 +1,7 @@
 // Dealbreakers, evaluated only on extracted facts. Unknown facts never fail. Blueprint sections 5.3 and 9.2.
 import type { Dealbreakers, Facts, Language } from './types';
 
-export type FailReason = 'minPay' | 'maxHours' | 'remote' | 'relocation' | 'jobType' | 'language';
+export type FailReason = 'minPay' | 'maxHours' | 'remote' | 'relocation' | 'language';
 
 /** Normalizes "Spanish (fluent)" or "spanish" to "spanish". */
 export function languageName(s: string): string {
@@ -34,7 +34,6 @@ export function evaluateDealbreakers(
     out.push('maxHours');
   if (rules.mustRemote && facts.remote === 'no') out.push('remote');
   if (rules.noRelocation && facts.relocation_required === 'yes') out.push('relocation');
-  if (facts.job_type !== 'unknown' && rules.excludeTypes.includes(facts.job_type)) out.push('jobType');
   if (
     rules.languageGap &&
     (missingLanguages(facts.languages_required, spoken).length > 0 || flags.includes('language_gap'))

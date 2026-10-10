@@ -10,6 +10,7 @@ import { useApp } from './AppContext';
 import { failText, jobTitle, payReason } from './format';
 import { DealbreakerMark } from './Icons';
 import { EmptyState } from './RankedList';
+import { FilteredOut, TypeFilter } from './TypeFilter';
 
 const CX = 340;
 const CY = 232;
@@ -125,6 +126,7 @@ export function Radar({ onOpen }: { onOpen: (id: string) => void }) {
       style={{ paddingTop: 16, paddingBottom: 40, display: 'flex', flexDirection: 'column', gap: 16 }}
     >
       <Heading />
+      <TypeFilter />
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20, alignItems: 'flex-start' }}>
         <section
           aria-label={t('radar.title')}
@@ -353,6 +355,7 @@ export function Radar({ onOpen }: { onOpen: (id: string) => void }) {
             </div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', borderTop: '1px solid var(--rule)' }}>
+            {view.all.length === 0 && <FilteredOut />}
             {pickList.map((x) => {
               const k = ids.indexOf(x.job.id);
               const on = k >= 0;

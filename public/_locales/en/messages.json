@@ -2526,5 +2526,28 @@
         "content": "$1"
       }
     }
+  },
+  "filter_label": {
+    "message": "Job type"
+  },
+  "filter_all": {
+    "message": "All"
+  },
+  "filter_unknown": {
+    "message": "Not stated"
+  },
+  "filter_none": {
+    "message": "No jobs of this type yet ($TYPES$).",
+    "placeholders": {
+      "types": {
+        "content": "$1"
+      }
+    }
+  },
+  "filter_showAll": {
+    "message": "Show every type"
+  },
+  "setup_deal_typesMoved": {
+    "message": "Only after one kind of job, like internships or contract work? Use the Job type buttons above your ranked list and radar. You can switch anytime."
   }
 }

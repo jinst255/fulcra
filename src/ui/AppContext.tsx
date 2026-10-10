@@ -10,7 +10,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { rankJobs, type RankView } from '../core/rank';
+import { ofTypes, rankJobs, type RankView } from '../core/rank';
 import type { JobRecord, Settings } from '../core/types';
 import { getSettings, onSettingsChanged, saveSettings, type AppStatus } from '../store/settings';
 import { useTheme } from './themeMode';
@@ -31,7 +31,10 @@ export interface AppCtx {
   /** Applies a change now and saves it; shows "Saved". */
   update: (fn: (s: Settings) => Settings | void, opts?: { silent?: boolean }) => void;
   jobs: JobRecord[];
+  /** Ranking of the jobs the job type filter shows. */
   view: RankView;
+  /** Ranking of every job, for a job the filter hides (opened from a notification, say). */
+  fullView: RankView;
   status: AppStatus;
   key: { hasKey: boolean; last4: string };
   saved: boolean;
@@ -141,16 +144,24 @@ export function AppProvider({ children, fallback }: { children: ReactNode; fallb
     setRoute(r);
   }, []);
 
-  const view = useMemo(() => (jobs && settings ? rankJobs(jobs, settings) : null), [jobs, settings]);
+  const fullView = useMemo(() => (jobs && settings ? rankJobs(jobs, settings) : null), [jobs, settings]);
+  const view = useMemo(
+    () =>
+      jobs && settings && settings.ui.jobTypes.length
+        ? rankJobs(ofTypes(jobs, settings.ui.jobTypes), settings)
+        : fullView,
+    [jobs, settings, fullView],
+  );
   useTheme(settings?.ui.theme);
 
-  if (!settings || !jobs || !status || !key || !view) return <>{fallback}</>;
+  if (!settings || !jobs || !status || !key || !view || !fullView) return <>{fallback}</>;
 
   const value: AppCtx = {
     settings,
     update,
     jobs,
     view,
+    fullView,
     status,
     key,
     saved,

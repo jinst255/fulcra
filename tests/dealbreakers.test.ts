@@ -19,7 +19,7 @@ describe('dealbreakers', () => {
     expect(evaluateDealbreakers(j.facts, null, rules, s.about.languages)).toEqual([]);
   });
 
-  it('checks hours, remote, relocation, job type, and language', () => {
+  it('checks hours, remote, relocation, and language', () => {
     const s = sampleSettings();
     const j = job('sales');
     j.facts.languages_required = ['English', 'Portuguese'];
@@ -28,14 +28,12 @@ describe('dealbreakers', () => {
       maxHours: 50,
       mustRemote: true,
       noRelocation: true,
-      excludeTypes: ['seasonal' as const],
       languageGap: true,
     };
     expect(evaluateDealbreakers(j.facts, 26700, rules, s.about.languages)).toEqual([
       'maxHours',
       'remote',
       'relocation',
-      'jobType',
       'language',
     ]);
   });

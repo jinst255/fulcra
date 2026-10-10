@@ -1,12 +1,8 @@
 // Dealbreakers. Setup step 4 and Settings > Dealbreakers.
-import type { JobType } from '../../core/types';
 import { t } from '../../i18n/t';
 import { useApp } from '../AppContext';
 import { SwitchRow } from '../components';
-import { jobTypeName } from '../format';
 import { NumberField } from './AboutForm';
-
-const TYPES: Exclude<JobType, 'unknown'>[] = ['full_time', 'part_time', 'internship', 'seasonal', 'contract'];
 
 export function DealForm({ showNone = false }: { showNone?: boolean }) {
   const { settings, update } = useApp();
@@ -64,32 +60,6 @@ export function DealForm({ showNone = false }: { showNone?: boolean }) {
           onToggle={() => save((x) => void (x.languageGap = !x.languageGap))}
         />
       </div>
-      <fieldset>
-        <legend>{t('setup.deal.excludeTypes')}</legend>
-        <div className="row-wrap">
-          {TYPES.map((ty) => {
-            const on = d.excludeTypes.includes(ty);
-            return (
-              <button
-                key={ty}
-                type="button"
-                className="seg"
-                aria-pressed={on}
-                onClick={() =>
-                  save(
-                    (x) =>
-                      void (x.excludeTypes = on
-                        ? x.excludeTypes.filter((y) => y !== ty)
-                        : [...x.excludeTypes, ty]),
-                  )
-                }
-              >
-                {jobTypeName(ty)}
-              </button>
-            );
-          })}
-        </div>
-      </fieldset>
       {showNone && (
         <div>
           <button
@@ -102,7 +72,6 @@ export function DealForm({ showNone = false }: { showNone?: boolean }) {
                   maxHours: null,
                   mustRemote: false,
                   noRelocation: false,
-                  excludeTypes: [],
                   languageGap: false,
                 };
               })

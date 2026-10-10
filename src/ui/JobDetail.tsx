@@ -30,7 +30,9 @@ export function JobDetail({
   onClose: () => void;
   onLearn: (l: Learn) => void;
 }) {
-  const { settings, view, confirm, key, status } = useApp();
+  const app = useApp();
+  const { settings, confirm, key, status } = app;
+  const view = app.view.byId.has(jobId) ? app.view : app.fullView;
   const [editPay, setEditPay] = useState(false);
   const [rescoreAt, setRescoreAt] = useState<number | null>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
