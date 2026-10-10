@@ -26,12 +26,6 @@ export function onScored(fn: Listener): void {
   scoredListeners.push(fn);
 }
 
-const batchDoneListeners: (() => void)[] = [];
-/** Called when a whole batch is done, so the half-price poller can stop. */
-export function onBatchDone(fn: () => void): void {
-  batchDoneListeners.push(fn);
-}
-
 let provider: Provider = openai;
 export function setProviderForTests(p: Provider): void {
   provider = p;
@@ -117,10 +111,7 @@ export async function finishItem(item: QueueItem): Promise<void> {
     const st = await updateStatus((s) =>
       s.batch && s.batch.id === item.batch ? { batch: { ...s.batch, done: s.batch.done + 1 } } : {},
     );
-    if (st.batch && st.batch.done >= st.batch.total) {
-      await updateStatus({ batch: null });
-      for (const fn of batchDoneListeners) fn();
-    }
+    if (st.batch && st.batch.done >= st.batch.total) await updateStatus({ batch: null });
   }
 }
 

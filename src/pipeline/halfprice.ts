@@ -1,16 +1,25 @@
 // Half-price scoring through OpenAI's Batch API. Runs in the service worker.
 // The user picks it for large batches; results usually arrive within an hour and always
 // within 24. Anything the batch can't answer falls back to a normal (full-price) call.
-import { batchClient, FINISHED, type BatchClient, type BatchLine, type BatchResult } from '../llm/batch';
+import {
+  batchClient,
+  FINISHED,
+  type BatchClient,
+  type BatchInfo,
+  type BatchLine,
+  type BatchResult,
+} from '../llm/batch';
 import { readStructured, responsesBody, scoringCall, type ResponsesBody } from '../llm/openai';
 import { ProviderError } from '../llm/provider';
 import { db, type QueueItem } from '../store/db';
 import { getJob } from '../store/jobs';
 import { addLog } from '../store/log';
 import { getApiKey, getSettings, getStatus, updateStatus } from '../store/settings';
-import { applyResult, finishItem, onBatchDone, pump, scoreRequest, setHalfPriceStarter } from './queue';
+import { applyResult, finishItem, pump, scoreRequest, setHalfPriceStarter } from './queue';
 
 export const BATCH_POLL_ALARM = 'openai-batch';
+/** Cancelled batches whose files still need deleting once OpenAI finishes cancelling. */
+const CLEANUP_KEY = 'openaiBatchCleanup';
 const POLL_MINUTES = 2;
 /** OpenAI allows 50,000 requests per batch; smaller ones finish sooner. */
 const MAX_LINES = 2000;
@@ -109,19 +118,48 @@ async function applyLine(r: BatchResult, remote: string, key: string): Promise<b
   return true;
 }
 
+async function cleanupList(): Promise<string[]> {
+  return ((await chrome.storage.local.get(CLEANUP_KEY))[CLEANUP_KEY] as string[] | undefined) ?? [];
+}
+
+/** The batch's files hold job text and the person's About you answers; remove them. */
+async function deleteFiles(key: string, info: BatchInfo): Promise<void> {
+  for (const f of [info.input_file_id, info.output_file_id, info.error_file_id])
+    if (f) await client.deleteFile(key, f).catch(() => undefined);
+}
+
+/** Deletes the files of cancelled batches once OpenAI has finished cancelling them. */
+async function cleanUp(key: string): Promise<void> {
+  const left: string[] = [];
+  for (const id of await cleanupList()) {
+    try {
+      const info = await client.get(key, id);
+      if (FINISHED.has(info.status)) await deleteFiles(key, info);
+      else left.push(id);
+    } catch {
+      left.push(id);
+    }
+  }
+  await chrome.storage.local.set({ [CLEANUP_KEY]: left });
+}
+
+async function stopPollingIfIdle(): Promise<void> {
+  const s = await getStatus();
+  if (!s.batch?.remoteIds.length && !(await cleanupList()).length)
+    await chrome.alarms.clear(BATCH_POLL_ALARM);
+}
+
 /** Checks on the batches that are out and applies finished ones. Runs on an alarm. */
 export async function pollHalfPrice(): Promise<void> {
-  const status = await getStatus();
   const key = await getApiKey();
-  const b = status.batch;
-  if (!b || !b.remoteIds.length || !key) {
-    if (!b?.remoteIds.length) await chrome.alarms.clear(BATCH_POLL_ALARM);
-    return;
-  }
+  if (!key) return;
+  await cleanUp(key);
+  const b = (await getStatus()).batch;
+  if (!b?.remoteIds.length) return stopPollingIfIdle();
   const done: string[] = [];
   let fellBack = 0;
   for (const remote of b.remoteIds) {
-    let info;
+    let info: BatchInfo;
     try {
       info = await client.get(key, remote);
     } catch {
@@ -143,17 +181,17 @@ export async function pollHalfPrice(): Promise<void> {
       fellBack++;
     }
     done.push(remote);
+    await deleteFiles(key, info);
     await addLog('BATCH_DONE', 'background', `${info.status} ${JSON.stringify(info.request_counts ?? {})}`);
   }
   if (!done.length) return;
   const st = await updateStatus((s) =>
     s.batch ? { batch: { ...s.batch, remoteIds: s.batch.remoteIds.filter((id) => !done.includes(id)) } } : {},
   );
-  if (!st.batch?.remoteIds.length) {
-    await chrome.alarms.clear(BATCH_POLL_ALARM);
-    // Leftovers run at full price.
-    if (st.batch && fellBack) await updateStatus({ batch: { ...st.batch, mode: 'now' } });
-  }
+  // Leftovers run at full price.
+  if (st.batch && !st.batch.remoteIds.length && fellBack)
+    await updateStatus({ batch: { ...st.batch, mode: 'now' } });
+  await stopPollingIfIdle();
   void pump();
 }
 
@@ -168,8 +206,9 @@ export async function speedUp(): Promise<void> {
     for (const item of (await (await db()).getAll('queue')).filter((i) => i.remote === remote))
       await fallBack(item);
   }
+  // Their files are deleted once the cancel completes; the poll alarm keeps running for that.
+  await chrome.storage.local.set({ [CLEANUP_KEY]: [...(await cleanupList()), ...b.remoteIds] });
   await updateStatus({ batch: { ...b, mode: 'now', remoteIds: [] } });
-  await chrome.alarms.clear(BATCH_POLL_ALARM);
   await addLog('BATCH_SPEEDUP', 'background', `${b.total - b.done} left`);
   void pump();
 }
@@ -177,10 +216,9 @@ export async function speedUp(): Promise<void> {
 /** Wires the queue to this module. Call once in the service worker. */
 export function initHalfPrice(): void {
   setHalfPriceStarter(submitHalfPrice);
-  onBatchDone(() => void chrome.alarms.clear(BATCH_POLL_ALARM));
-  // After a restart, keep polling batches that are still out.
-  void getStatus().then((s) => {
-    if (s.batch?.remoteIds.length)
+  // After a restart, keep polling batches that are still out or need their files deleted.
+  void Promise.all([getStatus(), cleanupList()]).then(([s, c]) => {
+    if (s.batch?.remoteIds.length || c.length)
       void chrome.alarms.create(BATCH_POLL_ALARM, { periodInMinutes: POLL_MINUTES, delayInMinutes: 1 });
   });
 }

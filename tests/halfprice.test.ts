@@ -44,6 +44,7 @@ class FakeBatches extends BatchClient {
   sent: BatchLine[][] = [];
   status: BatchInfo['status'] = 'in_progress';
   cancelled: string[] = [];
+  deleted: string[] = [];
   /** custom_ids to answer with junk, so they fall back to a direct call. */
   junk = new Set<string>();
   constructor() {
@@ -54,7 +55,10 @@ class FakeBatches extends BatchClient {
     return `batch_${this.sent.length}`;
   }
   override async get(_k: string, id: string): Promise<BatchInfo> {
-    return { id, status: this.status, output_file_id: 'out', error_file_id: null };
+    return { id, status: this.status, input_file_id: 'in', output_file_id: 'out', error_file_id: null };
+  }
+  override async deleteFile(_k: string, id: string) {
+    this.deleted.push(id);
   }
   override async cancel(_k: string, id: string) {
     this.cancelled.push(id);
@@ -157,6 +161,7 @@ describe('half-price scoring (Batch API)', () => {
     expect(p.calls).toBe(1);
     for (const id of ids) expect((await getJob(id))!.scoring).toBe('scored');
     expect((await getJob(ids[0]!))!.scores.enjoyment).toMatchObject({ score: 7 });
+    expect(batches.deleted).toEqual(['in', 'out']);
     expect((await getStatus()).batch).toBeNull();
   });
 
@@ -174,6 +179,10 @@ describe('half-price scoring (Batch API)', () => {
     await speedUp();
     await settle();
     expect(batches.cancelled).toEqual(['batch_1']);
+    // Once the cancel finishes, the next poll deletes the batch's files.
+    batches.status = 'cancelled';
+    await pollHalfPrice();
+    expect(batches.deleted).toEqual(['in', 'out']);
     expect(p.calls).toBe(12);
     expect((await getStatus()).batch).toBeNull();
   });

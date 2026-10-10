@@ -20,6 +20,7 @@ export interface BatchInfo {
     | 'expired'
     | 'cancelling'
     | 'cancelled';
+  input_file_id?: string | null;
   output_file_id: string | null;
   error_file_id: string | null;
   request_counts?: { total: number; completed: number; failed: number };
@@ -85,6 +86,11 @@ export class BatchClient {
 
   async cancel(key: string, id: string): Promise<void> {
     await this.call(key, `/batches/${id}/cancel`, { method: 'POST' });
+  }
+
+  /** Deletes an uploaded or result file, so job text doesn't stay in the OpenAI account. */
+  async deleteFile(key: string, fileId: string): Promise<void> {
+    await this.call(key, `/files/${fileId}`, { method: 'DELETE' });
   }
 
   /** Reads an output or error file. */
