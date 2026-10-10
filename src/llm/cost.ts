@@ -2,16 +2,17 @@
 import type { ModelChoice } from '../core/types';
 import { MODELS } from './models';
 
-export const TOKENS_FULL = { in: 3000, out: 500 };
+// The rubrics for built-in dimensions add about 800 tokens to a full score, about 150 to one dimension.
+export const TOKENS_FULL = { in: 3800, out: 500 };
 /** One-dimension re-score: same listing in, one short score out. */
-export const TOKENS_ONE_DIM = { in: 3000, out: 80 };
+export const TOKENS_ONE_DIM = { in: 3200, out: 80 };
 
 export function costPerCall(model: ModelChoice, tokens: { in: number; out: number }): number {
   const m = MODELS[model];
   return (tokens.in * m.priceIn + tokens.out * m.priceOut) / 1e6;
 }
 
-/** About $0.0012 per job on Standard. */
+/** About $0.0014 per job on Standard. */
 export function costPerJob(model: ModelChoice = 'standard'): number {
   return costPerCall(model, TOKENS_FULL);
 }

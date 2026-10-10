@@ -1,5 +1,6 @@
 // Prompts. Blueprint section 5.9. Stable instructions come first so prompt caching applies;
 // the listing is untrusted data inside delimiters, and the model is told to ignore instructions in it.
+import { defaultDimensions } from '../core/dimensions';
 import type { About, Dimension, PayPeriod } from '../core/types';
 
 export const MAX_LISTING_CHARS = 30_000;
@@ -70,12 +71,43 @@ export function profileBlock(about: About): string {
   ].join('\n');
 }
 
+/**
+ * How to score each built-in dimension: the evidence that counts, what moves the score, and what
+ * belongs to another dimension so nothing is counted twice. The person-facing tooltips
+ * (dimHelp.*) say the same in plain words. Used only while a dimension keeps its default meaning.
+ */
+export const RUBRICS: Record<string, string> = {
+  enjoyment:
+    'Compare the daily tasks, not the field, prestige, or pay, with what they enjoy. Evidence: listed duties, tools, pace, people contact, setting (desk, outdoors, physical), and schedule; with no duties listed, infer the usual ones for the title. Raise for duties that match what they enjoy; lower for repetitive, high-pressure, or unrelated tasks. Ignore pay, career value, and impact.',
+  impact:
+    "Who benefits from the role's own work, and how directly. Direct service to people in need (health, education, safety, essentials) scores high; supporting such work from behind the scenes, mid; ordinary commerce, 4 to 6; products that profit from harm (predatory lending, gambling, pressure sales, scams), low. Judge the role, not the employer's branding. Ignore pay and enjoyment.",
+  career:
+    'Distance from their target work. 9 to 10: that work, or its direct feeder role, at a level they could get. 7 to 8: same field or the same core skills. 5 to 6: general skills (service, admin, teamwork) that transfer loosely. 3 to 4: another field with little transfer. 1 to 2: no transfer, or a level so far above them that it is not a realistic step. Raise for credentials gained or a stated growth path into the target. Ignore pay.',
+  life: 'Time and energy left over. Evidence: hours per week (over 45 lowers sharply; 30 or fewer raises), nights, rotating or 12-hour shifts, on-call, weekends, schedule control, commute (remote saves it), travel, physical strain, and stress signals (quotas, "fast-paced", long hours at peaks). A local 40-hour daytime job with no stress signals is about 6 to 7. Ignore pay and enjoyment.',
+  risk: "Downside exposure from taking the job; high means low risk. Weigh, roughly in this order: (a) pay certainty: guaranteed base, then base plus variable, then tips or commission-heavy, then commission-only or unpaid; estimated pay adds a little doubt. (b) Tenure: permanent or ongoing, then fixed-term contract, then seasonal, temp, or gig (1099). (c) Access: requirements this person likely doesn't meet, judged from their target work and languages (years of experience, degrees, licenses, clearances, a language they don't speak), mean they may not get or keep the job: cap the score at 4, or at 2 if they would also have to move, however good the pay. Credentials the employer pays for don't count. (d) Start-up costs: moving, unpaid training, buying equipment, fees, or housing at their own cost. (e) Employer: established, then small or early-stage, then unknown; scam signs mean 1 to 2. (f) Notable physical danger. Ignore pay level beyond its certainty, hours, enjoyment, and where they'd live. 9 to 10: an established employer, steady base pay, ongoing, requirements they meet, local start. 5 to 6: one major risk or two minor ones. 1 to 2: commission-only, scam signs, or requirements far beyond them plus a move.",
+  location:
+    "Fit with where, and near whom, they want to live, using their home base, how much their community matters, and whether they're open to remote work and relocating. Remote, or on-site within about an hour of home: 9 to 10. A long commute, a temporary move, or hybrid work that needs a move: lower. A permanent move: low, lowest when their community is very important; soften it when they're open to relocating and community matters little. Ignore pay.",
+};
+
+/** True while a built-in dimension still means what it meant by default. */
+function keepsDefaultMeaning(d: Dimension): boolean {
+  const def = defaultDimensions().find((x) => x.id === d.id);
+  return (
+    def != null &&
+    def.definition === d.definition &&
+    def.anchorLow === d.anchorLow &&
+    def.anchorHigh === d.anchorHigh
+  );
+}
+
 export function dimensionsBlock(dims: Dimension[]): string {
   const lines = dims
     .filter((d) => d.active && !d.computedByApp)
-    .map(
-      (d) => `- ${d.id} (${d.name}): ${d.definition}. 1 means: ${d.anchorLow}. 10 means: ${d.anchorHigh}.`,
-    );
+    .map((d) => {
+      const line = `- ${d.id} (${d.name}): ${d.definition}. 1 means: ${d.anchorLow}. 10 means: ${d.anchorHigh}.`;
+      const rubric = RUBRICS[d.id];
+      return rubric && keepsDefaultMeaning(d) ? `${line}\n  How to score: ${rubric}` : line;
+    });
   return ['Dimensions to score:', ...lines].join('\n');
 }
 

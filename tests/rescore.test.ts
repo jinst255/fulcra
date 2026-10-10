@@ -17,7 +17,7 @@ describe('re-scoring (12.4)', () => {
     expect(plan.tasks.length).toBe(8);
     expect(plan.kind).toBe('new');
     expect(plan.tasks[0]!.dimIds).toEqual(['commute']);
-    expect(plan.cost).toBeCloseTo(8 * 0.000696);
+    expect(plan.cost).toBeCloseTo(8 * 0.000736);
     expect(isSmallBatch(plan.tasks.length, plan.cost)).toBe(true);
 
     dims = editDimension(s.dimensions, 'risk', {

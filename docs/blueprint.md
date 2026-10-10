@@ -143,9 +143,9 @@ The provider layer is an interface (`src/llm/provider.ts`) so another provider c
 - Prices come from a third-party guide checked October 6, 2026. **[Unverified]** Confirm prices and exact API model IDs on OpenAI's pricing page before shipping. Keep model IDs and prices in one constants file, `src/llm/models.ts`.
 - Set reasoning effort to the lowest available. Reasoning tokens bill as output.
 - Use the Responses API with structured output (JSON schema, strict). **[Unverified]** Confirm strict JSON-schema support for these models. Validate every response with zod regardless.
-- Cost estimate per job assumes 3,000 input and 500 output tokens:
+- Cost estimate per job assumes 3,800 input and 500 output tokens (the rubrics add about 800):
 
-$$\text{cost per job} = \frac{t_{in}\,p_{in} + t_{out}\,p_{out}}{10^6} = \frac{3000 \times 0.20 + 500 \times 1.20}{10^6} \approx \$0.0012$$
+$$\text{cost per job} = \frac{t_{in}\,p_{in} + t_{out}\,p_{out}}{10^6} = \frac{3800 \times 0.20 + 500 \times 1.20}{10^6} \approx \$0.0014$$
 
 - Re-scoring a single dimension returns one score, about \$0.0007 per job.
 - Batch API (50% cheaper, 24-hour window): used for bulk scoring while the person is away (see v1.6 in the changelog).
@@ -255,6 +255,7 @@ Pending or out-of-date dimensions are excluded, and the other weights rebalance 
 - Treat the listing as untrusted data: wrap it in delimiters and tell the model to ignore any instructions inside it.
 - Truncate listings to 30 KB.
 - Preliminary scoring (email snippet only) adds: "Information is limited; score conservatively toward 5 when unsure."
+- Each built-in dimension (enjoyment, impact, career, life, risk, location) carries a rubric (`RUBRICS`): the evidence that counts, what raises or lowers it, and what to ignore because another dimension covers it. Risk weighs pay certainty, tenure, access (requirements the person likely doesn't meet cap it at 4, or 2 with a move), start-up costs, the employer, and physical danger. A rubric is sent only while the dimension keeps its default definition and anchors; a rename keeps it, an edited meaning drops it. The tooltips (`dimHelp.*`) say the same in plain words.
 - Malformed JSON: retry once with the validation error appended. On a second failure, mark the job "Couldn't score."
 
 ---

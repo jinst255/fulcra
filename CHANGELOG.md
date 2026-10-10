@@ -19,6 +19,7 @@ First build of Fulcra.
 - Dark mode.
 - Several inboxes at once (say, a Gmail and an Outlook), checked in a collapsed "Fulcra" tab group instead of a minimized window.
 - Outlook reading copes with more layouts (folded search box, newer message list and body markup, the outlook.cloud.microsoft address), and Copy diagnostics says which step of an email check failed.
+- Clearer scoring: each built-in dimension now gives the AI a rubric, so Risk weighs steady pay, how long the job lasts, whether you'd get it, and start-up costs. The Risk tooltip says the same. Scores you already have don't change until you re-score.
 - Pay: a "No set time frame" choice, and a pay goal and minimum per hour, per year, or in total. Impossible pay units ("$110,000 an hour") are fixed.
 - A job type filter on the ranked list and radar, instead of a "job types to skip" dealbreaker.
 - The radar opens a job when you click its name and highlights it when you hover, on the list or on the chart. Tapping a dimension sorts the jobs by it.

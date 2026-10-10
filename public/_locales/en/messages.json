@@ -2427,7 +2427,7 @@
     "message": "How much time and energy the job leaves you outside work. Low cost scores high: reasonable hours and little stress score 10, a job that consumes everything scores 1."
   },
   "dimHelp_risk": {
-    "message": "How safe and steady the job is: reliable income, a clear commitment, and easy to start. Low risk scores high: a stable job scores 10, an unpredictable one scores 1."
+    "message": "How safe and steady the job is: pay you can count on, a job that lasts, an established employer, and a job you can actually get and start (you meet the requirements, with no move or upfront costs). Low risk scores high: a stable job you can start easily scores 10; commission-only work, scam signs, or requirements far beyond you score 1."
   },
   "dimHelp_location": {
     "message": "How well the job lets you live where, and near whom, you want. Fully compatible scores 10; having to leave your community scores 1."

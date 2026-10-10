@@ -2,7 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { defaultDimensions } from '../src/core/dimensions';
 import { OpenAIProvider } from '../src/llm/openai';
 import { ProviderError } from '../src/llm/provider';
-import { scoringUserMessage, truncateListing, MAX_LISTING_CHARS } from '../src/llm/prompts';
+import {
+  dimensionsBlock,
+  RUBRICS,
+  scoringUserMessage,
+  truncateListing,
+  MAX_LISTING_CHARS,
+} from '../src/llm/prompts';
+import { addDimension, editDimension } from '../src/core/dimensions';
 import { SAMPLE_ABOUT } from '../src/dev/sample';
 
 const facts = {
@@ -142,5 +149,28 @@ describe('prompts', () => {
     expect(msg).toContain('Use 5 only for a dimension they say nothing about');
     expect(msg).not.toContain('- pay');
     expect(truncateListing('a'.repeat(MAX_LISTING_CHARS + 50)).length).toBe(MAX_LISTING_CHARS);
+  });
+
+  it('gives every built-in dimension a rubric, until its meaning is edited', () => {
+    const dims = defaultDimensions();
+    const block = dimensionsBlock(dims);
+    for (const d of dims.filter((x) => !x.computedByApp)) expect(block).toContain(RUBRICS[d.id]!);
+    const risk = dims.find((d) => d.id === 'risk')!;
+    const edited = editDimension(dims, 'risk', { ...risk, definition: 'Chance the company folds' });
+    expect(dimensionsBlock(edited)).not.toContain(RUBRICS.risk!);
+    expect(dimensionsBlock(edited)).toContain(RUBRICS.life!);
+    // A rename alone keeps the meaning, and the rubric.
+    expect(dimensionsBlock(editDimension(dims, 'risk', { ...risk, name: 'Safety' }))).toContain(
+      RUBRICS.risk!,
+    );
+    const custom = addDimension(dims, {
+      name: 'Mentors',
+      definition: 'Access to mentors',
+      anchorLow: 'None',
+      anchorHigh: 'Daily',
+    });
+    expect(dimensionsBlock(custom)).toContain(
+      '- mentors (Mentors): Access to mentors. 1 means: None. 10 means: Daily.',
+    );
   });
 });
