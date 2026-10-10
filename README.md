@@ -13,7 +13,7 @@ then ranks every job by your own priorities.
 
 ![MIT license](https://img.shields.io/badge/license-MIT-0f6b5c) ![Chrome MV3](https://img.shields.io/badge/Chrome-MV3-0f6b5c) ![Status: beta](https://img.shields.io/badge/status-beta-c9a227)
 
-<img src="docs/store/ranked-list.png" width="860" alt="The ranked list: five jobs ordered by overall score, with sliders for what matters most">
+<img src="docs/ranked-list.gif" width="860" alt="Moving the sliders reorders the ranked list: a quant job rises to first when pay matters most, a startup role when career growth does, and a climate job when impact does">
 
 </div>
 
@@ -32,11 +32,11 @@ Move a slider and the list reorders instantly. Rename, remove, or add up to 12 o
 <table>
 <tr>
 <td width="50%"><img src="docs/store/radar.png" alt="The radar chart comparing three jobs"></td>
-<td width="50%"><img src="docs/store/job-detail.png" alt="A job's details, with pay, facts, and a reason for every score"></td>
+<td width="50%"><img src="docs/store/job-detail.png" alt="A job's details in dark mode, with pay, facts, and a reason for every score"></td>
 </tr>
 <tr>
 <td><b>Radar.</b> See the shape of any number of jobs side by side.</td>
-<td><b>Every score has a reason.</b> Disagree? Type your own.</td>
+<td><b>Every score has a reason.</b> Disagree? Type your own. Dark mode too.</td>
 </tr>
 </table>
 
