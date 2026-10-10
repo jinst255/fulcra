@@ -1,6 +1,6 @@
 // Ranked list (home). Blueprint section 9.2, matched to the approved demo.
 import { useEffect, useMemo, useState } from 'react';
-import { byValue, movement, type RankedJob } from '../core/rank';
+import { byValue, isNotAJob, movement, type RankedJob } from '../core/rank';
 import { bestFitDetail, bestFitLabel, dimsByWeight, topLine } from '../core/standouts';
 import type { JobRecord } from '../core/types';
 import { t } from '../i18n/t';
@@ -9,6 +9,7 @@ import { Switch, Swatch, Tag } from './components';
 import { failText, jobSub, jobTitle } from './format';
 import { DealbreakerMark, Search } from './Icons';
 import { WeightPanel } from './WeightPanel';
+import { deleteWhere } from '../store/jobs';
 import { LearnCard, type Learn } from './LearnCard';
 
 const UP = 'M5 1.5L9 8H1z';
@@ -44,9 +45,10 @@ export function RankedList({
   learn: Learn | null;
   setLearn: (l: Learn | null) => void;
 }) {
-  const { settings, update, view, jobs, go } = useApp();
+  const { settings, update, view, jobs, go, confirm, toast } = useApp();
   const [search, setSearch] = useState('');
   const [showClosed, setShowClosed] = useState(false);
+  const [showNotJobs, setShowNotJobs] = useState(false);
   const [breakdown, setBreakdown] = useState(false);
   const [page, setPage] = useState(1);
   const [extra, setExtra] = useState<Record<'unscored' | 'fail' | 'closed', number>>({
@@ -67,13 +69,14 @@ export function RankedList({
       }),
     [view, q],
   );
-  const open = visible.filter((x) => x.job.status !== 'closed');
+  const notJobs = visible.filter((x) => isNotAJob(x.job));
+  const open = visible.filter((x) => x.job.status !== 'closed' && !isNotAJob(x.job));
   const passing = open.filter((x) => x.scored && !x.fails.length).sort(byValue);
   const failing = open.filter((x) => x.scored && x.fails.length).sort(byValue);
   const unscored = open.filter((x) => !x.scored).sort((a, b) => b.job.addedAt - a.job.addedAt);
   // Closed and expired postings go to the bottom, folded away.
   const closed = visible
-    .filter((x) => x.job.status === 'closed')
+    .filter((x) => x.job.status === 'closed' && !isNotAJob(x.job))
     .sort((a, b) => b.job.lastSeenAt - a.job.lastSeenAt);
 
   const size = settings.ui.pageSize > 0 ? settings.ui.pageSize : Infinity;
@@ -390,6 +393,55 @@ export function RankedList({
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {limited(failing, 'fail').map((x, i) => row(x, i, 'fail'))}
                   {more(failing, 'fail')}
+                </div>
+              )}
+            </>
+          )}
+          {notJobs.length > 0 && (
+            <>
+              <button
+                type="button"
+                className="section-head fold"
+                aria-expanded={showNotJobs}
+                onClick={() => setShowNotJobs(!showNotJobs)}
+              >
+                <span aria-hidden="true" className="chev">
+                  {showNotJobs ? '▾' : '▸'}
+                </span>
+                <span style={{ fontSize: 13, fontWeight: 500 }}>{t('ranked.notJobsTitle')}</span>
+                <span className="small-note">
+                  {notJobs.length === 1
+                    ? t('ranked.outside.one')
+                    : t('ranked.outside.count', { count: notJobs.length })}
+                </span>
+                <span className="small-note" style={{ marginLeft: 'auto' }}>
+                  {showNotJobs ? t('ranked.outside.shown') : t('ranked.outside.hidden')}
+                </span>
+              </button>
+              {showNotJobs && (
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <div className="small-note" style={{ padding: '4px 8px' }}>
+                    {t('ranked.notJobsHint')}
+                  </div>
+                  <div style={{ opacity: 0.75 }}>{notJobs.map((x, i) => row(x, i, 'closed'))}</div>
+                  <button
+                    type="button"
+                    className="btn danger"
+                    style={{ alignSelf: 'flex-start', margin: 8 }}
+                    onClick={() =>
+                      confirm({
+                        text: t('ranked.notJobsDeleteConfirm', { count: notJobs.length }),
+                        confirmLabel: t('detail.delete'),
+                        onConfirm: async () => {
+                          const ids = new Set(notJobs.map((x) => x.job.id));
+                          await deleteWhere((j) => ids.has(j.id));
+                          toast(t('ranked.notJobsDeleted', { count: ids.size }));
+                        },
+                      })
+                    }
+                  >
+                    {t('ranked.notJobsDelete')}
+                  </button>
                 </div>
               )}
             </>

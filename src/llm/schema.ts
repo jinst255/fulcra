@@ -13,7 +13,7 @@ const JOB_TYPES = ['full_time', 'part_time', 'internship', 'seasonal', 'contract
 const YNU = ['yes', 'no', 'unknown'] as const;
 const REMOTE = ['yes', 'no', 'hybrid', 'unknown'] as const;
 const STATUS = ['open', 'closed', 'unknown'] as const;
-export const FLAGS = ['language_gap', 'commission_only', 'unpaid', 'scam_risk'] as const;
+export const FLAGS = ['language_gap', 'commission_only', 'unpaid', 'scam_risk', 'not_a_job'] as const;
 
 const nullableNumber: JsonSchema = { type: ['number', 'null'] };
 const nullableString: JsonSchema = { type: ['string', 'null'] };

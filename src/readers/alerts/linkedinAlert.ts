@@ -2,7 +2,7 @@
 // each card has three links to /comm/jobs/view/<id> (logo, one wrapping the whole text block, and
 // the title), then lines "Company · Location", an optional pay line, and badges.
 import type { AlertCard } from '../../email/types';
-import { cardFrom, cardRoot, unwrapLink } from './common';
+import { cardFrom, cardRoot, looksLikeJobTitle, unwrapLink } from './common';
 
 const JOB_LINK = /linkedin\.com\/(?:comm\/)?jobs\/view\/(?:[^/?]*-)?(\d{6,})/;
 
@@ -20,7 +20,7 @@ export function parseLinkedInAlert(body: Element): AlertCard[] {
     const titled = anchors
       .filter((a) => !anchors.some((b) => b !== a && a.contains(b)))
       .map((a) => ({ a, text: (a.textContent ?? '').replace(/\s+/g, ' ').trim() }))
-      .filter((x) => x.text && !/^(view job|apply)$/i.test(x.text))
+      .filter((x) => x.text && !/^(view job|apply)$/i.test(x.text) && looksLikeJobTitle(x.text))
       .sort((x, y) => y.text.length - x.text.length)[0];
     if (!titled) continue;
     const root = cardRoot(titled.a, body);

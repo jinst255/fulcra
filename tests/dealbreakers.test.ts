@@ -7,7 +7,7 @@ describe('dealbreakers', () => {
   it('fails Tutoring and the TA job on the $8,000 minimum, five open jobs pass', () => {
     const view = rankJobs(sampleJobs(), sampleSettings());
     const failing = view.all.filter((r) => r.fails.length).map((r) => r.job.facts.title);
-    expect(failing).toEqual(['Math and coding tutor', 'Math teaching assistant']);
+    expect(failing).toEqual(['Math tutor', 'Teaching assistant']);
     expect(view.openPass.length).toBe(5);
   });
 

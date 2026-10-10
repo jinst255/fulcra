@@ -36,6 +36,11 @@ export function byValue(a: RankedJob, b: RankedJob): number {
   return a.job.addedAt - b.job.addedAt;
 }
 
+/** The model found the text wasn't a job offer (a newsletter or promotion, say). */
+export function isNotAJob(job: JobRecord): boolean {
+  return job.flags.includes('not_a_job');
+}
+
 /** Fewest scored open jobs before spreading means anything. */
 export const SPREAD_MIN_JOBS = 3;
 
@@ -47,7 +52,7 @@ export interface Scale {
 /** Each model dimension's lowest and highest model score across scored, open jobs. */
 export function spreadScales(jobs: JobRecord[], dims: Dimension[]): Map<string, Scale> {
   const out = new Map<string, Scale>();
-  const pool = jobs.filter((j) => j.status !== 'closed' && j.scoring === 'scored');
+  const pool = jobs.filter((j) => j.status !== 'closed' && j.scoring === 'scored' && !isNotAJob(j));
   if (pool.length < SPREAD_MIN_JOBS) return out;
   for (const d of dims) {
     if (d.computedByApp) continue;
@@ -99,7 +104,7 @@ export function rankJobs(jobs: JobRecord[], settings: Settings): RankView {
   });
   // Unscored jobs don't take a rank; the list shows them in their own group.
   const openPass = all
-    .filter((x) => x.scored && x.job.status !== 'closed' && x.fails.length === 0)
+    .filter((x) => x.scored && x.job.status !== 'closed' && x.fails.length === 0 && !isNotAJob(x.job))
     .sort(byValue);
   return {
     dims,

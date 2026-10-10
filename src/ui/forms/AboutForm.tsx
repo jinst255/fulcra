@@ -1,7 +1,8 @@
 // "About you". Setup step 2 and Settings > About you.
 import { useEffect, useRef, useState } from 'react';
 import type { LanguageLevel } from '../../core/types';
-import { t } from '../../i18n/t';
+import { formatMoney } from '../../core/pay';
+import { t, type MessageKey } from '../../i18n/t';
 import { useApp } from '../AppContext';
 import { Segmented } from '../components';
 import { Close } from '../Icons';
@@ -91,14 +92,104 @@ export function NumberField(props: {
   );
 }
 
+const SPANS: { weeks: number; key: MessageKey }[] = [
+  { weeks: 13, key: 'setup.about.span.3m' },
+  { weeks: 26, key: 'setup.about.span.6m' },
+  { weeks: 52, key: 'setup.about.span.1y' },
+  { weeks: 104, key: 'setup.about.span.2y' },
+];
+const weeksToMonths = (w: number) => Math.max(1, Math.round((w * 12) / 52));
+const monthsToWeeks = (m: number) => Math.max(1, Math.round((m * 52) / 12));
+
+function spanName(weeks: number): string {
+  const preset = SPANS.find((x) => x.weeks === weeks);
+  if (preset) return t(preset.key).toLowerCase();
+  const m = weeksToMonths(weeks);
+  return m === 1 ? t('setup.about.oneMonth') : t('setup.about.months', { n: m });
+}
+
+/** "Compare pay over": how far ahead the person is planning, shown with a worked example. */
+function PayWindow() {
+  const { settings, update } = useApp();
+  const a = settings.about;
+  const save = (fn: (x: typeof a) => void) => update((s) => void fn(s.about));
+  const isPreset = SPANS.some((x) => x.weeks === a.windowWeeks);
+  const [other, setOther] = useState(!isPreset);
+  const showOther = other || !isPreset;
+  const example = formatMoney(20 * 40 * a.windowWeeks);
+  const goalHourly = a.payGoal && a.windowWeeks > 0 ? formatMoney(a.payGoal / (a.windowWeeks * 40)) : null;
+  return (
+    <div className="pay-window">
+      <fieldset>
+        <legend>{t('setup.about.window')}</legend>
+        <div className="field-hint" style={{ marginTop: -4, marginBottom: 10 }}>
+          {t('setup.about.windowHint')}
+        </div>
+        <div className="row-wrap">
+          {SPANS.map((x) => (
+            <button
+              key={x.weeks}
+              type="button"
+              className="seg"
+              aria-pressed={!showOther && a.windowWeeks === x.weeks}
+              onClick={() => {
+                setOther(false);
+                save((v) => void (v.windowWeeks = x.weeks));
+              }}
+            >
+              {t(x.key)}
+            </button>
+          ))}
+          <button type="button" className="seg" aria-pressed={showOther} onClick={() => setOther(true)}>
+            {t('setup.about.span.other')}
+          </button>
+          {showOther && (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              <NumberField
+                id="ab-months"
+                ariaLabel={t('setup.about.customMonths')}
+                width={80}
+                min={1}
+                max={36}
+                value={weeksToMonths(a.windowWeeks)}
+                onSave={(v) => v && v > 0 && save((x) => void (x.windowWeeks = monthsToWeeks(v)))}
+              />
+              <span style={{ fontSize: 14 }}>{t('setup.about.monthsUnit')}</span>
+            </span>
+          )}
+        </div>
+        <div className="example-line">
+          {t('setup.about.windowExample', { total: example, span: spanName(a.windowWeeks) })}
+        </div>
+      </fieldset>
+      <div>
+        <label htmlFor="ab-goal" className="field-label">
+          {t('setup.about.goalOver', { span: spanName(a.windowWeeks) })}
+        </label>
+        <div className="money-input">
+          <span aria-hidden="true">$</span>
+          <NumberField
+            id="ab-goal"
+            min={0}
+            step={500}
+            value={a.payGoal}
+            onSave={(v) => save((x) => void (x.payGoal = v && v > 0 ? v : null))}
+          />
+        </div>
+        <div className="field-hint">
+          {goalHourly ? t('setup.about.goalHourly', { hourly: goalHourly }) + ' ' : ''}
+          {t('setup.about.goalHint2')}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function AboutForm() {
   const { settings, update } = useApp();
   const a = settings.about;
   const [lang, setLang] = useState('');
   const [level, setLevel] = useState<LanguageLevel>('fluent');
-  const windowChoice = a.windowWeeks === 22 ? 'summer' : a.windowWeeks === 52 ? 'year' : 'custom';
-  const [custom, setCustom] = useState(windowChoice === 'custom');
-  const choice = custom ? 'custom' : windowChoice;
   const save = (fn: (x: typeof a) => void) => update((s) => void fn(s.about));
   const levelName = (l: LanguageLevel) => t(`setup.about.level.${l}`);
 
@@ -235,54 +326,7 @@ export function AboutForm() {
           </button>
         </div>
       </fieldset>
-      <fieldset>
-        <legend>{t('setup.about.window')}</legend>
-        <div className="row-wrap">
-          <Segmented
-            options={[
-              ['summer', t('setup.about.window.summer')],
-              ['year', t('setup.about.window.year')],
-              ['custom', t('setup.about.window.custom')],
-            ]}
-            value={choice}
-            onChange={(v) => {
-              setCustom(v === 'custom');
-              if (v === 'summer') save((x) => void (x.windowWeeks = 22));
-              if (v === 'year') save((x) => void (x.windowWeeks = 52));
-            }}
-          />
-          {choice === 'custom' && (
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-              <NumberField
-                id="ab-weeks"
-                ariaLabel={t('setup.about.customWeeks')}
-                width={90}
-                min={1}
-                max={104}
-                value={a.windowWeeks}
-                onSave={(v) => v && v > 0 && save((x) => void (x.windowWeeks = Math.round(v)))}
-              />
-              <span style={{ fontSize: 14 }}>{t('setup.about.weeks')}</span>
-            </span>
-          )}
-        </div>
-      </fieldset>
-      <div>
-        <label htmlFor="ab-goal" className="field-label">
-          {t('setup.about.goal')}
-        </label>
-        <div className="money-input">
-          <span aria-hidden="true">$</span>
-          <NumberField
-            id="ab-goal"
-            min={0}
-            step={500}
-            value={a.payGoal}
-            onSave={(v) => save((x) => void (x.payGoal = v && v > 0 ? v : null))}
-          />
-        </div>
-        <div className="field-hint">{t('setup.about.goalHint')}</div>
-      </div>
+      <PayWindow />
     </div>
   );
 }

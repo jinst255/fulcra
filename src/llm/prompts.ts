@@ -31,7 +31,8 @@ Scores:
 - Judge for this person's stated goals, interests, home base, and languages, not for an average person.
 - Each reason is one plain sentence of 15 words or fewer, written to the person ("you"), naming the specific thing in the listing that drove the score.
 - If the job requires a language the person doesn't speak, add the flag "language_gap" and lower the career and risk scores. A bilingual premium for a language they speak counts as upside.
-- Add "commission_only" when pay is mostly or entirely commission, "unpaid" when the job is unpaid, and "scam_risk" when the listing shows common scam signs.`;
+- Add "commission_only" when pay is mostly or entirely commission, "unpaid" when the job is unpaid, and "scam_risk" when the listing shows common scam signs.
+- Add "not_a_job" when the text isn't an offer of a specific job, internship, or paid gig: for example a newsletter, a promotion or subscription offer, an event, a course, or a list of links. Score it anyway; the person won't see it ranked.`;
 
 export const PRELIMINARY_NOTE =
   'Only the title, company, location, and maybe pay are known. Score what those clearly show as decisively as usual; use 5 only for dimensions they say nothing about.';

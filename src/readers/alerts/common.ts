@@ -64,6 +64,19 @@ const PAY =
 const NOISE =
   /^(view job|apply|easy apply|see all jobs|see jobs|actively recruiting|promoted|be an early applicant|\d+ (applicants?|connections?|school alum(ni)?).*|new|save|viewed|.*matches your (preferences|job alert).*|.*ago)$/i;
 
+/**
+ * Link text from promotions, newsletters, and account emails. Kept to phrases no job title uses,
+ * so "Event Coordinator" or "Premium Account Manager" still count.
+ */
+const PROMO =
+  /\b(subscribe|subscription|unsubscribe|last chance|limited time|free trial|try premium|try it free|upgrade (to|now)|sign ?up|log ?in|sign ?in|newsletter|webinar|reset your|update your|manage (your )?(preferences|settings|alerts)|refer a friend|get the app|learn more|read more|shop now)\b|\d+% off/i;
+
+/** True when link text looks like a job title rather than a promotion or account notice. */
+export function looksLikeJobTitle(text: string): boolean {
+  const words = text.split(/\s+/).filter(Boolean).length;
+  return text.length >= 3 && text.length <= 120 && words <= 16 && !PROMO.test(text) && !/[!?]$/.test(text);
+}
+
 export function cardFrom(
   root: Element,
   title: string,

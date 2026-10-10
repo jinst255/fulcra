@@ -633,3 +633,89 @@ details.disclosure summary {
   font-size: 12px;
   color: var(--text-2);
 }
+
+/* About you: pay period */
+.pay-window {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+}
+.example-line {
+  margin-top: 10px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-3);
+  background: var(--bg);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+/* Setup: you're set */
+.done-summary {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px 4px;
+  gap: 2px;
+}
+.done-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  font-size: 14px;
+  border-top: 1px solid var(--rule);
+}
+.done-summary h2 + .done-row {
+  border-top: 0;
+}
+.done-mark {
+  width: 22px;
+  height: 22px;
+  border-radius: 11px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  font-size: 13px;
+  font-weight: 600;
+}
+.done-mark.ok {
+  background: var(--teal-light);
+  color: var(--teal-dark);
+}
+.done-mark.todo {
+  background: var(--amber-bg);
+  color: var(--amber-text);
+}
+.done-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.done-steps li {
+  display: flex;
+  gap: 12px;
+  font-size: 15px;
+  line-height: 1.5;
+}
+.done-steps .num {
+  width: 26px;
+  height: 26px;
+  border-radius: 13px;
+  background: var(--teal);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}

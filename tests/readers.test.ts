@@ -35,12 +35,12 @@ describe('page readers', () => {
     expect(
       readPage(
         load('linkedin-guest.html'),
-        'https://www.linkedin.com/jobs/view/software-development-intern-at-clearwater-analytics-4459584288',
+        'https://www.linkedin.com/jobs/view/software-development-intern-at-northwind-analytics-4459584288',
       ),
     ).toMatchObject({
       siteJobId: '4459584288',
-      company: 'Clearwater Analytics',
-      location: 'Boise, ID',
+      company: 'Northwind Analytics',
+      location: 'Columbus, OH',
     });
     expect(
       readPage(load('linkedin-closed.html'), 'https://www.linkedin.com/jobs/view/1234567890/').closed,
@@ -69,17 +69,17 @@ describe('page readers', () => {
       site: 'handshake',
       siteJobId: '9876543',
       title: 'Math Teaching Assistant',
-      company: 'State University',
+      company: 'Riverside University',
     });
   });
 
   it('uses JSON-LD JobPosting on other sites and rejects non-job pages', () => {
-    const g = readPage(load('generic-jsonld.html'), 'https://careers.teton.example/jobs/42');
+    const g = readPage(load('generic-jsonld.html'), 'https://careers.fabrikam.example/jobs/42');
     expect(g).toMatchObject({
       site: null,
       title: 'Junior Data Analyst',
-      company: 'Teton Analytics',
-      location: 'Idaho Falls, ID',
+      company: 'Fabrikam Data',
+      location: 'Dayton, OH',
       isJobPage: true,
     });
     expect(readPage(load('not-a-job.html'), 'https://recipes.example/banana').isJobPage).toBe(false);
@@ -99,7 +99,7 @@ describe('page readers', () => {
       site: 'indeed',
       id: '0123456789abcdef',
     });
-    expect(siteFor('https://boisestate.joinhandshake.com/job-search/555?page=1')).toEqual({
+    expect(siteFor('https://riverside.joinhandshake.com/job-search/555?page=1')).toEqual({
       site: 'handshake',
       id: '555',
     });

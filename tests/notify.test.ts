@@ -32,7 +32,7 @@ describe('strong-match notifications', () => {
     expect(create).toHaveBeenCalledTimes(1);
     const [id, opts] = create.mock.calls[0] as unknown as [string, { title: string; message: string }];
     expect(opts.title).toBe('Strong match: 7.3');
-    expect(opts.message).toBe('Software dev internship at Northbeam Software');
+    expect(opts.message).toBe('Clinic operations internship at Northbeam Health');
     expect(jobIdFromNotification(id)).toBe('sample-dev');
   });
 });

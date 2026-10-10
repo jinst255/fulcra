@@ -1,8 +1,8 @@
 {
   "about": {
-    "targetWork": "Applied AI and developer tools",
-    "enjoys": "Building software and explaining things to people",
-    "homeBase": "Boise, Idaho",
+    "targetWork": "Healthcare operations and patient services",
+    "enjoys": "Organizing things and helping people one on one",
+    "homeBase": "Columbus, Ohio",
     "communityImportance": "very",
     "remote": "yes",
     "relocate": "maybe",
@@ -30,9 +30,9 @@
   "jobs": [
     {
       "id": "dev",
-      "title": "Software dev internship",
-      "company": "Northbeam Software",
-      "location": "Salt Lake City, UT (hybrid)",
+      "title": "Clinic operations internship",
+      "company": "Northbeam Health",
+      "location": "Cincinnati, OH (hybrid)",
       "source": "page",
       "status": "open",
       "pay": {
@@ -55,9 +55,9 @@
       ],
       "reasons": [
         "About $13,300 before tax over 15 weeks.",
-        "Building software is the kind of work you enjoy most.",
-        "Internal tools help coworkers more than end users.",
-        "Direct experience in applied AI and developer tools.",
+        "Coordinating patient flow is the kind of work you enjoy most.",
+        "Back-office work helps staff more than patients.",
+        "Direct experience in healthcare operations.",
         "Forty hours a week, evenings mostly free.",
         "Fixed pay for a set fifteen-week term.",
         "Hybrid; a few weeks away from your community."
@@ -65,8 +65,8 @@
     },
     {
       "id": "contract",
-      "title": "Contract AI work",
-      "company": "Remote AI training platform",
+      "title": "Remote scheduling contract",
+      "company": "Remote staffing platform",
       "location": "Remote",
       "source": "page",
       "status": "open",
@@ -90,9 +90,9 @@
       ],
       "reasons": [
         "About $10,000 before tax over 20 weeks.",
-        "Interesting tasks, with repetitive review some weeks.",
-        "Improves AI models; the benefit to people is indirect.",
-        "Hands-on with frontier models, though not engineering work.",
+        "Varied tasks, with repetitive data entry some weeks.",
+        "Fills shifts at clinics; the benefit to patients is indirect.",
+        "Healthcare exposure, though not an operations role.",
         "Set your own hours and work from home.",
         "Task supply can dry up without notice.",
         "Fully remote, so you stay where you are."
@@ -127,7 +127,7 @@
         "About $26,700 before tax over 16 weeks (estimate).",
         "Long days of door-to-door pitching.",
         "Product helps some buyers; pressure selling hurts others.",
-        "Sales skills transfer a little to consulting work.",
+        "Sales skills transfer a little to patient services.",
         "Six-day weeks with long hours all summer.",
         "Mostly commission, so income swings week to week.",
         "Requires moving out of state for the summer."
@@ -137,7 +137,7 @@
       "id": "warehouse",
       "title": "Warehouse associate",
       "company": "Valley Distribution",
-      "location": "Nampa, ID",
+      "location": "Grove City, OH",
       "source": "email",
       "status": "open",
       "pay": {
@@ -167,7 +167,7 @@
         "About $13,400 before tax over 21 weeks.",
         "Repetitive physical work on your feet.",
         "Keeps orders moving; little direct effect on people.",
-        "Little connection to software or AI work.",
+        "Little connection to healthcare work.",
         "Rotating shifts make a routine hard to keep.",
         "Easy to start, but shifts can be cut.",
         "Long commute to the site most days."
@@ -175,9 +175,9 @@
     },
     {
       "id": "tutor",
-      "title": "Math and coding tutor",
+      "title": "Math tutor",
       "company": "Independent",
-      "location": "Boise, ID or online",
+      "location": "Columbus, OH or online",
       "source": "paste",
       "status": "open",
       "pay": {
@@ -202,7 +202,7 @@
         "About $6,600 before tax over 22 weeks.",
         "One-on-one teaching is rewarding.",
         "Clear, direct help for each student.",
-        "Builds explaining skills, little technical growth.",
+        "Builds people skills, little healthcare experience.",
         "You set the schedule.",
         "Easy to start; demand dips in summer.",
         "Local or online, near your community."
@@ -210,9 +210,9 @@
     },
     {
       "id": "ta",
-      "title": "Math teaching assistant",
-      "company": "State university",
-      "location": "Boise, ID",
+      "title": "Teaching assistant",
+      "company": "Riverside Community College",
+      "location": "Columbus, OH",
       "source": "page",
       "status": "open",
       "pay": {
@@ -235,9 +235,9 @@
       ],
       "reasons": [
         "About $6,600 before tax over 22 weeks.",
-        "Explaining math is engaging; grading is tedious.",
+        "Helping students is engaging; grading is tedious.",
         "Helps students pass a class they find hard.",
-        "Teaching sharpens communication for client-facing work.",
+        "Teaching sharpens communication for patient-facing work.",
         "Hours fit around classes.",
         "Campus job with steady, guaranteed hours.",
         "On campus, but only during the term."
@@ -246,8 +246,8 @@
     {
       "id": "analyst",
       "title": "Junior data analyst",
-      "company": "Teton Analytics",
-      "location": "Idaho Falls, ID",
+      "company": "Fabrikam Health Data",
+      "location": "Dayton, OH",
       "source": "email",
       "status": "unknown",
       "preliminary": true,
@@ -271,9 +271,9 @@
       ],
       "reasons": [
         "About $17,600 before tax over 22 weeks (estimate).",
-        "Data work is close to what you enjoy.",
+        "Data work is close to organizing, which you enjoy.",
         "Unclear who the analysis helps.",
-        "Data skills lead toward applied AI work.",
+        "Data skills lead toward healthcare operations.",
         "Likely a standard full-time schedule.",
         "Little detail on stability from the alert.",
         "A few hours from home base."
@@ -281,9 +281,9 @@
     },
     {
       "id": "helpdesk",
-      "title": "IT help desk technician",
-      "company": "Gem County Schools",
-      "location": "Emmett, ID",
+      "title": "Front desk coordinator",
+      "company": "Lakeview Medical Group",
+      "location": "Westerville, OH",
       "source": "email",
       "status": "closed",
       "pay": {
@@ -306,11 +306,11 @@
       ],
       "reasons": [
         "About $15,800 before tax over 22 weeks.",
-        "Troubleshooting is fine, but repetitive.",
-        "Keeps teachers and students working.",
-        "Some technical growth, little AI work.",
-        "School hours with summers lighter.",
-        "Stable public employer.",
+        "Checking patients in is fine, but repetitive.",
+        "Keeps the clinic running for patients.",
+        "Some patient-facing experience, little operations work.",
+        "Clinic hours with weekends off.",
+        "Stable employer.",
         "Short drive from home base."
       ]
     }

@@ -181,13 +181,13 @@
     "message": "What work are you aiming for?"
   },
   "setup_about_targetHint": {
-    "message": "Example: applied AI, helping businesses automate work"
+    "message": "Example: nursing, marketing, skilled trades, or teaching"
   },
   "setup_about_enjoys": {
     "message": "What do you enjoy doing?"
   },
   "setup_about_enjoysHint": {
-    "message": "Example: building software, explaining things to people"
+    "message": "Example: working with people, solving problems, being outdoors"
   },
   "setup_about_home": {
     "message": "Where's home base?"
@@ -235,7 +235,7 @@
     "message": "Conversational"
   },
   "setup_about_window": {
-    "message": "Compare pay over"
+    "message": "How far ahead are you planning?"
   },
   "setup_about_window_summer": {
     "message": "This summer (22 weeks)"
@@ -298,7 +298,7 @@
     "message": "Describe it in your own words (optional)"
   },
   "setup_priorities_describeHint": {
-    "message": "Example: I want to stay in Rexburg and I hate cold calling."
+    "message": "Example: Pay matters most, but I don't want a long commute or weekend shifts."
   },
   "setup_priorities_describeButton": {
     "message": "Suggest changes"
@@ -349,7 +349,7 @@
     }
   },
   "setup_deal_minPay": {
-    "message": "Minimum take-home over your time window"
+    "message": "Minimum total pay over the time you're planning for"
   },
   "setup_deal_maxHours": {
     "message": "Maximum hours per week"
@@ -2084,5 +2084,195 @@
   },
   "ranked_closedTitle": {
     "message": "Closed or expired"
+  },
+  "setup_about_windowHint": {
+    "message": "$APP$ compares how much each job pays in total over this time. A job that ends sooner only counts the weeks it lasts.",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      }
+    }
+  },
+  "setup_about_span_3m": {
+    "message": "3 months"
+  },
+  "setup_about_span_6m": {
+    "message": "6 months"
+  },
+  "setup_about_span_1y": {
+    "message": "1 year"
+  },
+  "setup_about_span_2y": {
+    "message": "2 years"
+  },
+  "setup_about_span_other": {
+    "message": "Other"
+  },
+  "setup_about_customMonths": {
+    "message": "Months"
+  },
+  "setup_about_monthsUnit": {
+    "message": "months"
+  },
+  "setup_about_months": {
+    "message": "$N$ months",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "setup_about_oneMonth": {
+    "message": "1 month"
+  },
+  "setup_about_windowExample": {
+    "message": "For example, $$20 an hour at 40 hours a week adds up to $TOTAL$ over $SPAN$, before tax.",
+    "placeholders": {
+      "total": {
+        "content": "$1"
+      },
+      "span": {
+        "content": "$2"
+      }
+    }
+  },
+  "setup_about_goalOver": {
+    "message": "How much do you want to earn over $SPAN$? (optional)",
+    "placeholders": {
+      "span": {
+        "content": "$1"
+      }
+    }
+  },
+  "setup_about_goalHourly": {
+    "message": "That's about $HOURLY$ an hour at 40 hours a week.",
+    "placeholders": {
+      "hourly": {
+        "content": "$1"
+      }
+    }
+  },
+  "setup_about_goalHint2": {
+    "message": "A job that reaches it gets a 10 for pay. Leave it blank and your best-paying job gets the 10."
+  },
+  "setup_done_lead": {
+    "message": "You can change any of this later in Settings."
+  },
+  "setup_done_summary": {
+    "message": "What you set up"
+  },
+  "setup_done_keyOk": {
+    "message": "OpenAI key connected"
+  },
+  "setup_done_keyMissing": {
+    "message": "No OpenAI key yet. Jobs you add will wait until you add one."
+  },
+  "setup_done_priorities": {
+    "message": "Priorities: $PROFILE$",
+    "placeholders": {
+      "profile": {
+        "content": "$1"
+      }
+    }
+  },
+  "setup_done_dealOne": {
+    "message": "1 dealbreaker"
+  },
+  "setup_done_dealCount": {
+    "message": "$COUNT$ dealbreakers",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "setup_done_emailOn": {
+    "message": "Job alerts from $PROVIDER$. When you finish, $APP$ reads alerts from the $RANGE$.",
+    "placeholders": {
+      "provider": {
+        "content": "$1"
+      },
+      "app": {
+        "content": "$2"
+      },
+      "range": {
+        "content": "$3"
+      }
+    }
+  },
+  "setup_done_lastDays": {
+    "message": "last $N$ days",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "setup_done_emailOff": {
+    "message": "Job alert emails are off. You can turn them on in Settings."
+  },
+  "setup_done_change": {
+    "message": "Change"
+  },
+  "setup_done_howTitle": {
+    "message": "How to add jobs"
+  },
+  "setup_done_step1": {
+    "message": "Pin $APP$ so its icon is always in reach. Select the puzzle piece in Chrome's toolbar (1), then the pin next to $APP$ (2).",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      }
+    }
+  },
+  "setup_done_step2": {
+    "message": "On any job posting, select the $APP$ icon, then Score this job. Or press $SHORTCUT$.",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      },
+      "shortcut": {
+        "content": "$2"
+      }
+    }
+  },
+  "setup_done_step3": {
+    "message": "Right-click any job link and choose Score this job with $APP$. Or paste a link, or the text of an offer, into the popup.",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      }
+    }
+  },
+  "ranked_notJobsTitle": {
+    "message": "Not job listings"
+  },
+  "ranked_notJobsHint": {
+    "message": "These looked like newsletters, promotions, or other emails rather than job offers. Open one and select It's a job if one is wrong."
+  },
+  "ranked_notJobsDelete": {
+    "message": "Delete these"
+  },
+  "ranked_notJobsDeleteConfirm": {
+    "message": "Delete $COUNT$ items that aren't job listings? This can't be undone.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "ranked_notJobsDeleted": {
+    "message": "Deleted $COUNT$ items.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "detail_isAJob": {
+    "message": "It's a job"
+  },
+  "detail_notAJob": {
+    "message": "This doesn't look like a job listing, so it isn't ranked. If it is one, select It's a job below."
   }
 }

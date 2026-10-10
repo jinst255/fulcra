@@ -10,7 +10,8 @@ import { addPaste, describeTab, pageSeen, rescoreJob, scoreTab } from '@/src/pip
 import { jobIdFromNotification, maybeNotify } from '@/src/pipeline/notify';
 import { siteFor } from '@/src/readers/generic';
 import { onScored, planAndMaybeStart, pump, queueUnscored, startPlannedBatch } from '@/src/pipeline/queue';
-import { retentionCleanup } from '@/src/store/jobs';
+import { allJobs, retentionCleanup, updateJob } from '@/src/store/jobs';
+import { looksLikeJobTitle } from '@/src/readers/alerts/common';
 import {
   getSettings,
   getStatus,
@@ -38,6 +39,7 @@ export default defineBackground(() => {
 
   // A check can't be running in a service worker that just started; clear a flag left by one that died.
   void updateStatus({ emailRunning: false });
+  void flagPromotions();
 
   void chrome.alarms.create(PUMP_ALARM, { periodInMinutes: 1 });
   void chrome.alarms.create(DAILY_ALARM, { periodInMinutes: 24 * 60, delayInMinutes: 5 });
@@ -158,5 +160,14 @@ async function handle(msg: Request): Promise<unknown> {
       return true;
     default:
       return undefined;
+  }
+}
+
+/** Email jobs saved before the promotion filter existed: fold away the ones titled like ads. */
+async function flagPromotions(): Promise<void> {
+  for (const j of await allJobs()) {
+    if (j.source !== 'email' || j.flags.includes('not_a_job') || j.flags.includes('confirmed_job')) continue;
+    if (!looksLikeJobTitle(j.facts.title))
+      await updateJob(j.id, (x) => ({ ...x, flags: [...x.flags, 'not_a_job'] }));
   }
 }

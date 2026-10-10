@@ -1,7 +1,7 @@
 // Handshake job alert email body to job cards. [Unverified] Handshake emails may wrap links
 // in click-tracking redirects; then the job id is unknown and dedupe falls back to the facts.
 import type { AlertCard } from '../../email/types';
-import { cardFrom, cardRoot, unwrapLink } from './common';
+import { cardFrom, cardRoot, looksLikeJobTitle, unwrapLink } from './common';
 
 const JOB_LINK = /joinhandshake\.com\/(?:stu\/)?(?:jobs|job-search)\/(\d+)/;
 const TRACKED = /(click|links?|email)\.[^/]*joinhandshake\.com|joinhandshake\.com\/(?:ls|e)\//;
@@ -14,15 +14,21 @@ export function parseHandshakeAlert(body: Element): AlertCard[] {
     const id = JOB_LINK.exec(href)?.[1] ?? null;
     if (!id && !TRACKED.test(href)) continue;
     const title = (a.textContent ?? '').replace(/\s+/g, ' ').trim();
-    if (!title || title.length < 3 || /^(view|apply|see|unsubscribe|manage|explore|log ?in)/i.test(title))
-      continue;
+    if (!looksLikeJobTitle(title) || /^(view|apply|see|manage|explore)\b/i.test(title)) continue;
     const key = id ?? title;
     if (seen.has(key)) continue;
-    seen.add(key);
     const root = cardRoot(a, body);
-    cards.push(
-      cardFrom(root, title, id ? `https://app.joinhandshake.com/stu/jobs/${id}` : href, 'handshake', id),
+    const card = cardFrom(
+      root,
+      title,
+      id ? `https://app.joinhandshake.com/stu/jobs/${id}` : href,
+      'handshake',
+      id,
     );
+    // A tracked link with no job id is only a job if it reads like a card: an employer or a place.
+    if (!id && !card.company && !card.location) continue;
+    seen.add(key);
+    cards.push(card);
   }
   return cards;
 }

@@ -98,6 +98,7 @@ export function JobDetail({
         </div>
         {job.preliminary && <div className="note-amber">{t('common.preliminaryHelp')}</div>}
         {job.status === 'closed' && <div className="note-gray">{t('detail.closed')}</div>}
+        {job.flags.includes('not_a_job') && <div className="note-gray">{t('detail.notAJob')}</div>}
         {job.scoring === 'failed' && (
           <div
             className="note-red"
@@ -399,6 +400,20 @@ export function JobDetail({
                 ? t('common.tryAgain')
                 : t('detail.rescore')}
           </button>
+          {job.flags.includes('not_a_job') && (
+            <button
+              type="button"
+              className="btn"
+              onClick={() =>
+                editFacts((j) => ({
+                  ...j,
+                  flags: [...j.flags.filter((f) => f !== 'not_a_job'), 'confirmed_job'],
+                }))
+              }
+            >
+              {t('detail.isAJob')}
+            </button>
+          )}
           {job.status === 'closed' ? (
             <button
               type="button"

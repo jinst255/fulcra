@@ -11,13 +11,14 @@ import { DealForm } from '../forms/DealForm';
 import { EmailForm } from '../forms/EmailForm';
 import { KeyInput, saveKey } from '../forms/KeyForm';
 import { PriorityForm } from '../forms/PriorityForm';
+import { Check } from '../Icons';
 
 export const SETUP_STEPS = 7;
 
 /** Three example jobs for the welcome screen's bars, from the demo sample data. */
 const WELCOME = [
-  { name: 'Software dev internship', s: [5.0, 8, 6, 10, 7, 8, 7] },
-  { name: 'Contract AI work', s: [4.0, 6, 5, 7, 8, 6, 10] },
+  { name: 'Clinic internship', s: [5.0, 8, 6, 10, 7, 8, 7] },
+  { name: 'Remote contract', s: [4.0, 6, 5, 7, 8, 6, 10] },
   { name: 'Summer sales rep', s: [9.0, 3, 3, 3, 2, 3, 2] },
 ];
 
@@ -60,6 +61,42 @@ export function Setup({ step }: { step: number }) {
   };
 
   const dims = settings.dimensions.filter((d) => d.active).slice(0, 7);
+  const db = settings.dealbreakers;
+  const dealCount =
+    (db.minTakeHome != null ? 1 : 0) +
+    (db.maxHours != null ? 1 : 0) +
+    (db.mustRemote ? 1 : 0) +
+    (db.noRelocation ? 1 : 0) +
+    (db.excludeTypes.length ? 1 : 0) +
+    (db.languageGap ? 1 : 0);
+  const em = settings.email;
+  const summary: { step: number; ok: boolean; text: string }[] = [
+    { step: 1, ok: key.hasKey, text: key.hasKey ? t('setup.done.keyOk') : t('setup.done.keyMissing') },
+    { step: 3, ok: true, text: t('setup.done.priorities', { profile: t(`profile.${settings.profileId}`) }) },
+    {
+      step: 4,
+      ok: true,
+      text:
+        dealCount === 0
+          ? t('setup.deal.none')
+          : dealCount === 1
+            ? t('setup.done.dealOne')
+            : t('setup.done.dealCount', { count: dealCount }),
+    },
+    {
+      step: 5,
+      ok: true,
+      text: em.provider
+        ? t('setup.done.emailOn', {
+            provider: em.provider === 'gmail' ? t('setup.email.gmail') : t('setup.email.outlook'),
+            range:
+              em.importDays == null
+                ? t('setup.email.importAll').toLowerCase()
+                : t('setup.done.lastDays', { n: em.importDays }),
+          })
+        : t('setup.done.emailOff'),
+    },
+  ];
 
   return (
     <div className="wrap form-row">
@@ -100,8 +137,8 @@ export function Setup({ step }: { step: number }) {
                           height: 14,
                           flex: 'none',
                           width: `${((v / 7) * 10).toFixed(2)}%`,
-                          background: dims[i]?.color ?? '#6B7280',
-                          boxShadow: 'inset -2px 0 0 #F6F5F1',
+                          background: dims[i]?.color ?? 'var(--gray-switch)',
+                          boxShadow: 'inset -2px 0 0 var(--bg)',
                         }}
                       />
                     ))}
@@ -245,44 +282,60 @@ export function Setup({ step }: { step: number }) {
         )}
 
         {step === 6 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 18, padding: '8px 0' }}>
-            <h1 style={{ fontSize: 28 }}>{t('setup.done.title')}</h1>
-            <svg
-              width="300"
-              height="72"
-              viewBox="0 0 300 72"
-              role="img"
-              aria-label={t('setup.done.illustration')}
-              style={{ maxWidth: '100%' }}
-            >
-              <rect x="1" y="1" width="298" height="70" rx="12" fill="#FFFFFF" stroke="#DAD7CE" />
-              <rect x="16" y="22" width="160" height="28" rx="14" fill="#ECEAE3" />
-              <g transform="translate(196 22)">
-                <path
-                  d="M5 9h4.5a3 3 0 1 1 6 0H20v5a3 3 0 1 1 0 6v5H5z"
-                  fill="none"
-                  stroke="#3A3F45"
-                  strokeWidth="1.6"
-                  strokeLinejoin="round"
-                />
-              </g>
-              <g transform="translate(240 20)">
-                <rect width="32" height="32" rx="8" fill="#E6F3EF" stroke="#0F6B5F" />
-                <line
-                  x1="6"
-                  y1="14"
-                  x2="26"
-                  y2="10"
-                  stroke="#0F6B5F"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                />
-                <path d="M16 13.5L21 23H11Z" fill="#0F6B5F" />
-              </g>
-              <path d="M262 58l6-6M265 49l6 6" stroke="#B45309" strokeWidth="1.8" strokeLinecap="round" />
-            </svg>
-            <p style={{ fontSize: 15, lineHeight: 1.5 }}>{t('setup.done.pin')}</p>
-            <p style={{ fontSize: 15, lineHeight: 1.5 }}>{t('setup.done.how')}</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: '8px 0' }}>
+            <div>
+              <h1 style={{ fontSize: 28 }}>{t('setup.done.title')}</h1>
+              <p className="lead" style={{ marginTop: 6 }}>
+                {t('setup.done.lead')}
+              </p>
+            </div>
+
+            <section aria-labelledby="done-summary" className="done-summary">
+              <h2 id="done-summary" style={{ fontSize: 15 }}>
+                {t('setup.done.summary')}
+              </h2>
+              {summary.map((row) => (
+                <div key={row.step} className="done-row">
+                  <span className={`done-mark ${row.ok ? 'ok' : 'todo'}`} aria-hidden="true">
+                    {row.ok ? <Check /> : '!'}
+                  </span>
+                  <span style={{ flex: 1, minWidth: 0 }}>{row.text}</span>
+                  <button type="button" className="link-btn" onClick={() => to(row.step)}>
+                    {t('setup.done.change')}
+                  </button>
+                </div>
+              ))}
+            </section>
+
+            <section aria-labelledby="done-how">
+              <h2 id="done-how" style={{ fontSize: 15, marginBottom: 10 }}>
+                {t('setup.done.howTitle')}
+              </h2>
+              <ol className="done-steps">
+                <li>
+                  <span className="num" aria-hidden="true">
+                    1
+                  </span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10, minWidth: 0 }}>
+                    <span>{t('setup.done.step1')}</span>
+                    <PinPicture />
+                  </div>
+                </li>
+                <li>
+                  <span className="num" aria-hidden="true">
+                    2
+                  </span>
+                  <span>{t('setup.done.step2', { shortcut: 'Alt+Shift+F' })}</span>
+                </li>
+                <li>
+                  <span className="num" aria-hidden="true">
+                    3
+                  </span>
+                  <span>{t('setup.done.step3')}</span>
+                </li>
+              </ol>
+            </section>
+
             <div>
               <button type="button" className="btn primary lg" onClick={() => void finish(false)}>
                 {t('setup.done.button')}
@@ -325,5 +378,73 @@ export function Setup({ step }: { step: number }) {
         )}
       </div>
     </div>
+  );
+}
+
+/** Chrome's toolbar: the puzzle piece (1), then the pin beside the app (2). */
+function PinPicture() {
+  return (
+    <svg
+      width="300"
+      height="72"
+      viewBox="0 0 300 72"
+      role="img"
+      aria-label={t('setup.done.illustration')}
+      style={{ maxWidth: '100%' }}
+    >
+      <rect
+        x="1"
+        y="1"
+        width="298"
+        height="70"
+        rx="12"
+        style={{ fill: 'var(--card)', stroke: 'var(--border)' }}
+      />
+      <rect x="16" y="22" width="150" height="28" rx="14" style={{ fill: 'var(--rule)' }} />
+      <g transform="translate(186 22)">
+        <path
+          d="M5 9h4.5a3 3 0 1 1 6 0H20v5a3 3 0 1 1 0 6v5H5z"
+          fill="none"
+          style={{ stroke: 'var(--text-3)' }}
+          strokeWidth="1.6"
+          strokeLinejoin="round"
+        />
+      </g>
+      <circle cx="210" cy="16" r="8" style={{ fill: 'var(--amber-bar)' }} />
+      <text
+        x="210"
+        y="19.5"
+        textAnchor="middle"
+        fontSize="10"
+        fontWeight="600"
+        style={{ fill: 'var(--card)' }}
+      >
+        1
+      </text>
+      <g transform="translate(236 20)">
+        <rect width="32" height="32" rx="8" style={{ fill: 'var(--teal-light)', stroke: 'var(--teal)' }} />
+        <line
+          x1="6"
+          y1="14"
+          x2="26"
+          y2="10"
+          style={{ stroke: 'var(--teal)' }}
+          strokeWidth="2.2"
+          strokeLinecap="round"
+        />
+        <path d="M16 13.5L21 23H11Z" style={{ fill: 'var(--teal)' }} />
+      </g>
+      <circle cx="276" cy="16" r="8" style={{ fill: 'var(--amber-bar)' }} />
+      <text
+        x="276"
+        y="19.5"
+        textAnchor="middle"
+        fontSize="10"
+        fontWeight="600"
+        style={{ fill: 'var(--card)' }}
+      >
+        2
+      </text>
+    </svg>
   );
 }

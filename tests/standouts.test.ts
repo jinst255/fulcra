@@ -30,8 +30,8 @@ describe('best fit and standouts', () => {
     const view = rankJobs(sampleJobs(), sampleSettings());
     const pick = ['sample-dev', 'sample-contract', 'sample-sales'].map((id) => view.byId.get(id)!);
     const lines = standoutLines(view, pick);
-    expect(lines[0]).toBe('Software dev internship leads on career leverage (10).');
-    expect(lines[1]).toBe('Contract AI work leads on location and social (10).');
+    expect(lines[0]).toBe('Clinic operations internship leads on career leverage (10).');
+    expect(lines[1]).toBe('Remote scheduling contract leads on location and social (10).');
     expect(lines[2]).toBe('Summer sales rep leads on pay (9.0) but trails on life cost (2).');
     expect(lines[3]).toBe('They differ most on location and social, from 2 to 10.');
     expect(standoutLines(view, [])).toEqual(['Pick up to three jobs to compare their shapes.']);

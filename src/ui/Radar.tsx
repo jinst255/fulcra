@@ -2,7 +2,7 @@
 // matched to the approved demo. "What stands out" is worked out from scores, no AI call.
 // A point with no score sits at the center in red, so missing information never looks like a score.
 import { useMemo, useState } from 'react';
-import { byValue, type RankedJob } from '../core/rank';
+import { byValue, isNotAJob, type RankedJob } from '../core/rank';
 import { fmtDimScore, standoutLines } from '../core/standouts';
 import type { Dimension } from '../core/types';
 import { t } from '../i18n/t';
@@ -96,7 +96,9 @@ export function Radar() {
   );
   const end = pt(axis, 10);
   const axisDim = dims[axis];
-  const pickList = view.all.filter((x) => x.scored && x.job.status !== 'closed').sort(byValue);
+  const pickList = view.all
+    .filter((x) => x.scored && x.job.status !== 'closed' && !isNotAJob(x.job))
+    .sort(byValue);
 
   const reasonOf = (x: RankedJob, d: Dimension) =>
     d.computedByApp ? payReason(x.take) : (x.job.scores[d.id]?.reason ?? t('ranked.reasonNotScored'));

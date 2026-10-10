@@ -105,11 +105,14 @@ export function applyFullScore(
   };
   const status = job.status === 'closed' ? 'closed' : facts.status;
   merged.status = status;
+  // Once the person says it's a job, a re-score can't hide it again.
+  const confirmed = job.flags.includes('confirmed_job');
+  const flags = confirmed ? [...out.flags.filter((f) => f !== 'not_a_job'), 'confirmed_job'] : out.flags;
   return {
     ...job,
     facts: merged,
     scores,
-    flags: out.flags,
+    flags,
     status,
     scoring: 'scored',
     scoreError: null,

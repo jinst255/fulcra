@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { buildQuery, checkWindowDays, mailUrl, mailUrls, splitWindow } from '../src/email/run';
 import { parseAlert } from '../src/readers/alerts';
-import { unwrapLink } from '../src/readers/alerts/common';
+import { looksLikeJobTitle, unwrapLink } from '../src/readers/alerts/common';
 import { countFrom, threadIdOf } from '../src/readers/gmail';
 import { fromAlertSender } from '../src/readers/outlook';
 import { withDefaults } from '../src/store/settings';
@@ -18,8 +18,8 @@ describe('alert email parsers', () => {
     expect(cards).toEqual([
       {
         title: 'Software Development Intern',
-        company: 'Clearwater Analytics',
-        location: 'Boise, ID',
+        company: 'Northwind Analytics',
+        location: 'Columbus, OH',
         pay: '$25/hr',
         url: 'https://www.linkedin.com/jobs/view/4459584288/',
         site: 'linkedin',
@@ -27,8 +27,8 @@ describe('alert email parsers', () => {
       },
       {
         title: 'Intern - AI Engineering Team',
-        company: 'Micron Technology',
-        location: 'Boise, ID (On-site)',
+        company: 'Contoso Devices',
+        location: 'Columbus, OH (On-site)',
         pay: null,
         url: 'https://www.linkedin.com/jobs/view/4474959082/',
         site: 'linkedin',
@@ -48,9 +48,35 @@ describe('alert email parsers', () => {
   it('reads Handshake alert cards, with or without a job id', () => {
     const cards = parseAlert(body('alert-handshake.html'));
     expect(cards.map((c) => [c.title, c.company, c.location, c.siteJobId, c.pay])).toEqual([
-      ['Math Teaching Assistant', 'State University', 'Boise, ID', '9876543', null],
-      ['Data Analyst Intern', 'Teton Analytics', 'Idaho Falls, ID', null, '$20/hr'],
+      ['Math Teaching Assistant', 'Riverside University', 'Columbus, OH', '9876543', null],
+      ['Data Analyst Intern', 'Fabrikam Analytics', 'Dayton, OH', null, '$20/hr'],
     ]);
+  });
+
+  it('keeps promotions and account emails out of the job list', () => {
+    for (const promo of [
+      'Last chance to subscribe',
+      'Try Premium for free',
+      'Unsubscribe',
+      'Manage your alerts',
+      'Save 50% off your first month',
+      'Sign up for our webinar',
+      "Don't miss out!",
+    ])
+      expect(looksLikeJobTitle(promo), promo).toBe(false);
+    for (const job of [
+      'Event Coordinator',
+      'Premium Account Manager',
+      'Survey Technician',
+      'Software Engineer I',
+    ])
+      expect(looksLikeJobTitle(job), job).toBe(true);
+    const doc = new DOMParser().parseFromString(
+      `<table><tr><td><a href="https://click.joinhandshake.com/ls/click?upn=a">Last chance to subscribe to Handshake Premium</a></td></tr></table>
+       <table><tr><td><a href="https://click.joinhandshake.com/ls/click?upn=b">Spring career fair</a></td></tr></table>`,
+      'text/html',
+    );
+    expect(parseAlert(doc.body)).toEqual([]);
   });
 
   it('unwraps redirect links', () => {

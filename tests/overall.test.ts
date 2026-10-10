@@ -11,8 +11,8 @@ describe('overall score (5.7) and ranking', () => {
     const view = rankJobs(sampleJobs(), sampleSettings());
     const rows = view.openPass.map((r) => [r.job.facts.title, r.value.toFixed(1)]);
     expect(rows).toEqual([
-      ['Software dev internship', '7.3'],
-      ['Contract AI work', '6.6'],
+      ['Clinic operations internship', '7.3'],
+      ['Remote scheduling contract', '6.6'],
       ['Junior data analyst', '5.9'],
       ['Summer sales rep', '3.6'],
       ['Warehouse associate', '3.6'],

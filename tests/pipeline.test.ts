@@ -21,7 +21,7 @@ import { sampleJobs } from './helpers';
 const facts = (period: 'hour' | 'year', amount: number) => ({
   title: 'Warehouse associate',
   company: 'Valley',
-  location: 'Nampa, ID',
+  location: 'Grove City, OH',
   remote: 'no' as const,
   pay: { min: amount, max: amount, period, currency: 'USD', is_estimate: false },
   hours_per_week: 40,
@@ -104,6 +104,21 @@ describe('job records', () => {
     expect(out.scoring).toBe('scored');
     expect(out.scores.impact).toMatchObject({ score: 6, dimVersion: 1, state: 'current', override: null });
     expect(out.status).toBe('open');
+    // The model can hide a non-job, but not one the person said is a job.
+    const promo = applyFullScore(
+      j,
+      { facts: facts('hour', 16), scores, flags: ['not_a_job'] },
+      defaultDimensions(),
+      '{}',
+    );
+    expect(promo.flags).toEqual(['not_a_job']);
+    const mine = applyFullScore(
+      { ...j, flags: ['confirmed_job'] },
+      { facts: facts('hour', 16), scores, flags: ['not_a_job', 'unpaid'] },
+      defaultDimensions(),
+      '{}',
+    );
+    expect(mine.flags).toEqual(['unpaid', 'confirmed_job']);
   });
 });
 
