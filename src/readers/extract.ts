@@ -24,7 +24,7 @@ export const MAX_TEXT = 30_000;
 /** Collapses whitespace in visible text and caps the length. */
 export function cleanText(s: string | null | undefined): string {
   return (s ?? '')
-    .replace(/ /g, ' ')
+    .replace(/\u00a0/g, ' ')
     .replace(/[ \t]+/g, ' ')
     .replace(/\s*\n\s*/g, '\n')
     .replace(/\n{3,}/g, '\n\n')
