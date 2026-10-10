@@ -55,9 +55,12 @@ function useSavedCounts(): Record<string, SavedCounts> {
 function accountResultText(r: AccountResult, name: string): string {
   switch (r.status) {
     case 'ok':
-      return r.emails === 0
-        ? t('email.result.none', { provider: name })
-        : t('email.result.done', { provider: name, emails: r.emails, count: r.newJobs });
+      if (r.emails === 0) return t('email.result.none', { provider: name });
+      // Say why nothing new turned up: no listings in the emails, or all already saved.
+      if (!r.newJobs && r.jobs === 0)
+        return t('email.result.noListings', { provider: name, emails: r.emails });
+      if (!r.newJobs) return t('email.result.allSaved', { provider: name, emails: r.emails, count: r.jobs });
+      return t('email.result.done', { provider: name, emails: r.emails, count: r.newJobs });
     case 'signedOut':
       return t('setup.email.signedOut', { provider: name });
     case 'changed':

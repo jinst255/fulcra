@@ -56,6 +56,8 @@ export async function diagnostics(): Promise<string> {
   const codes = log.map((e) => e.code);
   // Which step of an email check broke. Details hold counts and steps, never mail text.
   const mail = log.find((e) => e.code === 'MAIL_CHANGED' || e.code === 'MAIL_ERROR');
+  // The latest check that worked: what each search found and read.
+  const check = log.find((e) => e.code === 'EMAIL_CHECK');
   const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
   const chromeVersion = /Chrome\/([\d.]+)/.exec(ua)?.[1] ?? 'unknown';
   const os = typeof navigator !== 'undefined' ? (navigator.platform ?? 'unknown') : 'unknown';
@@ -70,6 +72,7 @@ export async function diagnostics(): Promise<string> {
       jobs: counts,
       lastLogCodes: codes,
       lastEmailProblem: mail ? `${new Date(mail.at).toISOString()} ${mail.code} ${mail.detail}` : null,
+      lastEmailCheck: check ? `${new Date(check.at).toISOString()} ${check.detail}` : null,
     },
     null,
     2,

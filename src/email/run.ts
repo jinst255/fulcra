@@ -321,7 +321,14 @@ async function checkAccount(
   max: number,
   newIds: string[],
 ): Promise<AccountResult & { details: string[] }> {
-  const out = { id: account.id, status: 'ok' as CheckStatus, emails: 0, newJobs: 0, details: [] as string[] };
+  const out = {
+    id: account.id,
+    status: 'ok' as CheckStatus,
+    emails: 0,
+    jobs: 0,
+    newJobs: 0,
+    details: [] as string[],
+  };
   const { provider, index } = account;
   let seen = ((await chrome.storage.local.get(SEEN_KEY))[SEEN_KEY] as string[] | undefined) ?? [];
   const before = newIds.length;
@@ -359,6 +366,7 @@ async function checkAccount(
       out.details.push(`[${w.older}-${w.newer ?? 'all'}] ${r.detail}`);
       // Keep whatever was read before a failure.
       out.emails += r.emailsRead;
+      out.jobs += r.cards.length;
       newIds.push(...(await saveCards(r.cards)));
       seen = [...seen, ...r.threadIds].slice(-SEEN_MAX);
       await chrome.storage.local.set({ [SEEN_KEY]: seen });

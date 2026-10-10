@@ -55,6 +55,8 @@ export interface AccountResult {
   id: string;
   status: CheckStatus;
   emails: number;
+  /** Jobs found in those emails, including ones already in the list. */
+  jobs: number;
   newJobs: number;
 }
 

@@ -98,6 +98,12 @@ describe('storage', () => {
     expect(JSON.parse(await diagnostics()).lastEmailProblem).toMatch(
       /MAIL_CHANGED outlook now .*no search box/,
     );
+    await addLog(
+      'EMAIL_CHECK',
+      'background',
+      'outlook now days=2 new=0 [0-2] s1:rows=2 read=2 cards=0 empty=2 attached=2',
+    );
+    expect(JSON.parse(await diagnostics()).lastEmailCheck).toMatch(/empty=2 attached=2/);
     await deleteEverything();
     expect(await allJobs()).toEqual([]);
     expect(await overrideHistory()).toEqual([]);

@@ -39,6 +39,13 @@ const SEL = {
     '#ReadingPaneContainerId',
     'div[role="main"]',
   ],
+  attachment: [
+    '[aria-label*="attachment" i]',
+    '[title$=".eml" i]',
+    '[title$=".msg" i]',
+    '[aria-label*=".eml" i]',
+    '[aria-label*=".msg" i]',
+  ],
   markUnread: [
     'button[aria-label^="Mark as unread" i]',
     'button[title^="Mark as unread" i]',
@@ -240,6 +247,10 @@ export async function outlookReadAlerts(args: {
   const notes: string[] = [];
   let restored = 0;
   let noBody = 0;
+  // Read emails that gave no jobs, and how many of those carried an attachment (a forward as
+  // attachment holds the alert where Fulcra can't read it).
+  let empty = 0;
+  let attached = 0;
   const markUnread = async () => {
     const btn = q(SEL.markUnread);
     if (!btn) return;
@@ -293,7 +304,12 @@ export async function outlookReadAlerts(args: {
         if (t.unread) await markUnread();
         continue;
       }
-      cards.push(...parseAlert(body.cloneNode(true) as Element));
+      const found = parseAlert(body.cloneNode(true) as Element);
+      if (!found.length) {
+        empty++;
+        if (pane.querySelector(SEL.attachment.join(', '))) attached++;
+      }
+      cards.push(...found);
       ids.push(t.id);
       read++;
       if (t.unread) await markUnread();
@@ -307,7 +323,7 @@ export async function outlookReadAlerts(args: {
     cards,
     emailsRead: ids.length,
     threadIds: ids,
-    detail: `${notes.join(' ')} cards=${cards.length} restored=${restored}`,
+    detail: `${notes.join(' ')} cards=${cards.length}${empty ? ` empty=${empty} attached=${attached}` : ''} restored=${restored}`,
     more: false,
   };
 }

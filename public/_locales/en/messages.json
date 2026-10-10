@@ -2822,5 +2822,30 @@
         "content": "$1"
       }
     }
+  },
+  "email_result_noListings": {
+    "message": "Checked $PROVIDER$: read $EMAILS$ alert emails but found no job listings in them. Alerts forwarded as attachments can't be read; forward them normally instead.",
+    "placeholders": {
+      "provider": {
+        "content": "$1"
+      },
+      "emails": {
+        "content": "$2"
+      }
+    }
+  },
+  "email_result_allSaved": {
+    "message": "Checked $PROVIDER$: read $EMAILS$ alert emails. All $COUNT$ jobs in them are already in your list.",
+    "placeholders": {
+      "provider": {
+        "content": "$1"
+      },
+      "emails": {
+        "content": "$2"
+      },
+      "count": {
+        "content": "$3"
+      }
+    }
   }
 }
