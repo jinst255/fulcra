@@ -1,0 +1,28 @@
+// Handshake job alert email body to job cards. [Unverified] Handshake emails may wrap links
+// in click-tracking redirects; then the job id is unknown and dedupe falls back to the facts.
+import type { AlertCard } from '../../email/types';
+import { cardFrom, cardRoot, unwrapLink } from './common';
+
+const JOB_LINK = /joinhandshake\.com\/(?:stu\/)?(?:jobs|job-search)\/(\d+)/;
+const TRACKED = /(click|links?|email)\.[^/]*joinhandshake\.com|joinhandshake\.com\/(?:ls|e)\//;
+
+export function parseHandshakeAlert(body: Element): AlertCard[] {
+  const cards: AlertCard[] = [];
+  const seen = new Set<string>();
+  for (const a of Array.from(body.querySelectorAll('a[href]')) as HTMLAnchorElement[]) {
+    const href = unwrapLink(a.getAttribute('href') ?? '');
+    const id = JOB_LINK.exec(href)?.[1] ?? null;
+    if (!id && !TRACKED.test(href)) continue;
+    const title = (a.textContent ?? '').replace(/\s+/g, ' ').trim();
+    if (!title || title.length < 3 || /^(view|apply|see|unsubscribe|manage|explore|log ?in)/i.test(title))
+      continue;
+    const key = id ?? title;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const root = cardRoot(a, body);
+    cards.push(
+      cardFrom(root, title, id ? `https://app.joinhandshake.com/stu/jobs/${id}` : href, 'handshake', id),
+    );
+  }
+  return cards;
+}

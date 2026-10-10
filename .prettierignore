@@ -6,3 +6,4 @@ docs/
 package-lock.json
 demo/
 README.md
+tests/fixtures/

@@ -1,6 +1,8 @@
 // Service worker: queue, alarms, badge. Later steps add readers, email checks,
 // notifications, the context menu, and the keyboard command.
 import { defineBackground } from 'wxt/utils/define-background';
+import { runEmailCheck, signInCheck } from '@/src/email/run';
+import { CATCHUP_ALARM, EMAIL_ALARM, scheduleCatchUp, scheduleEmail } from '@/src/email/scheduler';
 import type { Request } from '@/src/messages';
 import { applyBadge } from '@/src/pipeline/badge';
 import { addPaste, describeTab, pageSeen, rescoreJob, scoreTab } from '@/src/pipeline/intake';
@@ -20,6 +22,11 @@ const DAILY_ALARM = 'daily';
 export default defineBackground(() => {
   chrome.runtime.onInstalled.addListener((details) => {
     if (details.reason === 'install') void chrome.runtime.openOptionsPage();
+    void scheduleEmail();
+  });
+  chrome.runtime.onStartup.addListener(() => {
+    void scheduleEmail();
+    void scheduleCatchUp();
   });
 
   void chrome.alarms.create(PUMP_ALARM, { periodInMinutes: 1 });
@@ -27,6 +34,8 @@ export default defineBackground(() => {
 
   chrome.alarms.onAlarm.addListener((a) => {
     if (a.name === PUMP_ALARM) void pump();
+    if (a.name === EMAIL_ALARM) void runEmailCheck({ reason: 'scheduled' });
+    if (a.name === CATCHUP_ALARM) void runEmailCheck({ reason: 'catchup' });
     if (a.name === DAILY_ALARM) void getSettings().then((s) => retentionCleanup(s.retentionDays));
   });
 
@@ -75,6 +84,17 @@ async function handle(msg: Request): Promise<unknown> {
       return rescoreJob(msg.jobId);
     case 'pageSeen':
       await pageSeen(msg.page);
+      return true;
+    case 'emailSignInCheck':
+      return signInCheck(msg.provider);
+    case 'emailCheckNow':
+      await runEmailCheck({ reason: 'now' });
+      return true;
+    case 'emailImport':
+      await runEmailCheck({ reason: 'import', importDays: msg.days });
+      return true;
+    case 'emailScheduleChanged':
+      await scheduleEmail();
       return true;
     case 'kick':
       await pump();
