@@ -28,7 +28,7 @@ Fulcra uses OpenAI to read and score jobs, with your own API key. OpenAI bills y
 1. Go to [platform.openai.com](https://platform.openai.com) and sign in or create an account.
 2. Add a payment method under Billing. A ChatGPT subscription doesn't include this.
 3. Open **API keys** and select **Create new secret key**.
-4. Paste it into Fulcra's setup and select **Test key**.
+4. Paste it into Fulcra's setup and select **Continue**. Fulcra tests the key first and tells you if it doesn't work.
 
 **Cost:** scoring costs about $1.20 per 1,000 jobs on the Standard model (about $4.50 on Sharper). Most people spend under $1 a month. Before any large batch (an email import, re-scoring after you change what you score, or Re-score all), Fulcra shows the count and cost and lets you pick **Score now**, **Half price** (OpenAI's Batch API: half the cost, finished within 24 hours and usually much sooner), or **Later**.
 
@@ -38,8 +38,9 @@ Fulcra uses OpenAI to read and score jobs, with your own API key. OpenAI bills y
 
 - **Score a posting:** open a job posting, select the Fulcra icon, then **Score this job**. You can also press `Alt+Shift+F`, or right-click the page or a link and choose **Score this job with Fulcra**.
 - **Paste a link or text:** in the popup, paste a job link, or the text of an offer with no posting, like a message from a friend.
-- **Job alert emails:** in Settings > Job alert emails, add each inbox that gets job alerts: one or more Gmail accounts, Outlook, or both. Once a day (or as often as you choose), Fulcra opens each inbox in turn in a background tab, tucked into a collapsed tab group named Fulcra, reads LinkedIn and Handshake job alerts that arrived since the last check, and closes it. **Import past alerts** reads the last 7, 30, or 90 days, or everything, with an estimate of the jobs and cost for each. Your emails stay marked unread, and nothing else in your inbox is read. Jobs from alerts get a **Preliminary** score from the email; open the posting and Fulcra upgrades it to a full score. Promotions and other non-job emails are left out, and anything the AI decides isn't a job listing is folded into **Not job listings**.
-- **Compare:** the **Ranked list** is home. The **Radar** compares up to three jobs across everything you care about.
+- **Setup** has four steps: your OpenAI key, a little about you, your job alert inboxes (at least one is required), and a summary where **Change** opens a step and brings you back.
+- **Job alert emails:** in setup or Settings > Job alert emails, add each inbox that gets job alerts: one or more Gmail accounts, Outlook, or both. Once a day (or as often as you choose), Fulcra opens each inbox in turn in a background tab, tucked into a collapsed tab group named Fulcra, reads LinkedIn and Handshake job alerts that arrived since the last check, and closes it. **Import past alerts** reads the last 7, 30, or 90 days, or everything, with an estimate of the jobs and cost for each. Your emails stay marked unread, and nothing else in your inbox is read. Jobs from alerts get a **Preliminary** score from the email; open the posting and Fulcra upgrades it to a full score. Promotions and other non-job emails are left out, and anything the AI decides isn't a job listing is folded into **Not job listings**.
+- **Compare:** the **Ranked list** is home. Drag the sliders in **What matters most** to reorder it; **Edit** opens Settings > Priorities to add, remove, or rename what Fulcra scores. Filters above the list (job type, remote or hybrid, no relocating, languages, lowest pay, most hours) apply to the ranked list and the radar alike. The **Radar** compares any number of jobs; click a name to open the job, or hover to highlight it.
 - **Disagree with a score?** Open the job and select the pencil next to the score to type your own. If you keep correcting the same thing, Fulcra offers to change that weight.
 - **Closed postings:** when a posting you open says it's no longer accepting applications, Fulcra moves it to **Closed or expired** at the bottom of the list.
 - **Light or dark:** the sun/moon button in the header, or Settings > Appearance (it follows your system by default).
@@ -66,7 +67,7 @@ where G is your pay goal, or the best take-home among your open jobs if you didn
 
 over the dimensions that have a score. If every weight is 0, they count equally.
 
-**Dealbreakers** are checked against facts from the posting, never the model's opinion. If Fulcra can't tell, the job doesn't fail. To see only one kind of job (internships, say), use the **Job type** buttons above the ranked list and radar; the filter is shared by both.
+**Filters** (once called dealbreakers) are checked against facts from the posting, never the model's opinion. A job that misses a must-have goes to **Filtered out** at the bottom, not deleted; if Fulcra can't tell, the job stays in. **Job type** hides other types instead.
 
 ## Privacy
 
@@ -74,7 +75,7 @@ over the dimensions that have a score. If every weight is 0, they count equally.
 - **What stays on your computer:** everything else, in the extension's own storage.
 - **Your key** is stored in Chrome's extension storage on this computer only. It never syncs to your Google account and is only ever sent to `api.openai.com`. **It is not encrypted at rest**: anyone with access to your computer's browser profile could read it. That's why a spend limit matters.
 - **No analytics** and no servers. Fulcra doesn't phone home.
-- **Delete everything:** Settings > Your data > **Delete everything** removes all jobs, settings, and your key from Fulcra. Your key still exists in your OpenAI account; delete it there under API keys.
+- **Reset Fulcra:** Settings > Your data > **Reset Fulcra** puts Fulcra back to a fresh install: it cancels any half-price batch still running, deletes all jobs, settings, inboxes, and your key, and starts setup again. Your key still exists in your OpenAI account; delete it there under API keys.
 
 See [PRIVACY.md](PRIVACY.md) for details.
 

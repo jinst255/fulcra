@@ -434,7 +434,7 @@ function DataSection() {
         </button>
       </div>
       <div style={{ borderTop: '1px solid var(--rule)', paddingTop: 16 }}>
-        <h3 style={{ fontSize: 15, marginBottom: 4 }}>{t('settings.data.reset')}</h3>
+        <h2 style={{ fontSize: 15, marginBottom: 4 }}>{t('settings.data.reset')}</h2>
         <p className="small-note" style={{ margin: '0 0 10px' }}>
           {t('settings.data.resetHint')}
         </p>

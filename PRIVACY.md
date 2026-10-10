@@ -30,7 +30,7 @@ Fulcra reads a page only when you ask it to (the popup, the right-click menu, or
 
 ## Deleting your data
 
-- **Settings > Your data > Delete everything** removes all jobs, settings, the log, and your key from Fulcra.
+- **Settings > Your data > Reset Fulcra** removes all jobs, settings, inboxes, the log, and your key from Fulcra, cancels any half-price batch still at OpenAI and deletes its files, and starts setup again.
 - **Removing the extension** makes Chrome delete all of Fulcra's storage.
 - **Your key still exists in your OpenAI account** after either one. Delete it at [platform.openai.com/api-keys](https://platform.openai.com/api-keys).
 

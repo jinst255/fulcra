@@ -22,3 +22,7 @@ First build of Fulcra.
 - A job type filter on the ranked list and radar, instead of a "job types to skip" dealbreaker.
 - The radar opens a job when you click its name and highlights it when you hover.
 - Setup: Skip this step skips one step; the priority sliders explain each dimension and what 0 and 10 mean.
+- Setup is four steps: Continue tests the key (and a saved key can be replaced), priorities and dealbreakers moved to the ranked list, at least one inbox is required, and Change links on the summary come straight back.
+- Filters above the ranked list and radar: job type plus remote, relocating, languages, lowest pay, and most hours. Dealbreakers are now called filters.
+- An Edit button on What matters most opens Settings > Priorities.
+- Reset Fulcra: a hard reset back to a fresh install.
