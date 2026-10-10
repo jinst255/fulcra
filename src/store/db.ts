@@ -15,6 +15,8 @@ export interface QueueItem {
   addedAt: number;
   /** Batch this item belongs to, for the re-score banner. */
   batch: string | null;
+  /** OpenAI batch the item was sent in, at half price. Direct scoring skips it until it's back. */
+  remote?: string | null;
 }
 
 interface FulcraDB extends DBSchema {

@@ -26,9 +26,14 @@ export function formatCost(usd: number): string {
   return '$' + Math.max(0.01, usd).toFixed(2);
 }
 
-/** Rough seconds for a batch with 3 requests in flight. */
+/** Rough seconds for a batch with 6 requests in flight, about 3 seconds each. */
 export function batchSeconds(count: number): number {
-  return Math.ceil(count / 3) * 3;
+  return Math.ceil(count / 6) * 3;
+}
+
+/** OpenAI's Batch API costs half. */
+export function halfPrice(usd: number): number {
+  return usd / 2;
 }
 
 export function formatDuration(seconds: number): string {

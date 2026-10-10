@@ -1,6 +1,6 @@
 // In-app banners, one at a time, most urgent first. Blueprint sections 7, 12.4, 13, and 19.5.
 import { useState } from 'react';
-import { formatCost, formatDuration } from '../llm/cost';
+import { formatCost, formatDuration, halfPrice } from '../llm/cost';
 import { t } from '../i18n/t';
 import { send } from '../messages';
 import { buildExport } from '../store/export';
@@ -46,6 +46,24 @@ export function Banner() {
   let b: BannerSpec | null = null;
   if (status.emailRunning) {
     b = { id: 'email', tone: 'info', icon: 'spin', text: t('banner.emailRunning'), actions: [] };
+  } else if (status.batch?.mode === 'half') {
+    const bt = status.batch;
+    b = {
+      id: 'half',
+      tone: 'info',
+      icon: 'refresh',
+      progress: bt.total ? bt.done / bt.total : 0,
+      title: t('banner.half.title', { done: bt.done, total: bt.total }),
+      text: bt.remoteIds.length ? t('banner.half.body') : t('banner.half.sending'),
+      actions: [
+        {
+          label: t('banner.half.speedUp', {
+            cost: formatCost(halfPrice(bt.cost * (1 - bt.done / Math.max(1, bt.total)))),
+          }),
+          run: () => void send({ type: 'batchSpeedUp' }),
+        },
+      ],
+    };
   } else if (status.batch) {
     const bt = status.batch;
     b = {
@@ -54,14 +72,16 @@ export function Banner() {
       icon: 'refresh',
       progress: bt.total ? bt.done / bt.total : 0,
       text:
-        bt.kind === 'new'
-          ? t('banner.rescoreNew', { dimension: bt.label, done: bt.done, total: bt.total })
-          : t('banner.rescoreSmall', {
-              dimension: bt.label,
-              done: bt.done,
-              total: bt.total,
-              cost: formatCost(bt.cost),
-            }),
+        bt.kind === 'unscored'
+          ? t('banner.scoringNew', { done: bt.done, total: bt.total })
+          : bt.kind === 'new'
+            ? t('banner.rescoreNew', { dimension: bt.label, done: bt.done, total: bt.total })
+            : t('banner.rescoreSmall', {
+                dimension: bt.label,
+                done: bt.done,
+                total: bt.total,
+                cost: formatCost(bt.cost),
+              }),
       actions: [
         {
           label: bt.paused ? t('banner.resume') : t('banner.pause'),
@@ -79,9 +99,21 @@ export function Banner() {
         a.kind === 'unscored'
           ? t('banner.ask.titleNew', { count: a.count })
           : t('banner.ask.title', { count: a.count }),
-      text: t('banner.ask.body', { time: formatDuration(a.seconds), cost: formatCost(a.cost) }),
+      text: t('banner.ask.choice', {
+        time: formatDuration(a.seconds),
+        cost: formatCost(a.cost),
+        half: formatCost(halfPrice(a.cost)),
+      }),
       actions: [
-        { label: t('banner.ask.start'), run: () => void send({ type: 'batchStart' }), primary: true },
+        {
+          label: t('banner.ask.now', { cost: formatCost(a.cost) }),
+          run: () => void send({ type: 'batchStart', mode: 'now' }),
+          primary: true,
+        },
+        {
+          label: t('banner.ask.half', { cost: formatCost(halfPrice(a.cost)) }),
+          run: () => void send({ type: 'batchStart', mode: 'half' }),
+        },
         { label: t('banner.ask.later'), run: () => void send({ type: 'batchLater' }) },
       ],
     };

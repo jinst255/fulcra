@@ -9,7 +9,8 @@ export type Request =
   | { type: 'kick' }
   | { type: 'keyChanged' }
   | { type: 'appOpened' }
-  | { type: 'batchStart' }
+  | { type: 'batchStart'; mode?: 'now' | 'half' }
+  | { type: 'batchSpeedUp' }
   | { type: 'batchLater' }
   | { type: 'batchPause'; paused: boolean }
   | { type: 'emailCheckNow' }

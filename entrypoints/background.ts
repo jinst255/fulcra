@@ -10,6 +10,7 @@ import { addPaste, describeTab, pageSeen, rescoreJob, scoreTab } from '@/src/pip
 import { jobIdFromNotification, maybeNotify } from '@/src/pipeline/notify';
 import { siteFor } from '@/src/readers/generic';
 import { onScored, planAndMaybeStart, pump, queueUnscored, startPlannedBatch } from '@/src/pipeline/queue';
+import { BATCH_POLL_ALARM, initHalfPrice, pollHalfPrice, speedUp } from '@/src/pipeline/halfprice';
 import { allJobs, retentionCleanup, updateJob } from '@/src/store/jobs';
 import { looksLikeJobTitle } from '@/src/readers/alerts/common';
 import {
@@ -40,12 +41,14 @@ export default defineBackground(() => {
   // A check can't be running in a service worker that just started; clear a flag left by one that died.
   void updateStatus({ emailRunning: false });
   void flagPromotions();
+  initHalfPrice();
 
   void chrome.alarms.create(PUMP_ALARM, { periodInMinutes: 1 });
   void chrome.alarms.create(DAILY_ALARM, { periodInMinutes: 24 * 60, delayInMinutes: 5 });
 
   chrome.alarms.onAlarm.addListener((a) => {
     if (a.name === PUMP_ALARM) void pump();
+    if (a.name === BATCH_POLL_ALARM) void pollHalfPrice();
     if (a.name === EMAIL_ALARM) void runEmailCheck({ reason: 'scheduled' });
     if (a.name === CATCHUP_ALARM) void runEmailCheck({ reason: 'catchup' });
     if (a.name === DAILY_ALARM) void getSettings().then((s) => retentionCleanup(s.retentionDays));
@@ -149,7 +152,10 @@ async function handle(msg: Request): Promise<unknown> {
       await updateStatus({ newScoredCount: 0 });
       return true;
     case 'batchStart':
-      await startPlannedBatch();
+      await startPlannedBatch(msg.mode ?? 'now');
+      return true;
+    case 'batchSpeedUp':
+      await speedUp();
       return true;
     case 'batchLater':
       await updateStatus({ askBatch: null });

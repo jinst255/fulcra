@@ -5,6 +5,7 @@ import { ProviderError, type Provider } from '../src/llm/provider';
 import { badgeFor } from '../src/pipeline/badge';
 import { applyFullScore, newJobRecord, undoPayUnit } from '../src/pipeline/jobs';
 import {
+  CONCURRENCY,
   enqueue,
   pump,
   queueSize,
@@ -245,7 +246,7 @@ describe('re-scoring engine (12.4)', () => {
     await new Promise((r) => setTimeout(r, 30));
     await pump();
     await new Promise((r) => setTimeout(r, 30));
-    expect(p.calls.length).toBeLessThanOrEqual(before + 3);
+    expect(p.calls.length).toBeLessThanOrEqual(before + CONCURRENCY);
     await updateStatus((s) => ({ batch: { ...s.batch!, paused: false } }));
     await pump();
     await settle();

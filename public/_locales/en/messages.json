@@ -755,7 +755,7 @@
     "message": "Radar"
   },
   "radar_subtitle": {
-    "message": "The shape of each job across everything you care about, up to three at once"
+    "message": "The shape of each job across everything you care about"
   },
   "radar_pick_title": {
     "message": "Jobs to compare"
@@ -2274,5 +2274,76 @@
   },
   "detail_notAJob": {
     "message": "This doesn't look like a job listing, so it isn't ranked. If it is one, select It's a job below."
+  },
+  "banner_ask_choice": {
+    "message": "Scoring now takes about $TIME$ and costs about $COST$. At half price ($HALF$), OpenAI finishes within 24 hours, usually much sooner.",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      },
+      "cost": {
+        "content": "$2"
+      },
+      "half": {
+        "content": "$3"
+      }
+    }
+  },
+  "banner_ask_now": {
+    "message": "Score now ($COST$)",
+    "placeholders": {
+      "cost": {
+        "content": "$1"
+      }
+    }
+  },
+  "banner_ask_half": {
+    "message": "Half price ($COST$)",
+    "placeholders": {
+      "cost": {
+        "content": "$1"
+      }
+    }
+  },
+  "banner_half_title": {
+    "message": "Scoring at half price: $DONE$ of $TOTAL$ done.",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "banner_half_body": {
+    "message": "OpenAI is working through them and usually finishes within an hour; it can take up to 24 hours. $APP$ checks every few minutes while Chrome is open.",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      }
+    }
+  },
+  "banner_half_sending": {
+    "message": "Sending the jobs to OpenAI…"
+  },
+  "banner_half_speedUp": {
+    "message": "Finish now at full price (about $COST$ more)",
+    "placeholders": {
+      "cost": {
+        "content": "$1"
+      }
+    }
+  },
+  "banner_scoringNew": {
+    "message": "Scoring new jobs: $DONE$ of $TOTAL$ done.",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
   }
 }

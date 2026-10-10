@@ -22,13 +22,19 @@ export interface AppStatus {
   batch: {
     id: string;
     label: string;
-    kind: 'new' | 'edit' | 'mixed';
+    kind: 'new' | 'edit' | 'mixed' | 'unscored';
     done: number;
     total: number;
+    /** Full-price estimate; half price is half of it. */
     cost: number;
     paused: boolean;
+    /** now: direct calls. half: sent through OpenAI's Batch API at half price. */
+    mode: 'now' | 'half';
+    /** OpenAI batch ids still out, in half-price mode. */
+    remoteIds: string[];
+    submittedAt: number | null;
   } | null;
-  /** A large batch waiting for the user's go-ahead. */
+  /** A large batch waiting for the user's go-ahead. Costs are full price. */
   askBatch: { kind: 'rescore' | 'unscored'; count: number; cost: number; seconds: number } | null;
   newScoredCount: number;
 }

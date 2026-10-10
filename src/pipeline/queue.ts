@@ -1,19 +1,21 @@
-// The scoring queue. Runs in the service worker, persists in IndexedDB, 3 requests in flight.
+// The scoring queue. Runs in the service worker, persists in IndexedDB, 6 requests in flight.
+// Large batches can instead go through OpenAI's Batch API at half price (halfprice.ts).
 // Blueprint sections 4, 7, and 12.4.
 import { modelDimensions } from '../core/dimensions';
 import { isPayOutlier } from '../core/pay';
 import { planRescore, isSmallBatch, markOutdated } from '../core/rescore';
-import type { JobRecord } from '../core/types';
+import type { JobRecord, Settings } from '../core/types';
 import { batchSeconds, costPerJob } from '../llm/cost';
 import { openai } from '../llm/openai';
-import { ProviderError, type Provider } from '../llm/provider';
+import type { ScoringOutput } from '../llm/schema';
+import { ProviderError, type Provider, type ScoreRequest } from '../llm/provider';
 import { db, StorageFullError, type QueueItem } from '../store/db';
 import { getJob, putJob, allJobs } from '../store/jobs';
 import { addLog } from '../store/log';
-import { getApiKey, getSettings, getStatus, updateStatus } from '../store/settings';
+import { getApiKey, getSettings, getStatus, updateStatus, type AppStatus } from '../store/settings';
 import { applyDimScores, applyFullScore, applyPayUnit } from './jobs';
 
-export const CONCURRENCY = 3;
+export const CONCURRENCY = 6;
 const REQUEUE_MS = 5 * 60 * 1000;
 const OFFLINE_RETRY_MS = 60 * 1000;
 
@@ -22,6 +24,12 @@ const scoredListeners: Listener[] = [];
 /** Called after each job is scored, for the badge and notifications. */
 export function onScored(fn: Listener): void {
   scoredListeners.push(fn);
+}
+
+const batchDoneListeners: (() => void)[] = [];
+/** Called when a whole batch is done, so the half-price poller can stop. */
+export function onBatchDone(fn: () => void): void {
+  batchDoneListeners.push(fn);
 }
 
 let provider: Provider = openai;
@@ -51,6 +59,7 @@ export async function enqueue(
     notBefore: 0,
     addedAt: existing?.addedAt ?? Date.now(),
     batch: opts.batch ?? existing?.batch ?? null,
+    remote: existing?.remote ?? null,
   };
   await d.put('queue', item);
   // A full score covers any pending dimension re-score.
@@ -77,8 +86,15 @@ export async function pump(): Promise<void> {
     const d = await db();
     const now = Date.now();
     const items = (await d.getAll('queue'))
-      .filter((i) => !inFlight.has(i.id) && i.notBefore <= now)
-      .filter((i) => !(status.batch?.paused && i.batch === status.batch.id))
+      .filter((i) => !inFlight.has(i.id) && i.notBefore <= now && !i.remote)
+      .filter(
+        (i) =>
+          !(
+            status.batch &&
+            i.batch === status.batch.id &&
+            (status.batch.paused || status.batch.mode === 'half')
+          ),
+      )
       .sort((a, b) => (a.batch ? 1 : 0) - (b.batch ? 1 : 0) || a.addedAt - b.addedAt);
     while (running < CONCURRENCY && items.length) {
       const item = items.shift()!;
@@ -95,13 +111,16 @@ export async function pump(): Promise<void> {
   }
 }
 
-async function finishItem(item: QueueItem): Promise<void> {
+export async function finishItem(item: QueueItem): Promise<void> {
   await (await db()).delete('queue', item.id);
   if (item.batch) {
     const st = await updateStatus((s) =>
       s.batch && s.batch.id === item.batch ? { batch: { ...s.batch, done: s.batch.done + 1 } } : {},
     );
-    if (st.batch && st.batch.done >= st.batch.total) await updateStatus({ batch: null });
+    if (st.batch && st.batch.done >= st.batch.total) {
+      await updateStatus({ batch: null });
+      for (const fn of batchDoneListeners) fn();
+    }
   }
 }
 
@@ -114,39 +133,66 @@ async function runItem(item: QueueItem, key: string): Promise<void> {
   try {
     if (item.kind === 'full') {
       await putJob({ ...job, scoring: 'queued' });
-      const dims = modelDimensions(settings.dimensions);
-      const r = await provider.score(key, {
-        model: settings.model,
-        about: settings.about,
-        dims,
-        listing: job.listingText,
-        preliminary: job.preliminary,
-        sourceUrl: job.sourceUrl,
-      });
-      let next = applyFullScore((await getJob(job.id)) ?? job, r.output, dims, r.raw);
-      if (isPayOutlier(next.facts.pay)) next = await checkUnit(next, key, settings.model);
-      await putJob(next);
-      await addLog('SCORE_OK', 'background', job.preliminary ? 'preliminary' : 'full');
-      for (const fn of scoredListeners) fn(next, item);
+      const r = await provider.score(key, scoreRequest(item, job, settings));
+      await applyResult(item, job, r.output, r.raw, key, settings);
     } else if (item.kind === 'dims') {
       const dims = modelDimensions(settings.dimensions).filter((d) => item.dimIds.includes(d.id));
       if (dims.length) {
-        const r = await provider.score(key, {
-          model: settings.model,
-          about: settings.about,
-          dims,
-          listing: job.listingText,
-          preliminary: job.preliminary,
-          onlyDims: dims.map((d) => d.id),
-        });
-        await putJob(applyDimScores((await getJob(job.id)) ?? job, r.output, dims));
-        await addLog('RESCORE_OK', 'background', `${dims.length} dimension(s)`);
+        const r = await provider.score(key, scoreRequest(item, job, settings));
+        await applyResult(item, job, r.output, r.raw, key, settings);
       }
     }
     await updateStatus((s) => (s.rateLimited ? { rateLimited: false } : {}));
     await finishItem(item);
   } catch (e) {
     await handleError(e, item, job);
+  }
+}
+
+/** The scoring request for a queue item: every dimension, or only the ones being re-scored. */
+export function scoreRequest(item: QueueItem, job: JobRecord, settings: Settings): ScoreRequest {
+  const all = modelDimensions(settings.dimensions);
+  if (item.kind === 'dims') {
+    const dims = all.filter((d) => item.dimIds.includes(d.id));
+    return {
+      model: settings.model,
+      about: settings.about,
+      dims,
+      listing: job.listingText,
+      preliminary: job.preliminary,
+      onlyDims: dims.map((d) => d.id),
+    };
+  }
+  return {
+    model: settings.model,
+    about: settings.about,
+    dims: all,
+    listing: job.listingText,
+    preliminary: job.preliminary,
+    sourceUrl: job.sourceUrl,
+  };
+}
+
+/** Writes a scoring answer into the job, direct or from a batch, and tells listeners. */
+export async function applyResult(
+  item: QueueItem,
+  job: JobRecord,
+  output: ScoringOutput,
+  raw: string,
+  key: string,
+  settings: Settings,
+): Promise<void> {
+  const req = scoreRequest(item, job, settings);
+  const cur = (await getJob(job.id)) ?? job;
+  if (item.kind === 'full') {
+    let next = applyFullScore(cur, output, req.dims, raw);
+    if (isPayOutlier(next.facts.pay)) next = await checkUnit(next, key, settings.model);
+    await putJob(next);
+    await addLog('SCORE_OK', 'background', job.preliminary ? 'preliminary' : 'full');
+    for (const fn of scoredListeners) fn(next, item);
+  } else {
+    await putJob(applyDimScores(cur, output, req.dims));
+    await addLog('RESCORE_OK', 'background', `${req.dims.length} dimension(s)`);
   }
 }
 
@@ -262,26 +308,45 @@ export async function planAndMaybeStart(): Promise<void> {
     });
 }
 
-export async function startPlannedBatch(): Promise<void> {
+type HalfPriceStarter = (batchId: string) => Promise<void>;
+let startHalfPrice: HalfPriceStarter = async () => undefined;
+/** halfprice.ts registers itself here, so the queue doesn't import the Batch API client. */
+export function setHalfPriceStarter(fn: HalfPriceStarter): void {
+  startHalfPrice = fn;
+}
+
+/**
+ * Starts the batch the user approved. "now" scores with direct calls, 6 at a time;
+ * "half" sends everything through OpenAI's Batch API at half price.
+ */
+export async function startPlannedBatch(mode: 'now' | 'half' = 'now'): Promise<void> {
   const settings = await getSettings();
-  const plan = planRescore(await allJobs(), settings.dimensions, settings.model);
   const status = await getStatus();
+  const id = `b${Date.now()}`;
+  let batch: NonNullable<AppStatus['batch']>;
   if (status.askBatch?.kind === 'unscored') {
     const jobs = (await allJobs()).filter((j) => j.scoring === 'notScored');
-    for (const j of jobs) await enqueue(j.id, { preliminary: j.preliminary });
-    await updateStatus({ askBatch: null });
-    void pump();
-    return;
-  }
-  if (!plan.tasks.length) {
-    await updateStatus({ askBatch: null });
-    return;
-  }
-  const id = `b${Date.now()}`;
-  for (const t of plan.tasks) await enqueue(t.jobId, { kind: 'dims', dimIds: t.dimIds, batch: id });
-  await updateStatus({
-    askBatch: null,
-    batch: {
+    for (const j of jobs) await enqueue(j.id, { preliminary: j.preliminary, batch: id });
+    batch = {
+      id,
+      label: '',
+      kind: 'unscored',
+      done: 0,
+      total: jobs.length,
+      cost: jobs.length * costPerJob(settings.model),
+      paused: false,
+      mode,
+      remoteIds: [],
+      submittedAt: null,
+    };
+  } else {
+    const plan = planRescore(await allJobs(), settings.dimensions, settings.model);
+    if (!plan.tasks.length) {
+      await updateStatus({ askBatch: null });
+      return;
+    }
+    for (const t of plan.tasks) await enqueue(t.jobId, { kind: 'dims', dimIds: t.dimIds, batch: id });
+    batch = {
       id,
       label: plan.dimNames.join(', '),
       kind: plan.kind,
@@ -289,7 +354,16 @@ export async function startPlannedBatch(): Promise<void> {
       total: plan.tasks.length,
       cost: plan.cost,
       paused: false,
-    },
-  });
-  void pump();
+      mode,
+      remoteIds: [],
+      submittedAt: null,
+    };
+  }
+  if (!batch.total) {
+    await updateStatus({ askBatch: null });
+    return;
+  }
+  await updateStatus({ askBatch: null, batch });
+  if (mode === 'half') await startHalfPrice(id);
+  else void pump();
 }
