@@ -1,7 +1,15 @@
 // Readability fallback for any page (reached through activeTab), and the dispatcher that
 // tries the site readers first. Blueprint sections 7 (PAGE_UNSUPPORTED, PAGE_CHANGED) and 14.
 import { Readability } from '@mozilla/readability';
-import { cleanText, looksClosed, looksLikeJob, textOf, type PageExtraction, type Site } from './extract';
+import {
+  cleanText,
+  headerText,
+  looksClosed,
+  looksLikeJob,
+  textOf,
+  type PageExtraction,
+  type Site,
+} from './extract';
 import { handshakeJobId, readHandshake } from './handshake';
 import { indeedJobId, readIndeed } from './indeed';
 import { linkedInJobId, readLinkedIn } from './linkedin';
@@ -72,7 +80,7 @@ export function readGeneric(doc: Document, url: string): PageExtraction {
     location,
     pay: null,
     text: cleanText(header ? `${header}\n\n${text}` : text),
-    closed: looksClosed(text.slice(0, 3000)),
+    closed: looksClosed(text.slice(0, 3000)) || looksClosed(headerText(doc)),
     isJobPage: !!ld || looksLikeJob(text),
     selectorsFailed: false,
     selectorVersion: null,

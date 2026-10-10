@@ -1,5 +1,5 @@
 // Ranked list (home). Blueprint section 9.2, matched to the approved demo.
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { byValue, movement, type RankedJob } from '../core/rank';
 import { bestFitDetail, bestFitLabel, dimsByWeight, topLine } from '../core/standouts';
 import type { JobRecord } from '../core/types';
@@ -48,23 +48,53 @@ export function RankedList({
   const [search, setSearch] = useState('');
   const [showClosed, setShowClosed] = useState(false);
   const [breakdown, setBreakdown] = useState(false);
+  const [page, setPage] = useState(1);
+  const [extra, setExtra] = useState<Record<'unscored' | 'fail' | 'closed', number>>({
+    unscored: 1,
+    fail: 1,
+    closed: 1,
+  });
 
   const q = search.trim().toLowerCase();
   const visible = useMemo(
     () =>
       view.all.filter((x) => {
-        if (!showClosed && x.job.status === 'closed') return false;
         if (!q) return true;
         return [x.job.facts.title, x.job.facts.company, x.job.facts.location]
           .join(' ')
           .toLowerCase()
           .includes(q);
       }),
-    [view, showClosed, q],
+    [view, q],
   );
-  const passing = visible.filter((x) => x.scored && !x.fails.length).sort(byValue);
-  const failing = visible.filter((x) => x.scored && x.fails.length).sort(byValue);
-  const unscored = visible.filter((x) => !x.scored).sort((a, b) => b.job.addedAt - a.job.addedAt);
+  const open = visible.filter((x) => x.job.status !== 'closed');
+  const passing = open.filter((x) => x.scored && !x.fails.length).sort(byValue);
+  const failing = open.filter((x) => x.scored && x.fails.length).sort(byValue);
+  const unscored = open.filter((x) => !x.scored).sort((a, b) => b.job.addedAt - a.job.addedAt);
+  // Closed and expired postings go to the bottom, folded away.
+  const closed = visible
+    .filter((x) => x.job.status === 'closed')
+    .sort((a, b) => b.job.lastSeenAt - a.job.lastSeenAt);
+
+  const size = settings.ui.pageSize > 0 ? settings.ui.pageSize : Infinity;
+  const pages = Math.max(1, Math.ceil(passing.length / size));
+  const cur = Math.min(page, pages);
+  const first = (cur - 1) * (Number.isFinite(size) ? size : 0);
+  const pageRows = Number.isFinite(size) ? passing.slice(first, first + size) : passing;
+  useEffect(() => setPage(1), [q, settings.ui.pageSize]);
+  const limited = (xs: RankedJob[], k: keyof typeof extra) =>
+    Number.isFinite(size) ? xs.slice(0, size * extra[k]) : xs;
+  const more = (xs: RankedJob[], k: keyof typeof extra) =>
+    Number.isFinite(size) && xs.length > size * extra[k] ? (
+      <button
+        type="button"
+        className="link-btn"
+        style={{ alignSelf: 'flex-start', margin: '4px 8px' }}
+        onClick={() => setExtra({ ...extra, [k]: extra[k] + 1 })}
+      >
+        {t('ranked.showMore', { count: Math.min(size, xs.length - size * extra[k]) })}
+      </button>
+    ) : null;
 
   const passCount = view.openPass.length;
   const auto = passCount < 5;
@@ -96,7 +126,7 @@ export function RankedList({
     );
   }
 
-  const row = (x: RankedJob, idx: number, mode: 'pass' | 'fail' | 'unscored') => {
+  const row = (x: RankedJob, idx: number, mode: 'pass' | 'fail' | 'unscored' | 'closed') => {
     const j = x.job;
     const top = x.scored ? topLine(view, x) : '';
     const segs = byWeight.filter((d) => (x.parts[d.id] ?? 0) > 0.001);
@@ -220,11 +250,24 @@ export function RankedList({
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <span id="lbl-closed" style={{ fontSize: 13 }}>
-                {t('ranked.showClosed')}
-              </span>
-              <Switch on={showClosed} onToggle={() => setShowClosed(!showClosed)} labelledBy="lbl-closed" />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto' }}>
+              <label htmlFor="rk-size" style={{ fontSize: 13 }}>
+                {t('ranked.perPage')}
+              </label>
+              <select
+                id="rk-size"
+                className="select"
+                style={{ width: 'auto', minHeight: 36 }}
+                value={settings.ui.pageSize}
+                onChange={(e) => update((s) => void (s.ui.pageSize = Number(e.target.value)))}
+              >
+                {[10, 20, 50, 100].map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+                <option value={0}>{t('ranked.perPageAll')}</option>
+              </select>
             </div>
           </div>
           <div
@@ -274,8 +317,35 @@ export function RankedList({
             </div>
           )}
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            {passing.map((x, i) => row(x, i, 'pass'))}
+            {pageRows.map((x, i) => row(x, first + i, 'pass'))}
           </div>
+          {pages > 1 && (
+            <nav className="pager" aria-label={t('ranked.pages')}>
+              <span className="small-note mono">
+                {t('ranked.range', {
+                  from: first + 1,
+                  to: Math.min(first + pageRows.length, passing.length),
+                  total: passing.length,
+                })}
+              </span>
+              <span className="row-wrap" style={{ marginLeft: 'auto' }}>
+                <button type="button" className="btn" disabled={cur <= 1} onClick={() => setPage(cur - 1)}>
+                  {t('ranked.prev')}
+                </button>
+                <span className="small-note" aria-live="polite">
+                  {t('ranked.pageOf', { page: cur, pages })}
+                </span>
+                <button
+                  type="button"
+                  className="btn"
+                  disabled={cur >= pages}
+                  onClick={() => setPage(cur + 1)}
+                >
+                  {t('ranked.next')}
+                </button>
+              </span>
+            </nav>
+          )}
           {passing.length === 0 && (
             <div style={{ padding: '16px 8px', fontSize: 14, color: 'var(--text-2)' }}>
               {q ? t('ranked.noMatch') : t('ranked.nonePass')}
@@ -291,7 +361,8 @@ export function RankedList({
                     : t('ranked.outside.count', { count: unscored.length })}
                 </span>
               </div>
-              {unscored.map((x, i) => row(x, i, 'unscored'))}
+              {limited(unscored, 'unscored').map((x, i) => row(x, i, 'unscored'))}
+              {more(unscored, 'unscored')}
             </div>
           )}
           {failing.length > 0 && (
@@ -317,7 +388,37 @@ export function RankedList({
               </div>
               {showFailing && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  {failing.map((x, i) => row(x, i, 'fail'))}
+                  {limited(failing, 'fail').map((x, i) => row(x, i, 'fail'))}
+                  {more(failing, 'fail')}
+                </div>
+              )}
+            </>
+          )}
+          {closed.length > 0 && (
+            <>
+              <button
+                type="button"
+                className="section-head fold"
+                aria-expanded={showClosed}
+                onClick={() => setShowClosed(!showClosed)}
+              >
+                <span aria-hidden="true" className="chev">
+                  {showClosed ? '▾' : '▸'}
+                </span>
+                <span style={{ fontSize: 13, fontWeight: 500 }}>{t('ranked.closedTitle')}</span>
+                <span className="small-note">
+                  {closed.length === 1
+                    ? t('ranked.outside.one')
+                    : t('ranked.outside.count', { count: closed.length })}
+                </span>
+                <span className="small-note" style={{ marginLeft: 'auto' }}>
+                  {showClosed ? t('ranked.outside.shown') : t('ranked.outside.hidden')}
+                </span>
+              </button>
+              {showClosed && (
+                <div style={{ display: 'flex', flexDirection: 'column', opacity: 0.75 }}>
+                  {limited(closed, 'closed').map((x, i) => row(x, i, 'closed'))}
+                  {more(closed, 'closed')}
                 </div>
               )}
             </>

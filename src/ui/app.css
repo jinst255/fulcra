@@ -608,3 +608,28 @@ details.disclosure summary {
   border-radius: 8px;
   padding: 12px 14px;
 }
+
+/* Ranked list pages and folded groups */
+.pager {
+  display: flex;
+  align-items: center;
+  gap: 8px 12px;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--rule);
+  padding: 10px 8px 2px;
+}
+.section-head.fold {
+  width: 100%;
+  border: 0;
+  border-top: 1px solid var(--rule);
+  background: none;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  min-height: 44px;
+}
+.section-head.fold .chev {
+  width: 14px;
+  font-size: 12px;
+  color: var(--text-2);
+}

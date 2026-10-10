@@ -2030,5 +2030,59 @@
   },
   "radar_pick_top3": {
     "message": "Show the top 3"
+  },
+  "detail_markOpen": {
+    "message": "It's still open"
+  },
+  "ranked_perPage": {
+    "message": "Per page"
+  },
+  "ranked_perPageAll": {
+    "message": "All"
+  },
+  "ranked_pages": {
+    "message": "Pages"
+  },
+  "ranked_range": {
+    "message": "$FROM$–$TO$ of $TOTAL$",
+    "placeholders": {
+      "from": {
+        "content": "$1"
+      },
+      "to": {
+        "content": "$2"
+      },
+      "total": {
+        "content": "$3"
+      }
+    }
+  },
+  "ranked_pageOf": {
+    "message": "Page $PAGE$ of $PAGES$",
+    "placeholders": {
+      "page": {
+        "content": "$1"
+      },
+      "pages": {
+        "content": "$2"
+      }
+    }
+  },
+  "ranked_prev": {
+    "message": "Previous"
+  },
+  "ranked_next": {
+    "message": "Next"
+  },
+  "ranked_showMore": {
+    "message": "Show $COUNT$ more",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "ranked_closedTitle": {
+    "message": "Closed or expired"
   }
 }

@@ -85,6 +85,15 @@ describe('page readers', () => {
     expect(readPage(load('not-a-job.html'), 'https://recipes.example/banana').isJobPage).toBe(false);
   });
 
+  it('sees a closed notice anywhere near the top of a LinkedIn job, even in an unknown element', () => {
+    const doc = new DOMParser().parseFromString(
+      `<main><h1>Analyst</h1><div class="new-banner-2027"><span>No longer accepting applications</span></div>
+       <div id="job-details"><p>${'Build reports and dashboards for the operations team. '.repeat(8)}</p></div></main>`,
+      'text/html',
+    );
+    expect(readPage(doc, 'https://www.linkedin.com/jobs/view/4400000001/').closed).toBe(true);
+  });
+
   it('recognizes sites, links, and closed wording', () => {
     expect(siteFor('https://www.indeed.com/jobs?q=x&vjk=0123456789abcdef')).toEqual({
       site: 'indeed',
@@ -98,6 +107,21 @@ describe('page readers', () => {
     expect(isUrl('https://example.com/job')).toBe(true);
     expect(isUrl('Hey, want to tutor at $25/hr? https://x.com')).toBe(false);
     expect(looksClosed('This job has expired on Indeed')).toBe(true);
+    for (const closed of [
+      'No longer accepting applications',
+      'This job is no longer available',
+      'This position has been filled.',
+      'This posting is no longer active',
+      'Applications have closed',
+      'The job you are looking for is no longer available',
+    ])
+      expect(looksClosed(closed), closed).toBe(true);
+    for (const open of [
+      'Actively recruiting',
+      'Apply now. Applications close November 1.',
+      'We are no longer a small team and are hiring fast',
+    ])
+      expect(looksClosed(open), open).toBe(false);
     expect(cleanText('  a \n\n\n\n b ')).toBe('a\n\nb');
   });
 });

@@ -1,7 +1,7 @@
 // LinkedIn job pages: selectors and closed detection, versioned.
 // [Unverified] LinkedIn changes class names often. When reading breaks, update these
 // lists and bump the version; the generic reader covers the gap meanwhile.
-import { cleanText, looksClosed, textOf, type PageExtraction } from './extract';
+import { cleanText, headerText, looksClosed, textOf, type PageExtraction } from './extract';
 
 export const LINKEDIN_SELECTORS_VERSION = 'linkedin-2026-10-10';
 
@@ -49,7 +49,14 @@ const SEL = {
     '.description__text',
   ],
   pay: ['.job-details-preferences-and-skills', '.salary.compensation__salary', '.compensation__salary'],
-  closed: ['.jobs-details-top-card__apply-error', '.closed-job', '.jobs-unified-top-card__apply-error'],
+  closed: [
+    '.jobs-details-top-card__apply-error',
+    '.jobs-unified-top-card__apply-error',
+    '.job-details-jobs-unified-top-card__container--two-pane .artdeco-inline-feedback',
+    '.jobs-details-top-card .artdeco-inline-feedback',
+    '.closed-job',
+    '.top-card-layout__entity-info-container .closed-job__flavor',
+  ],
 };
 
 export function readLinkedIn(doc: Document, url: string): PageExtraction | null {
@@ -76,7 +83,7 @@ export function readLinkedIn(doc: Document, url: string): PageExtraction | null 
     location: textOf(doc, SEL.location)?.split('·')[0]?.trim() ?? null,
     pay,
     text: cleanText(`${header}\n\n${description}`),
-    closed: looksClosed(closedText) || looksClosed(top),
+    closed: looksClosed(closedText) || looksClosed(top) || looksClosed(headerText(doc)),
     isJobPage: true,
     selectorsFailed: false,
     selectorVersion: LINKEDIN_SELECTORS_VERSION,

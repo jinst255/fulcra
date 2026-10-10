@@ -53,6 +53,7 @@ export function defaultSettings(): Settings {
       lastOpenedAt: 0,
       setupSkipped: false,
       learnSuppressed: {},
+      pageSize: 20,
     },
     retentionDays: 90,
     developerMode: false,

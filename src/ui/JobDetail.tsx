@@ -399,16 +399,27 @@ export function JobDetail({
                 ? t('common.tryAgain')
                 : t('detail.rescore')}
           </button>
-          <button
-            type="button"
-            className="btn"
-            disabled={job.status === 'closed'}
-            onClick={() =>
-              editFacts((j) => ({ ...j, status: 'closed', facts: { ...j.facts, status: 'closed' } }))
-            }
-          >
-            {t('detail.markClosed')}
-          </button>
+          {job.status === 'closed' ? (
+            <button
+              type="button"
+              className="btn"
+              onClick={() =>
+                editFacts((j) => ({ ...j, status: 'open', facts: { ...j.facts, status: 'open' } }))
+              }
+            >
+              {t('detail.markOpen')}
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="btn"
+              onClick={() =>
+                editFacts((j) => ({ ...j, status: 'closed', facts: { ...j.facts, status: 'closed' } }))
+              }
+            >
+              {t('detail.markClosed')}
+            </button>
+          )}
           <button
             type="button"
             className="btn danger"

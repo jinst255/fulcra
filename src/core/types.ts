@@ -146,6 +146,8 @@ export interface Settings {
     lastOpenedAt: number;
     setupSkipped: boolean;
     learnSuppressed: Record<string, number>;
+    /** Jobs per page in the ranked list; 0 shows all. */
+    pageSize: number;
   };
   retentionDays: number | null;
   developerMode: boolean;

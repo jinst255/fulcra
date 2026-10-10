@@ -42,16 +42,24 @@ export function textOf(root: ParentNode, selectors: string[]): string | null {
 }
 
 const CLOSED_PATTERNS = [
-  /no longer accepting applications/i,
-  /this job has expired/i,
-  /this job is no longer available/i,
+  /no longer accepting (?:applications|applicants|candidates)/i,
+  /(?:this|the) (?:job|position|posting|role|listing)(?: posting)? (?:has )?expired/i,
+  /(?:this|the) (?:job|position|posting|role|listing)(?: posting)? (?:is|has been) (?:no longer (?:available|active|open)|closed|removed|filled)/i,
+  /(?:job|position|posting) (?:is )?no longer (?:available|active|open)/i,
   /job (?:posting )?(?:has been )?closed/i,
-  /applications? (?:are |is )?closed/i,
+  /applications? (?:are |is |have )?(?:now )?closed/i,
   /position has been filled/i,
+  /(?:this|the) (?:job|posting) (?:you(?:'re| are) looking for )?(?:is|was) (?:no longer|not) (?:available|found)/i,
 ];
 
 export function looksClosed(text: string): boolean {
   return CLOSED_PATTERNS.some((p) => p.test(text));
+}
+
+/** The top of the page, where sites say a posting is closed, without the long description. */
+export function headerText(doc: Document, chars = 2000): string {
+  const root = (doc.querySelector('main') ?? doc.body) as HTMLElement | null;
+  return cleanText(root?.innerText ?? root?.textContent).slice(0, chars);
 }
 
 /** A rough check that generic page text is a job posting, before spending a model call. */
