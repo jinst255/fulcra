@@ -2156,7 +2156,7 @@
     "message": "A job that reaches it gets a 10 for pay. Leave it blank and your best-paying job gets the 10."
   },
   "setup_done_lead": {
-    "message": "You can change any of this later in Settings."
+    "message": "You can change any of this later in Settings. Set what matters most, and filter by job type, pay, or remote work, right on the ranked list."
   },
   "setup_done_summary": {
     "message": "What you set up"
@@ -2746,5 +2746,31 @@
   },
   "weights_editHint": {
     "message": "Add, remove, or rename what Fulcra scores, or describe your priorities in your own words"
+  },
+  "setup_progressOf": {
+    "message": "Step $N$ of $TOTAL$",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "setup_key_needOne": {
+    "message": "Paste your key above, or choose I'll add it later."
+  },
+  "setup_key_failedHint": {
+    "message": "Check the key and press Continue again, or choose I'll add it later. You can add it anytime in Settings."
+  },
+  "setup_email_required": {
+    "message": "Add at least one inbox to continue."
+  },
+  "setup_key_change": {
+    "message": "Use a different key"
+  },
+  "setup_backToSummary": {
+    "message": "Save and go back"
   }
 }

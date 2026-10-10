@@ -94,9 +94,9 @@ function Shell() {
           ) : (
             step >= 1 && (
               <div className="progress">
-                <span>{t('setup.progress', { n: step })}</span>
+                <span>{t('setup.progressOf', { n: step, total: SETUP_STEPS - 1 })}</span>
                 <span aria-hidden="true" className="progress-bar">
-                  <span style={{ width: `${Math.round((step / 6) * 100)}%` }} />
+                  <span style={{ width: `${Math.round((step / (SETUP_STEPS - 1)) * 100)}%` }} />
                 </span>
               </div>
             )
@@ -110,7 +110,7 @@ function Shell() {
         )}
         {screen === 'radar' && <Radar onOpen={(id) => go(`radar/${id}`)} />}
         {screen === 'settings' && <Settings section={arg || 'key'} />}
-        {screen === 'setup' && <Setup step={step} />}
+        {screen === 'setup' && <Setup step={step} review={route.split('/')[2] === 'review'} />}
       </main>
       {detailId && (
         <JobDetail

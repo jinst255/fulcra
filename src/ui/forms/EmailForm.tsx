@@ -296,7 +296,7 @@ export function EmailForm({ mode, onNotNow }: { mode: 'setup' | 'settings'; onNo
               {any ? t('email.addOutlook') : t('setup.email.outlook')}
             </button>
           )}
-          {mode === 'setup' && !any && (
+          {onNotNow && !any && (
             <button type="button" className="btn" onClick={onNotNow}>
               {t('setup.email.notNow')}
             </button>

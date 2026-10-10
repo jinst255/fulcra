@@ -1,4 +1,5 @@
-// First-run setup, steps 0 to 6. Blueprint section 10, matched to the approved demo.
+// First-run setup: welcome, OpenAI key, about you, job alert emails, done. Blueprint section 10.
+// Priorities and dealbreakers live on the ranked list (weights panel and filters), not here.
 import { useState } from 'react';
 import { rankJobs } from '../../core/rank';
 import { t } from '../../i18n/t';
@@ -6,14 +7,14 @@ import { send } from '../../messages';
 import { setSetupComplete } from '../../store/settings';
 import { useApp } from '../AppContext';
 import { AboutForm } from '../forms/AboutForm';
-import { DealForm } from '../forms/DealForm';
 import { EmailForm } from '../forms/EmailForm';
-import { KeyInput, saveKey } from '../forms/KeyForm';
-import { PriorityForm } from '../forms/PriorityForm';
+import { KeyField, saveKey, testKey, type KeyTest } from '../forms/KeyForm';
 import { inboxName } from '../format';
 import { Check } from '../Icons';
 
-export const SETUP_STEPS = 7;
+export const SETUP_STEPS = 5;
+/** Step numbers, so links and the progress bar don't hard-code them. */
+export const STEP = { welcome: 0, key: 1, about: 2, email: 3, done: 4 } as const;
 
 /** Three example jobs for the welcome screen's bars, from the demo sample data. */
 const WELCOME = [
@@ -22,10 +23,17 @@ const WELCOME = [
   { name: 'Summer sales rep', s: [9.0, 3, 3, 3, 2, 3, 2] },
 ];
 
-export function Setup({ step }: { step: number }) {
+/**
+ * `review`: opened from a Change link on the last screen, so Continue goes straight back to the
+ * summary instead of through every step after this one.
+ */
+export function Setup({ step, review = false }: { step: number; review?: boolean }) {
   const app = useApp();
   const { settings, update, go, jobs, key } = app;
-  const [testedKey, setTestedKey] = useState<string | null>(null);
+  const [keyDraft, setKeyDraft] = useState('');
+  const [keyTest, setKeyTest] = useState<KeyTest>(null);
+  const [keyMissing, setKeyMissing] = useState(false);
+  const [newKey, setNewKey] = useState(false);
   const to = (n: number) => go(`setup/${n}`);
 
   const finish = async () => {
@@ -40,38 +48,29 @@ export function Setup({ step }: { step: number }) {
   };
 
   const next = async () => {
-    if (step === 1 && testedKey) {
-      await saveKey(testedKey);
-      setTestedKey(null);
+    if (step === STEP.key && keyDraft.trim()) {
+      // Continue tests the key; it's saved only if the test passes.
+      setKeyTest('testing');
+      const r = await testKey(keyDraft);
+      setKeyTest(r);
+      if (r !== 'ok') return;
+      await saveKey(keyDraft.trim());
+      setKeyDraft('');
+    } else if (step === STEP.key && !key.hasKey) {
+      setKeyMissing(true);
+      return;
     }
-    to(Math.min(6, step + 1));
+    setNewKey(false);
+    to(review ? STEP.done : Math.min(STEP.done, step + 1));
   };
 
   const dims = settings.dimensions.filter((d) => d.active).slice(0, 7);
-  const db = settings.dealbreakers;
-  const dealCount =
-    (db.minTakeHome != null ? 1 : 0) +
-    (db.maxHours != null ? 1 : 0) +
-    (db.mustRemote ? 1 : 0) +
-    (db.noRelocation ? 1 : 0) +
-    (db.languageGap ? 1 : 0);
   const em = settings.email;
   const summary: { step: number; ok: boolean; text: string }[] = [
-    { step: 1, ok: key.hasKey, text: key.hasKey ? t('setup.done.keyOk') : t('setup.done.keyMissing') },
-    { step: 3, ok: true, text: t('setup.done.priorities', { profile: t(`profile.${settings.profileId}`) }) },
+    { step: STEP.key, ok: key.hasKey, text: key.hasKey ? t('setup.done.keyOk') : t('setup.done.keyMissing') },
     {
-      step: 4,
-      ok: true,
-      text:
-        dealCount === 0
-          ? t('setup.deal.none')
-          : dealCount === 1
-            ? t('setup.done.dealOne')
-            : t('setup.done.dealCount', { count: dealCount }),
-    },
-    {
-      step: 5,
-      ok: true,
+      step: STEP.email,
+      ok: em.accounts.length > 0,
       text: em.accounts.length
         ? t('setup.done.emailOn', {
             provider: em.accounts.map(inboxName).join(', '),
@@ -87,7 +86,7 @@ export function Setup({ step }: { step: number }) {
   return (
     <div className="wrap form-row">
       <div className="card form-card">
-        {step === 0 && (
+        {step === STEP.welcome && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 18, padding: '12px 0' }}>
             <h1 style={{ fontSize: 30, lineHeight: 1.2 }}>{t('setup.welcome.title')}</h1>
             <p style={{ fontSize: 16, lineHeight: 1.5, color: 'var(--text-3)' }}>{t('setup.welcome.body')}</p>
@@ -138,14 +137,14 @@ export function Setup({ step }: { step: number }) {
             </div>
             <p style={{ fontSize: 13, color: 'var(--text-2)' }}>{t('setup.welcome.footer')}</p>
             <div>
-              <button type="button" className="btn primary lg" onClick={() => to(1)}>
+              <button type="button" className="btn primary lg" onClick={() => to(STEP.key)}>
                 {t('setup.welcome.button')}
               </button>
             </div>
           </div>
         )}
 
-        {step === 1 && (
+        {step === STEP.key && (
           <>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <h1 style={{ fontSize: 24 }}>{t('setup.key.title')}</h1>
@@ -176,12 +175,34 @@ export function Setup({ step }: { step: number }) {
                 </ol>
               </details>
             </div>
-            {key.hasKey && !testedKey ? (
-              <div role="status" style={{ fontSize: 14, color: 'var(--teal-dark)', fontWeight: 500 }}>
-                {t('settings.key.current', { last4: key.last4 })} · {t('setup.key.ok')}
+            {key.hasKey && !newKey ? (
+              <div className="row-wrap" style={{ gap: '4px 12px' }}>
+                <span role="status" style={{ fontSize: 14, color: 'var(--teal-dark)', fontWeight: 500 }}>
+                  {t('settings.key.current', { last4: key.last4 })} · {t('setup.key.ok')}
+                </span>
+                <button type="button" className="link-btn" onClick={() => setNewKey(true)}>
+                  {t('setup.key.change')}
+                </button>
               </div>
             ) : (
-              <KeyInput onPassed={setTestedKey} />
+              <KeyField
+                value={keyDraft}
+                onChange={(v) => {
+                  setKeyDraft(v);
+                  setKeyTest(null);
+                  setKeyMissing(false);
+                }}
+                test={keyTest}
+                onEnter={() => void next()}
+              />
+            )}
+            {keyMissing && (
+              <div role="status" className="note-amber" style={{ fontSize: 14 }}>
+                {t('setup.key.needOne')}
+              </div>
+            )}
+            {keyTest && keyTest !== 'ok' && keyTest !== 'testing' && (
+              <div className="small-note">{t('setup.key.failedHint')}</div>
             )}
             <div
               style={{
@@ -205,7 +226,11 @@ export function Setup({ step }: { step: number }) {
                   marginTop: 4,
                 }}
               >
-                <button type="button" className="link-btn" onClick={() => to(2)}>
+                <button
+                  type="button"
+                  className="link-btn"
+                  onClick={() => to(review ? STEP.done : STEP.about)}
+                >
                   {t('setup.key.later')}
                 </button>
                 <span className="small-note">{t('setup.key.laterNote')}</span>
@@ -214,7 +239,7 @@ export function Setup({ step }: { step: number }) {
           </>
         )}
 
-        {step === 2 && (
+        {step === STEP.about && (
           <>
             <div>
               <h1 style={{ fontSize: 24 }}>{t('setup.about.title')}</h1>
@@ -226,32 +251,7 @@ export function Setup({ step }: { step: number }) {
           </>
         )}
 
-        {step === 3 && (
-          <>
-            <div>
-              <h1 style={{ fontSize: 24 }}>{t('setup.priorities.title')}</h1>
-              <p className="lead" style={{ marginTop: 6 }}>
-                {t('setup.priorities.body')}
-              </p>
-            </div>
-            <PriorityForm />
-          </>
-        )}
-
-        {step === 4 && (
-          <>
-            <div>
-              <h1 style={{ fontSize: 24 }}>{t('setup.deal.title')}</h1>
-              <p className="lead" style={{ marginTop: 6 }}>
-                {t('setup.deal.body')}
-              </p>
-            </div>
-            <DealForm showNone />
-            <p className="small-note">{t('setup.deal.typesMoved')}</p>
-          </>
-        )}
-
-        {step === 5 && (
+        {step === STEP.email && (
           <>
             <div>
               <h1 style={{ fontSize: 24 }}>{t('setup.email.title')}</h1>
@@ -259,17 +259,11 @@ export function Setup({ step }: { step: number }) {
                 {t('setup.email.body')}
               </p>
             </div>
-            <EmailForm
-              mode="setup"
-              onNotNow={() => {
-                update((s) => void (s.email.accounts = []));
-                to(6);
-              }}
-            />
+            <EmailForm mode="setup" />
           </>
         )}
 
-        {step === 6 && (
+        {step === STEP.done && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: '8px 0' }}>
             <div>
               <h1 style={{ fontSize: 28 }}>{t('setup.done.title')}</h1>
@@ -288,7 +282,7 @@ export function Setup({ step }: { step: number }) {
                     {row.ok ? <Check /> : '!'}
                   </span>
                   <span style={{ flex: 1, minWidth: 0 }}>{row.text}</span>
-                  <button type="button" className="link-btn" onClick={() => to(row.step)}>
+                  <button type="button" className="link-btn" onClick={() => go(`setup/${row.step}/review`)}>
                     {t('setup.done.change')}
                   </button>
                 </div>
@@ -332,7 +326,7 @@ export function Setup({ step }: { step: number }) {
           </div>
         )}
 
-        {step >= 1 && step <= 5 && (
+        {step >= STEP.key && step < STEP.done && (
           <div
             style={{
               display: 'flex',
@@ -344,25 +338,38 @@ export function Setup({ step }: { step: number }) {
               marginTop: 4,
             }}
           >
-            {step >= 2 && (
+            {step === STEP.about && (
               // Skips only this step; whatever it already has stays as it is.
-              <button type="button" className="link-btn quiet" onClick={() => to(step + 1)}>
+              <button
+                type="button"
+                className="link-btn quiet"
+                onClick={() => to(review ? STEP.done : step + 1)}
+              >
                 {t('setup.skipStep')}
               </button>
             )}
             <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
-              <button type="button" className="btn" onClick={() => to(step - 1)}>
-                {t('common.back')}
+              <button type="button" className="btn" onClick={() => to(review ? STEP.done : step - 1)}>
+                {review ? t('common.cancel') : t('common.back')}
               </button>
               <button
                 type="button"
                 className="btn primary"
-                disabled={step === 1 && !testedKey && !key.hasKey}
+                disabled={keyTest === 'testing' || (step === STEP.email && !settings.email.accounts.length)}
                 onClick={() => void next()}
               >
-                {t('common.continue')}
+                {keyTest === 'testing'
+                  ? t('setup.key.testing')
+                  : review
+                    ? t('setup.backToSummary')
+                    : t('common.continue')}
               </button>
             </div>
+            {step === STEP.email && !settings.email.accounts.length && (
+              <div className="small-note" style={{ flexBasis: '100%', textAlign: 'right' }}>
+                {t('setup.email.required')}
+              </div>
+            )}
           </div>
         )}
       </div>
