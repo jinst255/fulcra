@@ -2018,7 +2018,7 @@
     "message": "Red points have no information, such as a job that doesn't state its pay. They sit at the center, on their axis."
   },
   "radar_pick_hintAny": {
-    "message": "Pick as many as you like. $COUNT$ shown.",
+    "message": "Check as many as you like ($COUNT$ shown). Click a name to open the job.",
     "placeholders": {
       "count": {
         "content": "$1"
@@ -2420,6 +2420,22 @@
       },
       "total": {
         "content": "$2"
+      }
+    }
+  },
+  "radar_pick_compare": {
+    "message": "Compare $JOB$ on the chart",
+    "placeholders": {
+      "job": {
+        "content": "$1"
+      }
+    }
+  },
+  "radar_pick_open": {
+    "message": "Open $JOB$",
+    "placeholders": {
+      "job": {
+        "content": "$1"
       }
     }
   }

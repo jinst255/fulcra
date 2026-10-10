@@ -48,7 +48,8 @@ function Shell() {
 
   const { screen, arg } = parse(route);
   if (!checked) return <div className="app" />;
-  const detailId = route.startsWith('job/') ? arg : null;
+  // "job/<id>" opens a job over the ranked list; "radar/<id>" opens it over the radar.
+  const detailId = route.startsWith('job/') || (screen === 'radar' && arg) ? arg : null;
   const step = Math.max(0, Math.min(SETUP_STEPS - 1, Number(arg) || 0));
 
   return (
@@ -107,11 +108,17 @@ function Shell() {
         {screen === 'ranked' && (
           <RankedList onOpen={(id) => go(`job/${id}`)} learn={learn} setLearn={setLearn} />
         )}
-        {screen === 'radar' && <Radar />}
+        {screen === 'radar' && <Radar onOpen={(id) => go(`radar/${id}`)} />}
         {screen === 'settings' && <Settings section={arg || 'key'} />}
         {screen === 'setup' && <Setup step={step} />}
       </main>
-      {detailId && <JobDetail jobId={detailId} onClose={() => go('')} onLearn={setLearn} />}
+      {detailId && (
+        <JobDetail
+          jobId={detailId}
+          onClose={() => go(screen === 'radar' ? 'radar' : '')}
+          onLearn={setLearn}
+        />
+      )}
     </div>
   );
 }

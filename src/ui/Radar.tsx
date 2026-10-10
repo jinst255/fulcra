@@ -54,11 +54,13 @@ function LineKey({ k }: { k: number }) {
   );
 }
 
-export function Radar() {
+export function Radar({ onOpen }: { onOpen: (id: string) => void }) {
   const { view, jobs } = useApp();
   const defaults = useMemo(() => view.openPass.slice(0, 3).map((x) => x.job.id), [view.openPass]);
   const [pickedRaw, setPicked] = useState<string[] | null>(null);
   const [axisRaw, setAxis] = useState(0);
+  /** The job under the pointer or keyboard focus in a list, drawn on top of the others. */
+  const [hover, setHover] = useState<string | null>(null);
   if (!jobs.length) {
     return (
       <div
@@ -99,6 +101,20 @@ export function Radar() {
   const pickList = view.all
     .filter((x) => x.scored && x.job.status !== 'closed' && !isNotAJob(x.job))
     .sort(byValue);
+
+  const hovered = hover ? (view.byId.get(hover) ?? null) : null;
+  const hoverPicked = hovered != null && ids.includes(hovered.job.id);
+  /** Props that highlight a job on the chart while its row is hovered or focused. */
+  const hoverProps = (id: string) => ({
+    onMouseEnter: () => setHover(id),
+    onMouseLeave: () => setHover((h) => (h === id ? null : h)),
+    onFocus: () => setHover(id),
+    onBlur: () => setHover((h) => (h === id ? null : h)),
+  });
+  // The hovered job draws last, so it sits on top.
+  const drawOrder = [...picked]
+    .reverse()
+    .sort((a, b) => Number(a.x.job.id === hover) - Number(b.x.job.id === hover));
 
   const reasonOf = (x: RankedJob, d: Dimension) =>
     d.computedByApp ? payReason(x.take) : (x.job.scores[d.id]?.reason ?? t('ranked.reasonNotScored'));
@@ -154,18 +170,20 @@ export function Radar() {
                   strokeWidth="1.25"
                 />
                 <path d={grid} fill="none" style={{ stroke: 'var(--track)' }} strokeWidth="1" />
-                {[...picked].reverse().map(({ x, slot: k }) => {
+                {drawOrder.map(({ x, slot: k }) => {
                   const s = slot(k);
                   const pts = dims.map((d, i) => pt(i, sOf(x, d)));
                   const known = pts.filter((_p, i) => !missing(x, dims[i]!));
+                  const lit = hoverPicked && hover === x.job.id;
+                  const faded = hoverPicked && !lit;
                   // Missing scores draw in red below, on their own axis.
                   return (
-                    <g key={x.job.id}>
+                    <g key={x.job.id} opacity={faded ? 0.25 : 1} className="radar-series">
                       <polygon
                         points={pts.map((p) => p.map(f1).join(',')).join(' ')}
                         style={{ fill: s.color, stroke: s.color }}
-                        fillOpacity={picked.length > 3 ? 0.04 : 0.06 + 0.02 * Math.max(0, 2 - k)}
-                        strokeWidth="2.25"
+                        fillOpacity={lit ? 0.2 : picked.length > 3 ? 0.04 : 0.06 + 0.02 * Math.max(0, 2 - k)}
+                        strokeWidth={lit ? 3.5 : 2.25}
                         strokeDasharray={s.dash}
                         strokeLinejoin="round"
                       />
@@ -191,6 +209,20 @@ export function Radar() {
                     />
                   ) : null;
                 })}
+                {hovered && !hoverPicked && (
+                  // A job not on the chart yet: a gray outline previews its shape.
+                  <polygon
+                    points={dims
+                      .map((d, i) => pt(i, sOf(hovered, d)))
+                      .map((p) => p.map(f1).join(','))
+                      .join(' ')}
+                    style={{ fill: 'var(--text-2)', stroke: 'var(--text-2)' }}
+                    fillOpacity="0.08"
+                    strokeWidth="2"
+                    strokeDasharray="4 3"
+                    strokeLinejoin="round"
+                  />
+                )}
                 <g fontFamily="IBM Plex Mono, monospace" fontSize="10" style={{ fill: 'var(--text-2)' }}>
                   {[2, 4, 6, 8, 10].map((v) => (
                     <text key={v} x={CX + 6} y={CY - (R * v) / 10 + 4}>
@@ -259,6 +291,7 @@ export function Radar() {
               {picked.map(({ x, slot: k }) => (
                 <div
                   key={x.job.id}
+                  {...hoverProps(x.job.id)}
                   style={{
                     display: 'flex',
                     alignItems: 'flex-start',
@@ -269,7 +302,14 @@ export function Radar() {
                   }}
                 >
                   <LineKey k={k} />
-                  <span style={{ width: 170, flex: 'none' }}>{jobTitle(x.job)}</span>
+                  <button
+                    type="button"
+                    className="job-link"
+                    style={{ width: 170, flex: 'none' }}
+                    onClick={() => onOpen(x.job.id)}
+                  >
+                    {jobTitle(x.job)}
+                  </button>
                   {missing(x, axisDim) ? (
                     <span style={{ flex: 'none', fontWeight: 500, color: 'var(--red)' }}>
                       {t('radar.missing')}
@@ -316,63 +356,51 @@ export function Radar() {
             {pickList.map((x) => {
               const k = ids.indexOf(x.job.id);
               const on = k >= 0;
-              const id = `rj-${x.job.id}`;
+              const title = jobTitle(x.job);
               return (
                 <div
                   key={x.job.id}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 10,
-                    minHeight: 48,
-                    borderBottom: '1px solid var(--rule)',
-                  }}
+                  className={`pick-row${hover === x.job.id ? ' lit' : ''}`}
+                  {...hoverProps(x.job.id)}
                 >
                   <input
                     type="checkbox"
-                    id={id}
+                    aria-label={t('radar.pick.compare', { job: title })}
                     checked={on}
-                    style={{ width: 20, height: 20, margin: '0 0 0 4px', flex: 'none' }}
+                    style={{ width: 20, height: 20, margin: '0 0 0 4px', flex: 'none', cursor: 'pointer' }}
                     onChange={() => setPicked(on ? ids.filter((id) => id !== x.job.id) : [...ids, x.job.id])}
                   />
-                  <label
-                    htmlFor={id}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 10,
-                      flex: 1,
-                      minWidth: 0,
-                      minHeight: 48,
-                      fontSize: 14,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <span style={{ visibility: on ? 'visible' : 'hidden', display: 'flex' }}>
-                      <LineKey k={on ? k : 0} />
-                    </span>
-                    <span style={{ flex: 1, minWidth: 0 }}>
-                      {jobTitle(x.job)}
-                      {x.fails.length > 0 && (
-                        <span
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 4,
-                            fontSize: 12,
-                            color: 'var(--red)',
-                            marginTop: 1,
-                          }}
-                        >
-                          <DealbreakerMark size={12} stroke={2.5} />
-                          {failText(x.fails)}
-                        </span>
-                      )}
-                    </span>
-                    <span className="mono" style={{ fontSize: 13, color: 'var(--text-3)' }}>
-                      {x.value.toFixed(1)}
-                    </span>
-                  </label>
+                  <span style={{ visibility: on ? 'visible' : 'hidden', display: 'flex' }}>
+                    <LineKey k={on ? k : 0} />
+                  </span>
+                  <span style={{ flex: 1, minWidth: 0 }}>
+                    <button
+                      type="button"
+                      className="job-link"
+                      aria-label={t('radar.pick.open', { job: title })}
+                      onClick={() => onOpen(x.job.id)}
+                    >
+                      {title}
+                    </button>
+                    {x.fails.length > 0 && (
+                      <span
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 4,
+                          fontSize: 12,
+                          color: 'var(--red)',
+                          marginTop: 1,
+                        }}
+                      >
+                        <DealbreakerMark size={12} stroke={2.5} />
+                        {failText(x.fails)}
+                      </span>
+                    )}
+                  </span>
+                  <span className="mono" style={{ fontSize: 13, color: 'var(--text-3)' }}>
+                    {x.value.toFixed(1)}
+                  </span>
                 </div>
               );
             })}

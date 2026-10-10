@@ -758,3 +758,41 @@ details.disclosure summary {
   text-align: center;
   padding: 0 4px;
 }
+
+/* Radar: jobs to compare. The name opens the job; the box puts it on the chart. */
+.pick-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  border-bottom: 1px solid var(--rule);
+  font-size: 14px;
+  border-radius: 6px;
+}
+.pick-row.lit {
+  background: var(--bg);
+}
+.job-link {
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: var(--border-input);
+  text-underline-offset: 3px;
+}
+.job-link:hover {
+  color: var(--teal-dark);
+  text-decoration-color: currentColor;
+}
+.radar-series {
+  transition: opacity 0.15s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .radar-series {
+    transition: none;
+  }
+}
