@@ -1,6 +1,6 @@
 import { IDBFactory } from 'fake-indexeddb';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { defaultDimensions, addDimension } from '../src/core/dimensions';
+import { defaultDimensions, addDimension, editDimension } from '../src/core/dimensions';
 import { ProviderError, type Provider } from '../src/llm/provider';
 import { badgeFor } from '../src/pipeline/badge';
 import { applyFullScore, newJobRecord, undoPayUnit } from '../src/pipeline/jobs';
@@ -11,10 +11,11 @@ import {
   setProviderForTests,
   planAndMaybeStart,
   queueUnscored,
+  startPlannedBatch,
 } from '../src/pipeline/queue';
 import { resetDbForTests } from '../src/store/db';
 import { getJob, putJob, putSampleJobs } from '../src/store/jobs';
-import { defaultStatus, getStatus, setApiKey, updateSettings } from '../src/store/settings';
+import { defaultStatus, getStatus, setApiKey, updateSettings, updateStatus } from '../src/store/settings';
 import { sampleJobs } from './helpers';
 
 const facts = (period: 'hour' | 'year', amount: number) => ({
@@ -194,6 +195,47 @@ describe('queue', () => {
     await queueUnscored();
     expect((await getStatus()).askBatch).toMatchObject({ kind: 'unscored', count: 12 });
     expect(await queueSize()).toBe(0);
+  });
+});
+
+describe('re-scoring engine (12.4)', () => {
+  it('asks before a large edit re-score, marks scores outdated, and honors pause', async () => {
+    const p = fakeProvider();
+    setProviderForTests(p);
+    await setApiKey('sk-test-0000000000000000');
+    const many = Array.from({ length: 12 }, (_, i) => ({
+      ...sampleJobs()[0]!,
+      id: `j${i}`,
+      dedupeKey: `k${i}`,
+    }));
+    await putSampleJobs(many);
+    await updateSettings((s) => {
+      s.dimensions = editDimension(s.dimensions, 'risk', {
+        name: 'Risk',
+        definition: 'Changed meaning',
+        anchorLow: 'a',
+        anchorHigh: 'b',
+      });
+    });
+    await planAndMaybeStart();
+    expect((await getStatus()).askBatch).toMatchObject({ kind: 'rescore', count: 12 });
+    expect((await getJob('j0'))!.scores.risk!.state).toBe('outdated');
+    expect(p.calls).toEqual([]);
+    await startPlannedBatch();
+    const st = await getStatus();
+    expect(st.askBatch).toBeNull();
+    expect(st.batch).toMatchObject({ total: 12, kind: 'edit' });
+    await updateStatus((s) => ({ batch: { ...s.batch!, paused: true } }));
+    const before = p.calls.length;
+    await new Promise((r) => setTimeout(r, 30));
+    await pump();
+    await new Promise((r) => setTimeout(r, 30));
+    expect(p.calls.length).toBeLessThanOrEqual(before + 3);
+    await updateStatus((s) => ({ batch: { ...s.batch!, paused: false } }));
+    await pump();
+    await settle();
+    expect((await getJob('j11'))!.scores.risk).toMatchObject({ dimVersion: 2, state: 'current', score: 4 });
+    expect((await getStatus()).batch).toBeNull();
   });
 });
 
