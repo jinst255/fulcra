@@ -29,7 +29,7 @@ export interface AppStatus {
     paused: boolean;
   } | null;
   /** A large batch waiting for the user's go-ahead. */
-  askBatch: { count: number; cost: number; seconds: number } | null;
+  askBatch: { kind: 'rescore' | 'unscored'; count: number; cost: number; seconds: number } | null;
   newScoredCount: number;
 }
 
