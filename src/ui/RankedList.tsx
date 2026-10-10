@@ -50,7 +50,6 @@ export function RankedList({
   const [search, setSearch] = useState('');
   const [showClosed, setShowClosed] = useState(false);
   const [showNotJobs, setShowNotJobs] = useState(false);
-  const [breakdown, setBreakdown] = useState(false);
   const [page, setPage] = useState(1);
   const [extra, setExtra] = useState<Record<'unscored' | 'fail' | 'closed', number>>({
     unscored: 1,
@@ -80,6 +79,8 @@ export function RankedList({
     .filter((x) => x.job.status === 'closed' && !isNotAJob(x.job))
     .sort((a, b) => b.job.lastSeenAt - a.job.lastSeenAt);
 
+  // Saved, so it stays as you left it when you come back from a job or the radar.
+  const breakdown = settings.ui.breakdown;
   const size = settings.ui.pageSize > 0 ? settings.ui.pageSize : Infinity;
   const pages = Math.max(1, Math.ceil(passing.length / size));
   const cur = Math.min(page, pages);
@@ -296,7 +297,11 @@ export function RankedList({
               {breakdown ? t('ranked.breakdown.on') : t('ranked.breakdown.off')}
             </span>
             <span style={{ marginLeft: 'auto' }}>
-              <Switch on={breakdown} onToggle={() => setBreakdown(!breakdown)} labelledBy="lbl-breakdown" />
+              <Switch
+                on={breakdown}
+                onToggle={() => update((s) => void (s.ui.breakdown = !breakdown))}
+                labelledBy="lbl-breakdown"
+              />
             </span>
           </div>
           {breakdown && (

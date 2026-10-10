@@ -54,6 +54,7 @@ export function defaultSettings(): Settings {
       pageSize: 20,
       theme: 'system',
       jobTypes: [],
+      breakdown: false,
     },
     retentionDays: 90,
     developerMode: false,

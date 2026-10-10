@@ -176,6 +176,8 @@ export interface Settings {
     theme: 'system' | 'light' | 'dark';
     /** Job types shown in the ranked list and radar; empty shows every type. */
     jobTypes: JobType[];
+    /** The ranked list shows what makes up each score. */
+    breakdown: boolean;
   };
   retentionDays: number | null;
   developerMode: boolean;
