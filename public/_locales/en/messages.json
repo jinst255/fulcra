@@ -2740,5 +2740,11 @@
         "content": "$1"
       }
     }
+  },
+  "weights_edit": {
+    "message": "Edit"
+  },
+  "weights_editHint": {
+    "message": "Add, remove, or rename what Fulcra scores, or describe your priorities in your own words"
   }
 }

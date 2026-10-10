@@ -6,6 +6,7 @@ import { t } from '../i18n/t';
 import { pickProfile, setWeight } from './actions';
 import { useApp } from './AppContext';
 import { InfoTip, Swatch } from './components';
+import { Pencil } from './Icons';
 
 const HELP: Record<string, Parameters<typeof t>[0]> = {
   pay: 'dimHelp.pay',
@@ -97,14 +98,25 @@ export function profileName(id: ProfileId): string {
 }
 
 export function WeightPanel() {
-  const { settings, update, jobs } = useApp();
+  const { settings, update, jobs, go } = useApp();
   return (
     <aside aria-label={t('weights.title')} className="card side-col">
-      <div>
-        <h2 style={{ fontSize: 16 }}>{t('weights.title')}</h2>
-        <div className="small-note" style={{ marginTop: 2 }}>
-          {t('weights.hint')}
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <h2 style={{ fontSize: 16 }}>{t('weights.title')}</h2>
+          <div className="small-note" style={{ marginTop: 2 }}>
+            {t('weights.hint')}
+          </div>
         </div>
+        <button
+          type="button"
+          className="btn small-btn"
+          title={t('weights.editHint')}
+          onClick={() => go('settings/priorities')}
+        >
+          <Pencil size={14} />
+          {t('weights.edit')}
+        </button>
       </div>
       <div>
         <label htmlFor="rk-profile" className="small-note" style={{ display: 'block', marginBottom: 4 }}>
