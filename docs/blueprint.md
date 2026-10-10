@@ -1,6 +1,6 @@
 # Fulcra: project blueprint
 
-**Version 1.1, October 10, 2026.** Owner: Justin. Audience: the AI coding agent working in the Fulcra repository.
+**Version 1.2, October 10, 2026.** Owner: Justin. Audience: the AI coding agent working in the Fulcra repository.
 
 > **Read this first, agent.** The work happens in two phases, and you must not skip ahead.
 >
@@ -12,6 +12,16 @@
 
 ## Changelog
 
+- **v1.2 (October 10, 2026, Phase B build):** the extension is built (sections 1 to 22). Things the build settled or changed:
+  - **Models (5.2):** both model IDs are confirmed in the live API model list. These models reject reasoning effort `minimal`, so Fulcra uses `none`. Prices are still unverified. The list also shows a `gpt-6-luna` model, not evaluated.
+  - **Ranking (9.2):** jobs with no scores yet are not ranked; the list shows them in their own "Not scored yet" group. Ties keep the older job first.
+  - **Outdated scores (5.7 vs 12.4):** these disagreed. Outdated scores stay in the overall score until the new score lands, as 12.4 and the demo say; only missing ("pending") scores are left out.
+  - **Storage (12.1, 12.2):** IndexedDB has a fourth store, `queue`, for the persistent scoring queue. `JobRecord` gains `preliminary`, `scoring` (scored, not scored, queued, failed), `scoreError`, `knownCosts`, and `rawOutput`. `Settings.ui` gains `setupSkipped` and `learnSuppressed`, and `Settings.email` gains `importDays`.
+  - **Pasted links (4.1, 15):** links from LinkedIn, Handshake, and Indeed are read in a background tab. Links from other sites ask for that one site's permission through `optional_host_permissions`, since there's no `<all_urls>`.
+  - **Email (12.3):** each new alert thread is read from Gmail's print view inside the check window, falling back to opening it, then unread state is restored. Read thread ids are remembered so checks don't repeat. The import estimate counts alert emails and assumes 4 jobs per alert. The Handshake sender defaults to `notifications@joinhandshake.com`, still unverified.
+  - **Dev tooling (15, 16):** `web-ext` is not installed. It is MPL-licensed and pulled in 7 audit findings, so `npm run dev` hot-reloads without launching a browser; load `.output/chrome-mv3-dev` once by hand. Dev-only additions: `jsdom`, `globals`, `@eslint/js`, `typescript-eslint`, `eslint-plugin-react-hooks`, `@types/node`, `vite`. `npm run test:live` runs an opt-in smoke test against the real API.
+  - **Manifest description:** Chrome limits it to 132 characters, so the manifest uses a shorter `appShortDescription`; the full description is for the store listing.
+  - **Copy (19.8):** four strings added during the build, and the two job type keys renamed to `jobType.fullTime` and `jobType.partTime` so every key converts cleanly to Chrome's format.
 - **v1.1 (October 10, 2026):** Phase A demos approved (canvas "Fulcra demo": Onboarding, Full-page app, and Popup artboards). Section 19 now matches the demos and is no longer a draft; copy the demos added is listed in 19.8. Behavior the demos settled is written into sections 9 to 11: the popup shows no rank for a job that fails dealbreakers, the popup's "Add your OpenAI key" opens setup, the job detail lists its facts and override controls explicitly, settings show removed dimensions with "Add back," and the developer interval list includes the normal presets. Fixes: the breakdown example in 9.2 now matches the sample data (its second item was career leverage 0.6; it is enjoyment 0.2), the learning-card button in 12.6 matches `learn.yes`, the email estimate example in 10 is $0.14, and the `Settings` type in 12.2 gains the Gmail account number, the sticky "outside your dealbreakers" choice, and the last-opened time used by the badge. The file moved to `docs/blueprint.md` as section 14 says.
 - **v1.0:** first full blueprint. Supersedes the October 9 handoff document. Changes from the handoff: OpenAI API key is the only scoring engine (on-device and manual scoring removed), the name is Fulcra, the popup and full-page app are the two surfaces (no side panel), the ranked list is the home screen, there are no analytics, email is read through a scheduled background window, pay scores are computed by the app, and pay-unit outliers are checked by the model.
 
@@ -1155,6 +1165,10 @@ No `<all_urls>`. Other sites work through `activeTab` when the user clicks.
 | `ranked.segment` | {dimension}: {score}, adds {part} |
 | `popup.pasted` | Pasted job |
 | `email.checkedNow` | just now |
+| `appShortDescription` | It's a free browser extension that scores job offers on what matters to you, not just pay. |
+| `common.estimateParen` | (estimate) |
+| `popup.emailNotYet` | Emails not checked yet |
+| `setup.priorities.suggestLower` | Lower {dimension} from {from} to {to} |
 
 ---
 
