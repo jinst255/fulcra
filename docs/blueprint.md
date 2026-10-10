@@ -140,7 +140,7 @@ The provider layer is an interface (`src/llm/provider.ts`) so another provider c
 | Standard (recommended) | GPT-5.6 Luna | $0.20 / $1.20 | $1.20 | Default for all scoring |
 | Sharper | GPT-5.4 Mini | $0.75 / $4.50 | $4.50 | Optional, if Standard feels noisy |
 
-- Prices come from a third-party guide checked October 6, 2026. **[Unverified]** Confirm prices and exact API model IDs on OpenAI's pricing page before shipping. Keep model IDs and prices in one constants file, `src/llm/models.ts`.
+- Prices and model IDs checked against OpenAI's pricing page and the models API on October 10, 2026, for the 0.1.0 release. The Batch API costs half of these. Keep model IDs and prices in one constants file, `src/llm/models.ts`.
 - Set reasoning effort to the lowest available. Reasoning tokens bill as output.
 - Use the Responses API with structured output (JSON schema, strict). **[Unverified]** Confirm strict JSON-schema support for these models. Validate every response with zod regardless.
 - Cost estimate per job assumes 3,800 input and 500 output tokens (the rubrics add about 800):

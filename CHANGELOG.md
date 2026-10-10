@@ -1,36 +1,40 @@
 # Changelog
 
-## 0.1.0 (unreleased)
+## 0.1.0 (October 10, 2026)
 
-First build of Fulcra.
+The first release of Fulcra.
 
-- Score job postings on LinkedIn, Handshake, Indeed, and any other page, or from pasted text and links, with your own OpenAI key.
-- Seven dimensions by default (pay, enjoyment, impact, career leverage, life cost, risk, location and social), up to 12 of your own, with versioned re-scoring.
-- Pay and the overall score computed by Fulcra, with pay-unit correction and undo.
-- Ranked list with breakdown bars, live sliders and starting profiles, dealbreakers, and a job detail drawer with your own scores.
-- Radar comparing up to three jobs, with "What stands out."
-- First-run setup, full settings, export, and delete everything.
-- Job alert emails from Gmail and Outlook with preliminary scores, scheduled checks, and strong-match notifications.
-- Right-click menu, Alt+Shift+F shortcut, and toolbar badge.
-- Half-price scoring through OpenAI's Batch API for jobs found while you're away, with a Score now button (and its price) for when you're back; six scoring requests at once otherwise.
-- Scores spread across your jobs, a stricter scoring prompt, and facts (remote, relocation, languages) filled in instead of left blank. Re-score all.
-- Edit a score in place; pages of 10 to 100 jobs; closed postings and non-job emails fold away; the radar compares any number of jobs, with missing scores in red.
-- Email checks report what happened, read past imports in full, pick the Gmail account, and switch between Gmail and Outlook directly.
-- Dark mode.
-- Several inboxes at once (say, a Gmail and an Outlook), checked in a collapsed "Fulcra" tab group instead of a minimized window.
-- Outlook reading copes with more layouts (folded search box, newer message list and body markup, the outlook.cloud.microsoft address), and Copy diagnostics says which step of an email check failed.
-- A bad OpenAI key is always reported as one: pasted keys lose stray spaces and invisible characters (which used to read as "You're offline"), and the popup says a job is saved but not scored, with the fix, instead of "Scoring…" forever.
-- Alert emails keep each card's lines apart in Chrome (company and location were run together), and Handshake's weekly round-up is read: one link per card, with pay, job type, and place on one line.
-- An email check that finds nothing new says why: no job listings in the emails (with a hint about forwarding as an attachment), or every job already in your list. Copy diagnostics includes the latest check.
-- Job alerts from any sender you add (Indeed, a company's careers site, a forward from a friend) are read too, not just LinkedIn and Handshake.
-- Outlook no longer reports a layout change when you have no alerts: its "No results found" page and the loosely related mail it shows after it are skipped, one search runs per sender, and mail from other people is never opened when the row shows who sent it.
-- Clearer scoring: each built-in dimension now gives the AI a rubric, so Risk weighs steady pay, how long the job lasts, whether you'd get it, and start-up costs. The Risk tooltip says the same. Scores you already have don't change until you re-score.
-- Pay: a "No set time frame" choice, and a pay goal and minimum per hour, per year, or in total. Impossible pay units ("$110,000 an hour") are fixed.
-- A job type filter on the ranked list and radar, instead of a "job types to skip" dealbreaker.
-- The radar opens a job when you click its name and highlights it when you hover, on the list or on the chart. Tapping a dimension sorts the jobs by it.
-- Setup: Skip this step skips one step; the priority sliders explain each dimension and what 0 and 10 mean.
-- Setup is four steps: Continue tests the key (and a saved key can be replaced), priorities and dealbreakers moved to the ranked list, at least one inbox is required, and Change links on the summary come straight back.
-- Filters above the ranked list and radar: job type plus remote, relocating, languages, lowest pay, and most hours. Dealbreakers are now called filters.
-- An Edit button on What matters most opens Settings > Priorities.
-- Reset Fulcra: a hard reset back to a fresh install.
-- No more Score now / Half price / Later question: Fulcra scores right away while you're using it and at half price while you're away, and nothing is left unscored.
+### Scoring
+
+- Score any job posting on LinkedIn, Handshake, Indeed, or any other site, or paste a link or the text of an offer. Use the popup, the right-click menu, or <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd>.
+- Seven dimensions to start with: pay, enjoyment, impact, career leverage, life cost, risk, and location and social. Rename or remove them, or add up to 12 of your own. Each built-in one gives the AI a rubric, and every score comes with a one-line reason.
+- Pay and the overall score are worked out by Fulcra, not the AI. Pay can be compared over a time frame or as a rate, with your goal and minimum per hour, per year, or in total. Impossible pay units, like "$110,000 an hour", are fixed, with an Undo.
+- Scores are spread across your jobs, so the best and weakest on each dimension are easy to see. You can turn this off.
+- Disagree with a score? Type your own. If you keep correcting the same thing, Fulcra offers to change that weight.
+
+### Comparing
+
+- A ranked list that reorders as you move the sliders in What matters most, with starting profiles, a breakdown of what makes up each score, and arrows showing how far each job moved.
+- A radar that compares any number of jobs. Click a dimension to sort by it.
+- Filters for job type, remote or hybrid, no relocating, languages, lowest pay, and most hours. Jobs that miss a must-have are set aside, not deleted.
+- Closed postings and anything that isn't a job fold away at the bottom.
+- Light and dark mode.
+
+### Job alert emails
+
+- Fulcra reads job alerts from Gmail and Outlook on the web, from any mix of inboxes, on a schedule you choose. It works in a background tab inside a collapsed Fulcra tab group.
+- LinkedIn and Handshake alerts, including Handshake's weekly round-up, are read by their layout. Alerts from any other sender you add (Indeed, a company's careers site, or a friend who forwards jobs) are read from links that look like jobs.
+- Only emails from your alert senders are read, and they stay marked unread.
+- Import past alerts from the last 7, 30, or 90 days, or everything, with an estimate of the jobs and cost first.
+- Every check says what it found. If it found nothing new, it says why: no job listings in the emails, or only jobs you already have.
+
+### Cost and your OpenAI key
+
+- Scoring uses your own OpenAI key: about $1.20 per 1,000 jobs on Standard, or $4.50 on Sharper.
+- Jobs found while you're away, like from an overnight email check, are scored at half price through OpenAI's Batch API. When you come back, Score now finishes them right away and shows the price.
+- Fulcra tests your key before saving it, ignores stray spaces and invisible characters picked up when copying, and always says plainly when a key doesn't work. A job added while the key is broken is saved and scored once it's fixed.
+
+### Privacy
+
+- No accounts, servers, or analytics. Only the job text, your About you answers, and your dimension definitions are sent, and only to OpenAI.
+- Settings > Your data > Reset Fulcra deletes everything and starts over. Copy diagnostics helps report a problem without sharing your key, jobs, or emails.

@@ -1,5 +1,5 @@
 // Model IDs and prices, kept in one place. Blueprint section 5.2.
-// Model IDs confirmed in the API model list on Oct 10, 2026. [Unverified] Prices: confirm on OpenAI's pricing page before shipping.
+// Model IDs and prices checked against OpenAI's models API and pricing page on Oct 10, 2026.
 import type { ModelChoice } from '../core/types';
 
 export interface ModelInfo {

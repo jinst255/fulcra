@@ -47,10 +47,23 @@ Move a slider and the list reorders instantly. Rename, remove, or add up to 12 o
 ## Install
 
 > [!NOTE]
-> Fulcra is in beta and not on the Chrome Web Store yet. Until it is, install it from source.
+> Fulcra isn't on the Chrome Web Store yet. Until it is, install it from a release. It takes a minute and needs no tools.
 
 <details open>
-<summary><b>From source</b> (macOS, Linux, Windows)</summary>
+<summary><b>From a release</b> (recommended)</summary>
+<br>
+
+1. Download `fulcra-<version>-chrome.zip` from the [latest release](https://github.com/jinst255/fulcra/releases/latest) and unzip it to a folder you'll keep. Chrome loads Fulcra from there each time it starts.
+2. Open `chrome://extensions` and turn on **Developer mode** (top right).
+3. Select **Load unpacked** and choose the unzipped folder.
+4. Setup opens in a new tab.
+
+**To update:** unzip the new release over the same folder, then select ↻ on Fulcra's card in `chrome://extensions`. Your jobs and settings stay.
+
+</details>
+
+<details>
+<summary><b>From source</b></summary>
 <br>
 
 You need [Node.js](https://nodejs.org) 22 or newer and Git.
@@ -62,25 +75,14 @@ npm ci
 npm run build
 ```
 
-1. Open `chrome://extensions` and turn on **Developer mode** (top right).
-2. Select **Load unpacked** and choose the build folder:
+Then load the build folder with **Load unpacked** as above:
 
-   | System | Folder |
-   |---|---|
-   | macOS, Linux | `fulcra/.output/chrome-mv3` |
-   | Windows | `fulcra\.output\chrome-mv3` |
+| System | Folder |
+|---|---|
+| macOS, Linux | `fulcra/.output/chrome-mv3` |
+| Windows | `fulcra\.output\chrome-mv3` |
 
-3. Setup opens in a new tab.
-
-To update later: `git pull`, `npm run build`, then select ↻ on Fulcra's card in `chrome://extensions`.
-
-</details>
-
-<details>
-<summary><b>From a release zip</b></summary>
-<br>
-
-Each [GitHub release](https://github.com/jinst255/fulcra/releases) has a zip of the built extension. Unzip it and load the unzipped folder with **Load unpacked** as above.
+**To update:** `git pull`, `npm run build`, then select ↻ on Fulcra's card.
 
 </details>
 
