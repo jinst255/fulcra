@@ -26,6 +26,8 @@ export default defineConfig({
       'contextMenus',
       'notifications',
     ],
+    // Asked for one site at a time, only when you paste a link from a site not listed below.
+    optional_host_permissions: ['https://*/*', 'http://*/*'],
     host_permissions: [
       'https://www.linkedin.com/*',
       'https://app.joinhandshake.com/*',

@@ -3,6 +3,7 @@
 import { defineBackground } from 'wxt/utils/define-background';
 import type { Request } from '@/src/messages';
 import { applyBadge } from '@/src/pipeline/badge';
+import { addPaste, describeTab, pageSeen, rescoreJob, scoreTab } from '@/src/pipeline/intake';
 import { planAndMaybeStart, pump, queueUnscored, startPlannedBatch } from '@/src/pipeline/queue';
 import { retentionCleanup } from '@/src/store/jobs';
 import {
@@ -59,6 +60,17 @@ function sig(dims: { id: string; version: number; active: boolean }[]): string {
 
 async function handle(msg: Request): Promise<unknown> {
   switch (msg.type) {
+    case 'scoreTab':
+      return scoreTab(msg.tabId);
+    case 'readTab':
+      return describeTab(msg.tabId);
+    case 'addPaste':
+      return addPaste(msg.text);
+    case 'rescoreJob':
+      return rescoreJob(msg.jobId);
+    case 'pageSeen':
+      await pageSeen(msg.page);
+      return true;
     case 'kick':
       await pump();
       return true;

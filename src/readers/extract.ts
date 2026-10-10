@@ -26,7 +26,7 @@ export function cleanText(s: string | null | undefined): string {
   return (s ?? '')
     .replace(/\u00a0/g, ' ')
     .replace(/[ \t]+/g, ' ')
-    .replace(/\s*\n\s*/g, '\n')
+    .replace(/[ \t]*\n[ \t]*/g, '\n')
     .replace(/\n{3,}/g, '\n\n')
     .trim()
     .slice(0, MAX_TEXT);
