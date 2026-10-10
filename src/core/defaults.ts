@@ -1,0 +1,61 @@
+// Default settings for a new install.
+import { defaultDimensions } from './dimensions';
+import { presetWeights } from './presets';
+import type { Settings } from './types';
+
+export const DEFAULT_SENDERS = [
+  'jobalerts-noreply@linkedin.com',
+  // [Unverified] Handshake's alert sender. Confirm from a real alert email.
+  'notifications@joinhandshake.com',
+];
+
+export const INTERVALS = { daily: 1440, sixHours: 360, hourly: 60, fiveMinutes: 5, thirtySeconds: 0.5 };
+
+export function defaultSettings(): Settings {
+  const dimensions = defaultDimensions();
+  return {
+    model: 'standard',
+    weights: presetWeights('balanced', dimensions),
+    profileId: 'balanced',
+    dimensions,
+    about: {
+      targetWork: '',
+      enjoys: '',
+      homeBase: '',
+      communityImportance: 'somewhat',
+      remote: 'maybe',
+      relocate: 'maybe',
+      languages: [{ name: 'English', level: 'native' }],
+      windowWeeks: 52,
+      payGoal: null,
+    },
+    dealbreakers: {
+      minTakeHome: null,
+      maxHours: null,
+      mustRemote: false,
+      noRelocation: false,
+      excludeTypes: [],
+      languageGap: true,
+    },
+    email: {
+      provider: null,
+      intervalMinutes: INTERVALS.daily,
+      senders: DEFAULT_SENDERS.slice(),
+      lastCheck: null,
+      accountIndex: 0,
+      importDays: 30,
+    },
+    scoring: { autoScore: false, upgradeOnVisit: true, notify: true, notifyThreshold: 8 },
+    ui: {
+      showOutsideDealbreakers: null,
+      baselineOrder: [],
+      lastOpenedAt: 0,
+      setupSkipped: false,
+      learnSuppressed: {},
+    },
+    retentionDays: 90,
+    developerMode: false,
+    verboseLog: false,
+    showRawOutput: false,
+  };
+}
