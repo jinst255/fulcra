@@ -17,7 +17,8 @@
     "format": "prettier --write .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "postinstall": "wxt prepare"
+    "postinstall": "wxt prepare",
+    "test:live": "vitest run --config vitest.live.config.ts"
   },
   "dependencies": {
     "@mozilla/readability": "0.6.0",

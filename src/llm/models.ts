@@ -1,5 +1,5 @@
 // Model IDs and prices, kept in one place. Blueprint section 5.2.
-// [Unverified] Confirm the exact API model IDs and prices on OpenAI's pricing page before shipping.
+// Model IDs confirmed in the API model list on Oct 10, 2026. [Unverified] Prices: confirm on OpenAI's pricing page before shipping.
 import type { ModelChoice } from '../core/types';
 
 export interface ModelInfo {
@@ -15,5 +15,5 @@ export const MODELS: Record<ModelChoice, ModelInfo> = {
   sharper: { id: 'gpt-5.4-mini', priceIn: 0.75, priceOut: 4.5 },
 };
 
-/** Lowest reasoning effort: reasoning tokens bill as output. */
-export const REASONING_EFFORT = 'minimal';
+/** Lowest reasoning effort these models accept (checked Oct 10, 2026): reasoning tokens bill as output. */
+export const REASONING_EFFORT = 'none';
