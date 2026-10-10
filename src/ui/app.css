@@ -796,3 +796,61 @@ details.disclosure summary {
     transition: none;
   }
 }
+
+/* Slider ends and (i) tooltips */
+.slider-row {
+  position: relative;
+}
+.slider-ends {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-2);
+  margin-top: -2px;
+}
+.info-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin: -6px 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--text-2);
+  cursor: help;
+}
+.info-btn:hover,
+.info-btn:focus-visible {
+  color: var(--teal-dark);
+}
+.info-tip .tip {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 26px;
+  z-index: 20;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--toast-bg);
+  color: var(--toast-text);
+  font-size: 12.5px;
+  line-height: 1.45;
+  font-weight: 400;
+  box-shadow: var(--shadow);
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.12s;
+  pointer-events: none;
+}
+.info-tip .tip.open {
+  visibility: visible;
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .info-tip .tip {
+    transition: none;
+  }
+}

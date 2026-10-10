@@ -202,3 +202,23 @@ export function Pencil({ size = 14 }: { size?: number }) {
     </svg>
   );
 }
+
+/** A small "i" in a circle, for tooltips. */
+export function Info({ size = 16 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 16 16"
+      aria-hidden="true"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+    >
+      <circle cx="8" cy="8" r="6.6" />
+      <line x1="8" y1="7.2" x2="8" y2="11.2" />
+      <circle cx="8" cy="4.9" r="0.5" fill="currentColor" />
+    </svg>
+  );
+}

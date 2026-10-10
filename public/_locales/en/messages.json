@@ -2460,5 +2460,71 @@
   },
   "setup_skipStep": {
     "message": "Skip this step"
+  },
+  "weights_scale": {
+    "message": "Each slider is how much that thing counts toward a job's overall score: 0 ignores it, 10 counts it most. Scores themselves always run the same way: 10 is best for you."
+  },
+  "weights_low": {
+    "message": "Doesn't matter"
+  },
+  "weights_high": {
+    "message": "Matters most"
+  },
+  "weights_more": {
+    "message": "matters a lot"
+  },
+  "weights_less": {
+    "message": "matters a little"
+  },
+  "weights_some": {
+    "message": "matters some"
+  },
+  "weights_valueText": {
+    "message": "$N$ of 10, $MEANING$",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      },
+      "meaning": {
+        "content": "$2"
+      }
+    }
+  },
+  "weights_about": {
+    "message": "What $NAME$ means",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "dimHelp_pay": {
+    "message": "How much the job pays, compared with your pay goal (or your best-paying job if you didn't set one). Fulcra works this out from the listing; it isn't an AI guess."
+  },
+  "dimHelp_enjoyment": {
+    "message": "How much you'd like the day-to-day work, based on what you said you enjoy. Work you'd do for fun scores 10."
+  },
+  "dimHelp_impact": {
+    "message": "How much the work helps real people. Clear, direct help to people scores 10; work that helps no one, or harms someone, scores 1."
+  },
+  "dimHelp_career": {
+    "message": "How much the job moves you toward the work you're aiming for. Direct experience in that work scores 10; unrelated work scores 1."
+  },
+  "dimHelp_life": {
+    "message": "How much time and energy the job leaves you outside work. Low cost scores high: reasonable hours and little stress score 10, a job that consumes everything scores 1."
+  },
+  "dimHelp_risk": {
+    "message": "How safe and steady the job is: reliable income, a clear commitment, and easy to start. Low risk scores high: a stable job scores 10, an unpredictable one scores 1."
+  },
+  "dimHelp_location": {
+    "message": "How well the job lets you live where, and near whom, you want. Fully compatible scores 10; having to leave your community scores 1."
+  },
+  "dimHelp_customHigh": {
+    "message": "A 10 means: $HIGH$.",
+    "placeholders": {
+      "high": {
+        "content": "$1"
+      }
+    }
   }
 }

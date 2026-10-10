@@ -1,7 +1,8 @@
 // Shared controls: switch, tags, toast, confirm dialog. Blueprint section 14 (Banner, Switch,
 // DealbreakerMark, Toast, Dialog), matched to the approved demos.
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { t } from '../i18n/t';
+import { Info } from './Icons';
 
 export function Switch(props: { on: boolean; onToggle: () => void; labelledBy?: string; label?: string }) {
   return (
@@ -125,5 +126,38 @@ export function ConfirmDialog(props: {
         </div>
       </div>
     </div>
+  );
+}
+
+/**
+ * An (i) button that explains something. The text shows on hover, keyboard focus, or tap, and is
+ * always in the page for screen readers. It's placed under the nearest positioned parent.
+ */
+export function InfoTip({ label, text }: { label: string; text: string }) {
+  const id = useId();
+  const [open, setOpen] = useState(false);
+  return (
+    <span className="info-tip" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
+      <button
+        type="button"
+        className="info-btn"
+        aria-label={label}
+        aria-describedby={id}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setOpen(false)}
+        onClick={() => setOpen((o) => !o)}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape' && open) {
+            e.stopPropagation();
+            setOpen(false);
+          }
+        }}
+      >
+        <Info />
+      </button>
+      <span role="tooltip" id={id} className={open ? 'tip open' : 'tip'}>
+        {text}
+      </span>
+    </span>
   );
 }
